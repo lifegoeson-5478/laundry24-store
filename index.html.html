@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAUNDRY24 매장 정보 시스템</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2300a991'/><text x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='11' fill='white' letter-spacing='-0.5'>L24</text></svg>">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+:root {
+  --bg: #f7f8fa; --white: #ffffff; --border: #e5e8ed; --border2: #d0d5de;
+  --text: #1a1d23; --text2: #5a6172; --text3: #9aa0ad;
+  --accent: #00a991; --accent-light: #e6f7f5;
+  --accent2: #0072ce; --accent2-light: #e5f1ff;
+  --danger: #e03e3e; --warn: #f59e0b; --success: #10b981;
+  --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,.07); --shadow-md: 0 4px 24px rgba(0,0,0,.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* NAV */
+header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200; box-shadow: 0 1px 6px rgba(0,0,0,.05); }
+.nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; }
+.logo { display: flex; align-items: center; margin-right: 36px; text-decoration: none; }
+.logo-text { font-size: 21px; font-weight: 900; color: #111; letter-spacing: -1px; line-height: 1; }
+.nav-tabs { display: flex; height: 60px; }
+.nav-tab { padding: 0 18px; height: 60px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; white-space: nowrap; }
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-right { margin-left: auto; }
+.btn-admin { background: var(--text); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; display: flex; align-items: center; gap: 6px; }
+.btn-admin:hover { background: #333; }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
+
+/* HERO */
+.hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 40px 24px 32px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 320px; height: 320px; background: radial-gradient(circle, rgba(0,169,145,.18) 0%, transparent 70%); pointer-events: none; }
+.hero::after { content: ''; position: absolute; bottom: -40px; left: -40px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,114,206,.12) 0%, transparent 70%); pointer-events: none; }
+.hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+.hero-sub { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 24px; }
+.search-box { position: relative; max-width: 540px; margin: 0 auto; }
+.search-box input { width: 100%; padding: 16px 20px 16px 52px; border: 2px solid var(--border); border-radius: 50px; font-size: 15px; font-family: inherit; background: var(--white); color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: var(--shadow); }
+.search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(0,169,145,.12); }
+.search-box input::placeholder { color: var(--text3); }
+.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 18px; pointer-events: none; transition: color .2s; }
+.search-box:focus-within .search-icon { color: var(--accent); }
+
+/* FILTER */
+.filter-bar { max-width: 1280px; margin: 0 auto; padding: 16px 24px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filter-label { font-size: 12px; font-weight: 700; color: var(--text3); margin-right: 4px; }
+.chip { padding: 6px 14px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: white; }
+.chip.c-매일.on { background: var(--success); border-color: var(--success); }
+.chip.c-격일.on { background: var(--accent2); border-color: var(--accent2); }
+.chip.c-부산대구.on { background: var(--warn); border-color: var(--warn); }
+.chip.c-대전.on { background: var(--danger); border-color: var(--danger); }
+.chip.c-셀프.on { background: #7c3aed; border-color: #7c3aed; }
+.chip-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.chip-reset { background: transparent; border-color: transparent; color: var(--text3); }
+.chip-reset:hover { color: var(--danger); border-color: var(--danger); background: transparent; }
+
+/* STATS */
+.stats-row { max-width: 1280px; margin: 0 auto; padding: 0 24px 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.stat-num { font-size: 20px; font-weight: 800; }
+.stat-lbl { font-size: 11px; color: var(--text3); margin-top: 1px; font-weight: 500; }
+
+/* TABLE */
+.table-outer { max-width: 1280px; margin: 0 auto; padding: 0 24px 48px; }
+.table-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.table-toolbar { padding: 14px 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border); }
+.result-count { font-size: 13px; color: var(--text2); }
+.result-count strong { color: var(--text); font-weight: 700; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th { text-align: left; padding: 11px 14px; color: var(--text3); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; background: var(--bg); border-bottom: 1px solid var(--border); white-space: nowrap; }
+tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f0fdf9; }
+tbody td { padding: 12px 14px; vertical-align: middle; }
+.td-no { font-size: 12px; color: var(--text3); font-weight: 600; min-width: 36px; }
+.td-name { font-weight: 700; color: var(--text); white-space: nowrap; min-width: 200px; }
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.b-직영 { background: var(--accent2-light); color: var(--accent2); }
+.b-일반 { background: var(--bg); color: var(--text3); }
+.b-일반\/직영 { background: #eff6ff; color: #3b82f6; }
+.b-론디원 { background: var(--accent-light); color: var(--accent); }
+.b-비론디원 { color: var(--text3); font-size: 12px; }
+.b-복합형 { background: #f0fdf4; color: #16a34a; }
+.b-드라이only { background: #fff7ed; color: #ea580c; }
+.b-셀프only { background: #faf5ff; color: #7c3aed; }
+.b-line { display: inline-block; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 6px; }
+/* 라인별 색상 */
+.line-A, .line-C, .line-E, .line-G { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fca5a5; }
+.line-B, .line-D, .line-F, .line-H { background: #dbeafe; color: #1d4ed8; border: 1.5px solid #93c5fd; }
+.line-Z, .line-Y, .line-X, .line-W { background: #ccfbf1; color: #0f766e; border: 1.5px solid #5eead4; }
+.line-busan { background: #ede9fe; color: #6d28d9; border: 1.5px solid #c4b5fd; }
+.line-daejeon { background: #fef9c3; color: #a16207; border: 1.5px solid #fde047; }
+.line-etc { background: var(--bg); border: 1px solid var(--border2); color: var(--text3); }
+.freq { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; }
+.freq::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .6; }
+.f-매일 { background: #d1fae5; color: #065f46; }
+.f-격일 { background: #dbeafe; color: #1e40af; }
+.f-busan { background: #fef3c7; color: #92400e; }
+.f-daejeon { background: #fee2e2; color: #991b1b; }
+.f-셀프only { background: #f3e8ff; color: #6b21a8; }
+.f-기타 { background: var(--bg); color: var(--text3); }
+.note-preview { font-size: 12px; color: var(--warn); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+/* 오늘 방문 매장 행 하이라이트 */
+tbody tr.visit-today { background: #eff6ff; }
+tbody tr.visit-today:hover { background: #dbeafe; }
+tbody tr.visit-today .td-name { color: #1d4ed8; }
+.today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
+/* 키오스크 버전 배지 */
+.kiosk-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 800; border: 1.5px solid; }
+.kiosk-v1 { background: #fef9c3; color: #a16207; border-color: #fde047; }
+.kiosk-v2 { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+/* 방문 예정일 표시 */
+.visit-dates { display: flex; flex-direction: column; gap: 3px; }
+.visit-next { font-size: 12px; font-weight: 700; color: var(--accent); }
+.visit-next2 { font-size: 11px; color: var(--text3); font-weight: 500; }
+.empty { text-align: center; padding: 80px 0; color: var(--text3); }
+
+/* MODAL */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,30,.45); z-index: 500; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+.overlay.open { display: flex; }
+.modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 660px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); animation: modalIn .2s ease; }
+@keyframes modalIn { from { transform: scale(.95) translateY(8px); opacity: 0; } }
+.modal-hd { padding: 22px 24px 18px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--white); z-index: 1; }
+.modal-no { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; color: var(--text2); }
+.modal-name { font-size: 20px; font-weight: 800; }
+.modal-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.modal-x { background: none; border: none; color: var(--text3); font-size: 22px; cursor: pointer; padding: 2px 6px; border-radius: 6px; transition: background .1s; line-height: 1; }
+.modal-x:hover { background: var(--bg); color: var(--text); }
+.modal-bd { padding: 20px 24px 28px; }
+.sec-lbl { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; margin-top: 22px; }
+.sec-lbl:first-child { margin-top: 0; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.info-cell label { font-size: 11px; color: var(--text3); display: block; margin-bottom: 5px; font-weight: 600; }
+.info-cell span { font-size: 14px; font-weight: 600; }
+/* 모달 방문 예정일 카드 */
+.visit-card { background: var(--accent-light); border: 1px solid rgba(0,169,145,.25); border-radius: 10px; padding: 14px 18px; display: flex; gap: 24px; flex-wrap: wrap; }
+.visit-item label { font-size: 11px; color: #047857; font-weight: 700; display: block; margin-bottom: 4px; letter-spacing: .5px; text-transform: uppercase; }
+.visit-item span { font-size: 16px; font-weight: 800; color: #065f46; }
+.visit-item span.secondary { font-size: 14px; font-weight: 600; color: #047857; }
+.cost-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cc { padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1.5px solid; }
+.cc-발생 { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+.cc-미발생 { background: var(--bg); color: var(--text3); border-color: var(--border); }
+.note-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.75; color: var(--text2); white-space: pre-wrap; font-weight: 500; }
+.note-card.warn { background: #fffbeb; border-color: #fde68a; color: #78350f; }
+
+/* SCHEDULE PAGE */
+.pg-inner { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+.pg-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.pg-desc { font-size: 14px; color: var(--text2); margin-bottom: 28px; font-weight: 500; }
+.sched-notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #78350f; margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-start; font-weight: 500; }
+.sched-table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.sched-table { width: 100%; border-collapse: collapse; }
+.sched-table thead th { background: var(--bg); padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; border-bottom: 1px solid var(--border); }
+.sched-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+.sched-table tbody tr:last-child { border-bottom: none; }
+.sched-table tbody tr:hover { background: #f9fafb; }
+.sched-table tbody td { padding: 14px 16px; font-size: 14px; vertical-align: middle; font-weight: 500; }
+.sched-dot-circle { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.sched-note-badge { display: inline-block; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 2px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; margin-top: 4px; }
+
+/* ADMIN */
+.admin-inner { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+.admin-hd { margin-bottom: 24px; }
+.admin-hd h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.admin-hd p { font-size: 14px; color: var(--text2); font-weight: 500; }
+.admin-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
+.atab { padding: 10px 20px; font-size: 14px; font-weight: 700; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+.atab:hover { color: var(--text); }
+.atab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.apanel { display: none; }
+.apanel.active { display: block; }
+
+/* admin store list */
+.store-panel-top { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.asearch-wrap { position: relative; flex: 1; min-width: 200px; max-width: 380px; }
+.asearch-wrap input { width: 100%; background: var(--white); border: 1.5px solid var(--border); color: var(--text); padding: 11px 16px 11px 42px; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .2s; }
+.asearch-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,169,145,.1); }
+.asearch-wrap .si { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; }
+.btn-add { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: background .15s; white-space: nowrap; }
+.btn-add:hover { background: #008f79; }
+.astore-list { list-style: none; border: 1.5px solid var(--border); border-radius: 10px; background: var(--white); max-height: 280px; overflow-y: auto; box-shadow: var(--shadow); }
+.astore-list li { padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13.5px; display: flex; align-items: center; gap: 10px; transition: background .1s; font-weight: 500; }
+.astore-list li:last-child { border-bottom: none; }
+.astore-list li:hover { background: var(--accent-light); }
+.astore-list li.selected { background: var(--accent-light); }
+.ali-no { font-size: 11px; color: var(--text3); font-weight: 700; min-width: 28px; }
+.ali-del { margin-left: auto; background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 3px 7px; border-radius: 5px; transition: all .12s; flex-shrink: 0; line-height: 1; }
+.ali-del:hover { color: var(--danger); background: #fee2e2; }
+
+/* Edit form */
+.edit-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 24px; margin-top: 20px; box-shadow: var(--shadow); }
+.edit-card.is-new { border-color: var(--accent2); }
+.edit-card-title { font-size: 16px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.edit-card-title.new-color { color: var(--accent2); }
+.edit-card-title.edit-color { color: var(--accent); }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 6px; }
+.fg label { font-size: 12px; font-weight: 700; color: var(--text2); }
+.fg input, .fg select, .fg textarea { border: 1.5px solid var(--border); background: var(--bg); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 13.5px; font-family: inherit; outline: none; transition: border-color .15s; font-weight: 500; }
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); background: var(--white); }
+.fg textarea { resize: vertical; min-height: 80px; }
+.fg.full { grid-column: 1 / -1; }
+.edit-actions { display: flex; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.btn-save { background: var(--accent); color: white; border: none; padding: 11px 28px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
+.btn-save:hover { background: #008f79; }
+.btn-save-new { background: var(--accent2); }
+.btn-save-new:hover { background: #005bb0; }
+.btn-cancel-edit { background: transparent; color: var(--text2); border: 1.5px solid var(--border); padding: 10px 20px; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; }
+.btn-cancel-edit:hover { background: var(--bg); }
+.saved-msg { font-size: 13px; color: var(--success); font-weight: 700; opacity: 0; transition: opacity .3s; display: inline-flex; align-items: center; gap: 4px; }
+.saved-msg.show { opacity: 1; }
+
+/* Schedule admin table */
+.sched-admin-info { background: var(--accent-light); border: 1px solid rgba(0,169,145,.3); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #065f46; margin-bottom: 20px; line-height: 1.7; font-weight: 500; }
+.sched-admin-table { width: 100%; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.sched-admin-table thead th { background: var(--bg); padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; border-bottom: 1px solid var(--border); }
+.sched-admin-table tbody tr { border-bottom: 1px solid var(--border); }
+.sched-admin-table tbody tr:last-child { border-bottom: none; }
+.sched-admin-table tbody td { padding: 12px 16px; vertical-align: middle; }
+.sched-admin-table input, .sched-admin-table textarea { width: 100%; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); padding: 8px 11px; border-radius: 7px; font-size: 13px; font-family: inherit; outline: none; transition: border-color .15s; font-weight: 500; }
+.sched-admin-table input:focus, .sched-admin-table textarea:focus { border-color: var(--accent); background: var(--white); }
+.sched-admin-table textarea { resize: vertical; min-height: 60px; }
+.sched-type-label { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+
+/* Confirm delete modal */
+.confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,30,.5); z-index: 600; align-items: center; justify-content: center; }
+.confirm-overlay.open { display: flex; }
+.confirm-box { background: var(--white); border-radius: 16px; padding: 32px 32px 28px; max-width: 380px; width: 90%; box-shadow: var(--shadow-md); text-align: center; animation: modalIn .18s ease; }
+.confirm-icon { font-size: 40px; margin-bottom: 14px; }
+.confirm-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.confirm-desc { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.7; font-weight: 500; }
+.confirm-btns { display: flex; gap: 10px; justify-content: center; }
+.btn-cf-cancel { background: var(--bg); border: 1.5px solid var(--border); color: var(--text2); padding: 10px 24px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-cf-cancel:hover { background: var(--border); }
+.btn-cf-del { background: var(--danger); color: white; border: none; padding: 10px 24px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
+.btn-cf-del:hover { background: #c03030; }
+/* 비밀번호 모달 */
+.pw-overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,30,.5); z-index: 700; align-items: center; justify-content: center; }
+.pw-overlay.open { display: flex; }
+.pw-box { background: var(--white); border-radius: 16px; padding: 32px; max-width: 360px; width: 90%; box-shadow: var(--shadow-md); animation: modalIn .18s ease; }
+.pw-icon { font-size: 36px; text-align: center; margin-bottom: 12px; }
+.pw-title { font-size: 17px; font-weight: 800; text-align: center; margin-bottom: 6px; }
+.pw-desc { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 20px; font-weight: 500; }
+.pw-input-wrap { position: relative; margin-bottom: 16px; }
+.pw-input-wrap input { width: 100%; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); padding: 12px 44px 12px 16px; border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; transition: border-color .15s; letter-spacing: 2px; }
+.pw-input-wrap input:focus { border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 3px rgba(0,169,145,.1); }
+.pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text3); font-size: 16px; padding: 4px; }
+.pw-error { font-size: 12px; color: var(--danger); font-weight: 600; margin-bottom: 14px; min-height: 18px; text-align: center; }
+.pw-btns { display: flex; gap: 10px; }
+.btn-pw-cancel { flex: 1; background: var(--bg); border: 1.5px solid var(--border); color: var(--text2); padding: 11px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
+.btn-pw-cancel:hover { background: var(--border); }
+.btn-pw-confirm { flex: 1; background: var(--accent); color: white; border: none; padding: 11px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
+.btn-pw-confirm:hover { background: #008f79; }
+
+@media (max-width: 768px) {
+  .info-grid { grid-template-columns: 1fr 1fr; }
+  .fgrid { grid-template-columns: 1fr; }
+  .nav-inner, .pg-inner, .admin-inner, .table-outer, .filter-bar, .stats-row { padding-left: 12px; padding-right: 12px; }
+  .hero { padding: 28px 16px 22px; }
+}
+.top-btn { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px; background: var(--text); color: white; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.2); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 300; }
+.top-btn.visible { opacity: 1; pointer-events: auto; }
+.top-btn:hover { background: #333; transform: translateY(-2px); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <a class="logo" href="#" onclick="switchPage('list'); return false;">
+      <span class="logo-text">LAUNDRY24</span>
+    </a>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchPage('list')">매장 목록</div>
+      <div class="nav-tab" onclick="switchPage('schedule')">운송 일정</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn-admin" onclick="switchPage('admin')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        어드민
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE: LIST -->
+<div id="page-list" class="page active">
+  <div class="hero">
+    <div class="hero-eyebrow">Store Information</div>
+    <div class="hero-sub">매장 정보 검색</div>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="매장명을 입력하세요..." oninput="renderList()" autocomplete="off">
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">방문주기</span>
+    <button class="chip c-매일" onclick="toggleFilter('매일',this)">🟢 매일</button>
+    <button class="chip c-격일" onclick="toggleFilter('격일',this)">🔵 격일</button>
+    <button class="chip c-부산대구" onclick="toggleFilter('부산/대구',this)">🟠 부산/대구</button>
+    <button class="chip c-대전" onclick="toggleFilter('대전',this)">🔴 대전</button>
+    <button class="chip c-셀프" onclick="toggleFilter('셀프only',this)">🟣 셀프only</button>
+    <div class="chip-divider"></div>
+    <span class="filter-label">유형</span>
+    <button class="chip" onclick="toggleFilter('직영',this)">직영</button>
+    <button class="chip" onclick="toggleFilter('론디원',this)">론디원</button>
+    <button class="chip chip-reset" onclick="clearFilters()">✕ 초기화</button>
+  </div>
+  <div class="stats-row" id="stats-row"></div>
+  <div class="table-outer">
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="result-count" id="result-count">전체 <strong>0</strong>개 매장</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th><th>매장명</th><th>유형</th><th>론디원</th>
+              <th>매장형태</th><th>라인</th><th>방문주기</th>
+              <th>다음 방문 예정일</th><th>키오스크</th><th>A/S</th><th>특이사항</th>
+            </tr>
+          </thead>
+          <tbody id="store-tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty-state" style="display:none">
+        <div style="font-size:32px;margin-bottom:8px">🔍</div>
+        <div>검색 결과가 없습니다</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: SCHEDULE -->
+<div id="page-schedule" class="page">
+  <div class="pg-inner">
+    <div class="pg-title">운송 일정</div>
+    <div class="pg-desc">라인별 방문 주기 및 요일 현황입니다. 어드민에서 수정하면 즉시 반영됩니다.</div>
+    <div class="sched-notice">
+      ⚠️ 일정 변경 시 어드민 &gt; 운송 일정 수정에서 업데이트하세요. 매장 목록의 방문 예정일도 자동 갱신됩니다.
+    </div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>방문주기</th><th>해당 라인</th><th>방문 요일 패턴</th><th>비고</th></tr></thead>
+        <tbody id="sched-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: ADMIN -->
+<div id="page-admin" class="page">
+  <div class="admin-inner">
+    <div class="admin-hd">
+      <h2>어드민 관리</h2>
+      <p>매장 추가·수정·삭제 및 운송 일정을 관리합니다. 변경사항은 <strong>Supabase에 저장</strong>되어 모든 팀원과 실시간 공유됩니다.</p>
+    </div>
+    <div class="admin-tabs">
+      <div class="atab active" onclick="switchAtab('store')">📋 매장 관리</div>
+      <div class="atab" onclick="switchAtab('sched')">🚚 운송 일정 수정 🔒</div>
+    </div>
+
+    <!-- STORE PANEL -->
+    <div id="apanel-store" class="apanel active">
+      <div class="store-panel-top">
+        <div class="asearch-wrap">
+          <span class="si">🔍</span>
+          <input type="text" id="asearch" placeholder="매장명으로 검색..." oninput="renderAlist()">
+        </div>
+        <button class="btn-add" onclick="openNewStoreForm()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          매장 추가
+        </button>
+      </div>
+      <ul class="astore-list" id="alist"></ul>
+      <div class="edit-card" id="edit-card" style="display:none">
+        <div class="edit-card-title" id="edit-card-title">✏️ 매장 정보 수정</div>
+        <div class="fgrid">
+          <div class="fg"><label>매장명 *</label><input type="text" id="f-name" placeholder="예: 강남역점"></div>
+          <div class="fg"><label>직영/일반</label><select id="f-type"><option>일반</option><option>직영</option><option>일반/직영</option></select></div>
+          <div class="fg"><label>론디원 여부</label><select id="f-rondi"><option>론디원</option><option>비론디원</option></select></div>
+          <div class="fg"><label>매장 형태</label><select id="f-stype"><option>복합형</option><option>드라이only</option><option>셀프only</option></select></div>
+          <div class="fg"><label>라인</label><input type="text" id="f-line" placeholder="예: A, B, C..."></div>
+          <div class="fg"><label>방문 주기</label><select id="f-freq"><option>매일</option><option>격일</option><option>부산/대구</option><option>대전</option><option>셀프only</option><option>시트 미등록</option></select></div>
+          <div class="fg"><label>오픈/양수일자</label><input type="date" id="f-open"></div>
+          <div class="fg"><label>셀프장비 보증 만료</label><input type="date" id="f-sw"></div>
+          <div class="fg"><label>드라이 보증 만료</label><input type="date" id="f-dw"></div>
+          <div class="fg"><label>셀프장비 A/S</label><input type="text" id="f-as" placeholder="예: 유니룩스"></div>
+          <div class="fg"><label>드라이스테이션 출장비</label><select id="f-dry"><option>발생</option><option>미발생</option></select></div>
+          <div class="fg"><label>키오스크 버전</label><select id="f-kiosk"><option value="">없음</option><option value="V1">V1</option><option value="V2">V2</option></select></div>
+          <div class="fg full"><label>🅿️ 주차 정보</label><textarea id="f-parking" rows="3" placeholder="예: 지하 1층 무료 2시간&#10;아이디: laundry / 비밀번호: 1234&#10;엔터로 줄바꿈 가능"></textarea></div>
+          <div class="fg full"><label>🅿️ 주차 등록 링크 (있는 경우만)</label><input type="url" id="f-parking-url" placeholder="https://..."></div>
+          <div class="fg full"><label>📷 CCTV 정보</label><textarea id="f-cctv" rows="2" placeholder="예: 4채널 / 업체명&#10;엔터로 줄바꿈 가능"></textarea></div>
+          <div class="fg full"><label>📷 CCTV 링크 (있는 경우만)</label><input type="url" id="f-cctv-url" placeholder="https://..."></div>
+          <div class="fg full"><label>📌 매장 특이사항</label><textarea id="f-sn" rows="3" placeholder="고객 응대 시 참고 사항을 입력하세요"></textarea></div>
+          <div class="fg full"><label>점주 특이사항</label><textarea id="f-on" rows="3" placeholder="점주 관련 참고 사항을 입력하세요"></textarea></div>
+        </div>
+        <div class="edit-actions">
+          <button class="btn-save" id="btn-form-save" onclick="saveStore()">저장하기</button>
+          <button class="btn-cancel-edit" onclick="closeEditForm()">취소</button>
+          <span class="saved-msg" id="save-msg">✓ 저장되었습니다</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHED PANEL -->
+    <div id="apanel-sched" class="apanel">
+      <div class="sched-admin-info">
+        💡 방문 요일 패턴을 수정하면 <strong>운송 일정 페이지</strong>와 <strong>매장 목록의 방문 예정일</strong>이 즉시 자동 계산됩니다.
+      </div>
+      <table class="sched-admin-table">
+        <thead><tr><th style="width:140px">방문주기</th><th style="width:180px">해당 라인</th><th style="width:220px">방문 요일 패턴</th><th>비고 (연휴·임시 변경 등)</th></tr></thead>
+        <tbody id="sched-edit-tbody"></tbody>
+      </table>
+      <div class="edit-actions" style="margin-top:20px">
+        <button class="btn-save" onclick="saveSched()">일정 저장</button>
+        <span class="saved-msg" id="sched-save-msg">✓ 저장 완료 — 매장 목록에 즉시 반영됩니다</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STORE DETAIL MODAL -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="modal-no" id="m-no"></span>
+          <span class="modal-name" id="m-name"></span>
+        </div>
+        <div class="modal-tags" id="m-tags"></div>
+      </div>
+      <button class="modal-x" onclick="document.getElementById('overlay').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-bd" id="m-body"></div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirm-title">매장을 삭제할까요?</div>
+    <div class="confirm-desc" id="confirm-desc"></div>
+    <div class="confirm-btns">
+      <button class="btn-cf-cancel" onclick="document.getElementById('confirm-overlay').classList.remove('open')">취소</button>
+      <button class="btn-cf-del" id="btn-cf-del" onclick="confirmDelete()">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SUPABASE 설정 — 아래 두 줄만 본인 값으로 교체하세요
+// ============================================================
+const SUPABASE_URL  = 'https://ebiepxqkqeyyxewnddov.supabase.co';   // 예: https://xxxx.supabase.co
+const SUPABASE_KEY  = 'sb_publishable_2fZWxxerbpn9tOqLrMfh7A_YXT0un6I';        // anon public key
+
+// ============================================================
+// DATA
+// ============================================================
+let STORES = [];
+const DEFAULT_SCHED = [
+  { key: 'daily',   label: '매일',      color: '#10b981', lines: 'Z, Y, X, W',               days: '매일 (월~일)',                        note: '' },
+  { key: 'alt',     label: '격일',      color: '#3b82f6', lines: 'A, B, C, D, E, F, G, H',   days: 'B·D·F·H: 홀수일 / A·C·E·G: 짝수일', note: '' },
+  { key: 'busan',   label: '부산/대구', color: '#f59e0b', lines: '부산·대구 지역 매장',       days: '월, 목, 토',                          note: '' },
+  { key: 'daejeon', label: '대전',      color: '#ef4444', lines: '대전 지역 매장',             days: '월, 목, 토',                          note: '' },
+];
+let schedData = JSON.parse(JSON.stringify(DEFAULT_SCHED));
+
+// ============================================================
+// SUPABASE API HELPERS
+// ============================================================
+async function sbFetch(path, options = {}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': options.prefer || '',
+      ...options.headers,
+    },
+    ...options,
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// DB 컬럼 → JS 객체 변환
+function rowToStore(r) {
+  return {
+    no: r.no, name: r.name, type: r.type, rondiOne: r.rondi_one,
+    storeType: r.store_type, line: r.line, frequency: r.frequency,
+    openDate: r.open_date || '', selfWarranty: r.self_warranty || '',
+    dryWarranty: r.dry_warranty || '', selfAS: r.self_as || '',
+    dryStation: r.dry_station || '', interior: r.interior || '',
+    washer: r.washer || '', dryer: r.dryer || '',
+    vending: r.vending || '', cardReader: r.card_reader || '',
+    kiosk: r.kiosk || '', storeNote: r.store_note || '',
+    ownerNote: r.owner_note || '', parking: r.parking || '',
+    parkingUrl: r.parking_url || '', cctv: r.cctv || '', cctvUrl: r.cctv_url || '', _id: r.id,
+  };
+}
+
+// JS 객체 → DB 컬럼 변환
+function storeToRow(s) {
+  return {
+    no: s.no, name: s.name, type: s.type, rondi_one: s.rondiOne,
+    store_type: s.storeType, line: s.line, frequency: s.frequency,
+    open_date: s.openDate || null, self_warranty: s.selfWarranty || null,
+    dry_warranty: s.dryWarranty || null, self_as: s.selfAS,
+    dry_station: s.dryStation, interior: s.interior,
+    washer: s.washer, dryer: s.dryer, vending: s.vending,
+    card_reader: s.cardReader, kiosk: s.kiosk,
+    store_note: s.storeNote, owner_note: s.ownerNote,
+    parking: s.parking, parking_url: s.parkingUrl, cctv: s.cctv, cctv_url: s.cctvUrl,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+// ============================================================
+// 초기 데이터 로드
+// ============================================================
+function showLoading(msg) {
+  document.getElementById('store-tbody').innerHTML =
+    `<tr><td colspan="11" style="text-align:center;padding:60px;color:var(--text3);font-size:14px">⏳ ${msg}</td></tr>`;
+}
+function showError(msg) {
+  document.getElementById('store-tbody').innerHTML =
+    `<tr><td colspan="11" style="text-align:center;padding:60px;color:var(--danger);font-size:14px">⚠️ ${msg}<br><small style="color:var(--text3)">SUPABASE_URL과 SUPABASE_KEY를 확인해주세요.</small></td></tr>`;
+}
+
+async function loadData() {
+  showLoading('데이터를 불러오는 중...');
+  try {
+    // 매장 데이터
+    const rows = await sbFetch('stores?select=*&order=no.asc');
+    STORES = rows.map(rowToStore);
+
+    // 운송 일정
+    const scheds = await sbFetch('schedules?select=*&order=id.asc');
+    if (scheds && scheds.length > 0) {
+      schedData = scheds.map(r => ({
+        key: r.key, label: r.label, color: r.color,
+        lines: r.lines, days: r.days, note: r.note || '',
+      }));
+    }
+    renderList();
+  } catch (e) {
+    showError('데이터 로드 실패: ' + e.message);
+  }
+}
+
+// ============================================================
+// NEXT VISIT DATE CALCULATOR
+// 방문 요일 패턴 문자열을 파싱해서 가장 가까운 날짜 2개를 계산
+// ============================================================
+
+// 요일명 → JS getDay() 숫자 매핑
+const DAY_MAP = { '일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6 };
+
+// 패턴 문자열에서 요일 목록 추출
+// 지원 패턴:
+//   "매일 (월~일)" → [0,1,2,3,4,5,6]
+//   "월, 목, 토" → [1,4,6]
+//   "A·C·E·G: 홀수일 / B·D·F·H: 짝수일" → 라인 기반 → 별도 처리
+//   "홀수일" "짝수일" → 날짜 기반
+
+function parseDaysFromPattern(pattern, line) {
+  if (!pattern) return null;
+
+  // 매일
+  if (pattern.includes('매일') || pattern.includes('월~일')) {
+    return { type: 'fixed', days: [0,1,2,3,4,5,6] };
+  }
+
+  // 홀수일 / 짝수일 분기 (격일 복합 패턴)
+  if (pattern.includes('홀수일') || pattern.includes('짝수일')) {
+    // 라인 기준으로 홀수/짝수 결정
+    const altOdd  = ['B','D','F','H'];  // 파랑 = 홀수일
+    const altEven = ['A','C','E','G'];  // 빨강 = 짝수일
+    const upperLine = (line || '').toUpperCase().trim();
+    if (altOdd.includes(upperLine))  return { type: 'date_parity', parity: 'odd' };
+    if (altEven.includes(upperLine)) return { type: 'date_parity', parity: 'even' };
+    // 라인 없으면 패턴에서 직접 읽기
+    if (pattern.includes('홀수일')) return { type: 'date_parity', parity: 'odd' };
+    if (pattern.includes('짝수일')) return { type: 'date_parity', parity: 'even' };
+  }
+
+  // "월, 목, 토" 형태 — 한글 요일 추출
+  const found = [];
+  for (const [name, num] of Object.entries(DAY_MAP)) {
+    if (pattern.includes(name)) found.push(num);
+  }
+  if (found.length > 0) return { type: 'fixed', days: [...new Set(found)].sort((a,b)=>a-b) };
+
+  return null;
+}
+
+function getNextTwoDates(frequency, line) {
+  const sd = schedData.find(s => s.label === frequency);
+  if (!sd) return null;
+
+  const parsed = parseDaysFromPattern(sd.days, line);
+  if (!parsed) return null;
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const results = [];
+
+  if (parsed.type === 'fixed') {
+    // 고정 요일: 다음 7일~14일에서 해당 요일 찾기
+    for (let offset = 0; offset <= 13 && results.length < 2; offset++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + offset);
+      if (parsed.days.includes(d.getDay())) results.push(new Date(d));
+    }
+  } else if (parsed.type === 'date_parity') {
+    // 홀수/짝수일: 앞으로 14일 중 해당 날짜 찾기
+    const isOdd = parsed.parity === 'odd';
+    for (let offset = 0; offset <= 13 && results.length < 2; offset++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + offset);
+      const dateNum = d.getDate();
+      if (isOdd ? dateNum % 2 === 1 : dateNum % 2 === 0) results.push(new Date(d));
+    }
+  }
+
+  return results.length >= 2 ? results : results.length === 1 ? results : null;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const mm = d.getMonth() + 1;
+  const dd = d.getDate();
+  const days = ['일','월','화','수','목','금','토'];
+  return `${mm}/${dd}(${days[d.getDay()]})`;
+}
+
+function getDaysUntil(d) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((d - today) / 86400000);
+  if (diff === 0) return '오늘';
+  if (diff === 1) return '내일';
+  return `${diff}일 후`;
+}
+
+// ============================================================
+// 출장비 자동 계산
+// No.1 일성OT는 수동값 유지, 나머지는 보증 도래일 기준 자동 계산
+// ============================================================
+function calcCosts(s) {
+  // 일성OT (No.1) 예외 — 수동값 그대로
+  if (s.no === 1) {
+    return {
+      dryStation: s.dryStation || '미발생',
+      interior:   s.interior   || '미발생',
+      washer:     s.washer     || '미발생',
+      dryer:      s.dryer      || '미발생',
+      vending:    s.vending    || '미발생',
+      cardReader: s.cardReader || '미발생',
+    };
+  }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // 드라이 2년 도래일 기준 → 드라이스테이션
+  const dryExpired = s.dryWarranty && new Date(s.dryWarranty) < today;
+  // 셀프 1년 도래일 기준 → 나머지 5개
+  const selfExpired = s.selfWarranty && new Date(s.selfWarranty) < today;
+
+  return {
+    dryStation: dryExpired  ? '발생' : '미발생',
+    interior:   selfExpired ? '발생' : '미발생',
+    washer:     selfExpired ? '발생' : '미발생',
+    dryer:      selfExpired ? '발생' : '미발생',
+    vending:    selfExpired ? '발생' : '미발생',
+    cardReader: selfExpired ? '발생' : '미발생',
+  };
+}
+
+
+function getLineClass(line, frequency) {
+  const l = (line || '').toUpperCase().trim();
+  if (['A','C','E','G'].includes(l)) return 'line-A';
+  if (['B','D','F','H'].includes(l)) return 'line-B';
+  if (['Z','Y','X','W'].includes(l)) return 'line-Z';
+  if (frequency === '부산/대구') return 'line-busan';
+  if (frequency === '대전') return 'line-daejeon';
+  return 'line-etc';
+}
+
+// ============================================================
+// TODAY VISIT CHECKER
+// B·D·F·H 라인(홀수일) 또는 A·C·E·G(짝수일) 기준으로 오늘 방문인지 판단
+// 매일 라인은 항상 today, 부산/대구/대전은 월/목/토 체크
+// ============================================================
+function isVisitingToday(s) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const dateNum = today.getDate();
+  const dow = today.getDay(); // 0=일,1=월...6=토
+  const l = (s.line || '').toUpperCase().trim();
+
+  if (s.frequency === '매일') return true;
+  if (s.frequency === '격일') {
+    if (['B','D','F','H'].includes(l)) return dateNum % 2 === 1; // 파랑 = 홀수일
+    if (['A','C','E','G'].includes(l)) return dateNum % 2 === 0; // 빨강 = 짝수일
+  }
+  if (s.frequency === '부산/대구' || s.frequency === '대전') {
+    return [1, 4, 6].includes(dow); // 월=1, 목=4, 토=6
+  }
+  return false;
+}
+
+
+function getSchedByFreq(freq) {
+  return schedData.find(s => s.label === freq) || null;
+}
+
+function freqCls(f) {
+  if (f === '매일')      return 'f-매일';
+  if (f === '격일')      return 'f-격일';
+  if (f === '부산/대구') return 'f-busan';
+  if (f === '대전')      return 'f-daejeon';
+  if (f === '셀프only')  return 'f-셀프only';
+  return 'f-기타';
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let activeFilters = new Set();
+let editingIdx = -1;   // -1: no selection, -2: new store mode
+let deleteTargetIdx = -1;
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats(stores) {
+  const c = { total: stores.length, 매일: 0, 격일: 0, '부산/대구': 0, 대전: 0, 직영: 0 };
+  stores.forEach(s => {
+    if (s.frequency === '매일') c['매일']++;
+    else if (s.frequency === '격일') c['격일']++;
+    else if (s.frequency === '부산/대구') c['부산/대구']++;
+    else if (s.frequency === '대전') c['대전']++;
+    if (s.type === '직영') c['직영']++;
+  });
+  document.getElementById('stats-row').innerHTML = [
+    { num: c.total, lbl: '전체 매장', color: '#111' },
+    { num: c['매일'], lbl: '매일 방문', color: '#10b981' },
+    { num: c['격일'], lbl: '격일 방문', color: '#3b82f6' },
+    { num: c['부산/대구'], lbl: '부산/대구', color: '#f59e0b' },
+    { num: c['대전'], lbl: '대전', color: '#ef4444' },
+    { num: c['직영'], lbl: '직영 매장', color: '#0072ce' },
+  ].map(x => `<div class="stat-card"><div class="stat-dot" style="background:${x.color}"></div><div><div class="stat-num">${x.num}</div><div class="stat-lbl">${x.lbl}</div></div></div>`).join('');
+}
+
+// ============================================================
+// RENDER LIST
+// ============================================================
+function renderList() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const filtered = [];
+  STORES.forEach((s, i) => {
+    if (q && !s.name.toLowerCase().includes(q)) return;
+    if (activeFilters.size > 0) {
+      let ok = false;
+      if (activeFilters.has('매일') && s.frequency === '매일') ok = true;
+      if (activeFilters.has('격일') && s.frequency === '격일') ok = true;
+      if (activeFilters.has('부산/대구') && s.frequency === '부산/대구') ok = true;
+      if (activeFilters.has('대전') && s.frequency === '대전') ok = true;
+      if (activeFilters.has('셀프only') && s.frequency === '셀프only') ok = true;
+      if (activeFilters.has('직영') && s.type === '직영') ok = true;
+      if (activeFilters.has('론디원') && s.rondiOne === '론디원') ok = true;
+      if (!ok) return;
+    }
+    filtered.push({ s, i });
+  });
+
+  document.getElementById('result-count').innerHTML = `전체 <strong>${filtered.length}</strong>개 매장`;
+  document.getElementById('empty-state').style.display = filtered.length === 0 ? 'block' : 'none';
+  renderStats(filtered.map(x => x.s));
+
+  document.getElementById('store-tbody').innerHTML = filtered.map(({ s, i }) => {
+    // 다음 방문 예정일 계산
+    let visitHtml = '<span style="font-size:12px;color:var(--text3)">—</span>';
+    if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
+      const dates = getNextTwoDates(s.frequency, s.line);
+      if (dates && dates.length >= 2) {
+        visitHtml = `<div class="visit-dates">
+          <span class="visit-next">▶ ${formatDate(dates[0])} <span style="font-size:10px;opacity:.7">${getDaysUntil(dates[0])}</span></span>
+          <span class="visit-next2">${formatDate(dates[1])}</span>
+        </div>`;
+      }
+    }
+    return `<tr onclick="openModal(${i})" ${isVisitingToday(s) ? 'class="visit-today"' : ''}>
+      <td class="td-no">${s.no}</td>
+      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}</td>
+      <td><span class="badge b-${s.type}">${s.type}</span></td>
+      <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
+      <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
+      <td style="white-space:nowrap"><span class="b-line ${getLineClass(s.line, s.frequency)}">${s.line || '—'}</span></td>
+      <td><span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span></td>
+      <td>${visitHtml}</td>
+      <td>${s.kiosk ? `<span class="kiosk-badge kiosk-${s.kiosk.toLowerCase()}">${s.kiosk}</span>` : '<span style="font-size:12px;color:var(--text3)">—</span>'}</td>
+      <td style="font-size:12px;color:var(--text2);font-weight:500;white-space:nowrap;min-width:80px">${s.selfAS || '—'}</td>
+      <td>${s.storeNote ? `<span class="note-preview">📌 ${s.storeNote.split('\n')[0]}</span>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleFilter(val, btn) {
+  activeFilters.has(val) ? (activeFilters.delete(val), btn.classList.remove('on')) : (activeFilters.add(val), btn.classList.add('on'));
+  renderList();
+}
+function clearFilters() {
+  activeFilters.clear();
+  document.querySelectorAll('.chip').forEach(b => b.classList.remove('on'));
+  renderList();
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(i) {
+  const s = STORES[i];
+  document.getElementById('m-no').textContent = 'No.' + s.no;
+  document.getElementById('m-name').textContent = s.name;
+  document.getElementById('m-tags').innerHTML = `
+    <span class="badge b-${s.type}">${s.type}</span>
+    <span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne}</span>
+    <span class="badge b-${s.storeType}">${s.storeType}</span>
+    <span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span>
+  `;
+
+  // 방문 예정일 계산
+  let visitCardHtml = '';
+  if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
+    const dates = getNextTwoDates(s.frequency, s.line);
+    if (dates && dates.length >= 2) {
+      visitCardHtml = `
+        <div class="sec-lbl">방문 예정일</div>
+        <div class="visit-card">
+          <div class="visit-item"><label>가장 가까운 방문</label><span>${formatDate(dates[0])} <span style="font-size:12px;opacity:.7">${getDaysUntil(dates[0])}</span></span></div>
+          <div class="visit-item"><label>그 다음 방문</label><span class="secondary">${formatDate(dates[1])} <span style="font-size:12px;opacity:.7">${getDaysUntil(dates[1])}</span></span></div>
+        </div>`;
+    }
+  }
+
+  const sd = getSchedByFreq(s.frequency);
+  const costs = [['dryStation','드라이스테이션'],['interior','인테리어'],['washer','세탁기'],['dryer','건조기'],['vending','자판기'],['cardReader','카드리더기']];
+  const costCalc = calcCosts(s);
+  document.getElementById('m-body').innerHTML = `
+    ${visitCardHtml}
+    <div class="sec-lbl" ${visitCardHtml ? 'style="margin-top:20px"' : ''}>기본 정보</div>
+    <div class="info-grid">
+      <div class="info-cell"><label>라인</label><span><span class="b-line ${getLineClass(s.line, s.frequency)}">${s.line || '—'}</span></span></div>
+      <div class="info-cell"><label>방문 요일 패턴</label><span style="color:var(--accent);font-size:13px">${sd ? sd.days : '—'}</span></div>
+      <div class="info-cell"><label>키오스크 버전</label><span>${s.kiosk === 'V2'
+        ? `<a href="https://admin.sbox24.co.kr/react-page/operation-admin/equipment-control" target="_blank" class="kiosk-badge kiosk-v2" style="cursor:pointer;text-decoration:none">V2 ↗</a>`
+        : s.kiosk === 'V1' ? `<span class="kiosk-badge kiosk-v1">V1</span>` : '—'
+      }</span></div>
+      <div class="info-cell"><label>셀프장비 A/S</label><span>${s.selfAS || '—'}</span></div>
+      <div class="info-cell"><label>오픈/양수일</label><span>${s.openDate || '—'}</span></div>
+      <div class="info-cell"><label>셀프장비 보증</label><span>${s.selfWarranty || '—'}</span></div>
+      <div class="info-cell"><label>드라이 보증</label><span>${s.dryWarranty || '—'}</span></div>
+    </div>
+    <div class="sec-lbl" style="margin-top:20px">출장비 발생 현황</div>
+    <div class="cost-chips">${costs.map(([k,l]) => `<span class="cc cc-${costCalc[k]}">${l}: ${costCalc[k]}</span>`).join('')}</div>
+    ${s.storeNote ? `<div class="sec-lbl" style="margin-top:20px">📌 매장 특이사항</div><div class="note-card warn">${s.storeNote}</div>` : ''}
+    ${s.ownerNote ? `<div class="sec-lbl" style="margin-top:20px">점주 특이사항</div><div class="note-card">${s.ownerNote}</div>` : ''}
+    ${(s.parking || s.cctv) ? `
+      <div class="sec-lbl" style="margin-top:20px">기타 정보</div>
+      <div class="info-grid">
+        ${(s.parking || s.parkingUrl) ? `<div class="info-cell" style="grid-column:1/-1;display:flex;flex-direction:column;gap:8px">
+          <label>🅿️ 주차 정보</label>
+          ${s.parkingUrl ? `<a href="${s.parkingUrl}" target="_blank" style="color:var(--accent2);font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:var(--accent2-light);padding:5px 12px;border-radius:6px;align-self:flex-start">🅿️ 주차 등록하기 ↗</a>` : ''}
+          ${s.parking ? `<span style="font-size:13px;white-space:pre-line">${s.parking}</span>` : ''}
+        </div>` : ''}
+        ${(s.cctv || s.cctvUrl) ? `<div class="info-cell" style="grid-column:1/-1;display:flex;flex-direction:column;gap:8px">
+          <label>📷 CCTV 정보</label>
+          ${s.cctvUrl ? `<a href="${s.cctvUrl}" target="_blank" style="color:var(--text);font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1.5px solid var(--border);padding:5px 12px;border-radius:6px;align-self:flex-start">📷 CCTV 접속하기 ↗</a>` : ''}
+          ${s.cctv ? `<span style="font-size:13px;white-space:pre-line">${s.cctv}</span>` : ''}
+        </div>` : ''}
+      </div>` : ''
+    }
+  `;
+  document.getElementById('overlay').classList.add('open');
+}
+function closeOverlay(e) { if (e.target.id === 'overlay') document.getElementById('overlay').classList.remove('open'); }
+
+// ============================================================
+// PAGE SWITCHING
+// ============================================================
+function switchPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  const idx = { list: 0, schedule: 1 };
+  if (idx[p] !== undefined) document.querySelectorAll('.nav-tab')[idx[p]]?.classList.add('active');
+  if (p === 'schedule') renderSchedDisplay();
+  if (p === 'admin') { renderAlist(); renderSchedEditTable(); }
+}
+
+// ============================================================
+// SCHEDULE DISPLAY
+// ============================================================
+function renderSchedDisplay() {
+  document.getElementById('sched-tbody').innerHTML = schedData.map(sd => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sched-dot-circle" style="background:${sd.color}"></div>
+          <span class="freq ${freqCls(sd.label)}">${sd.label}</span>
+        </div>
+      </td>
+      <td style="color:var(--text2);font-size:13px">${sd.lines}</td>
+      <td style="font-weight:600">${sd.days}</td>
+      <td>${sd.note ? `<span class="sched-note-badge">⚠️ ${sd.note}</span>` : '<span style="color:var(--text3);font-size:13px">—</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+// ============================================================
+// ADMIN: STORE LIST
+// ============================================================
+function renderAlist() {
+  const q = document.getElementById('asearch').value.trim().toLowerCase();
+  const items = STORES
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => !q || s.name.toLowerCase().includes(q));
+
+  document.getElementById('alist').innerHTML = items.map(({ s, i }) => `
+    <li onclick="selectStore(${i})" id="ali-${i}">
+      <span class="ali-no">${s.no}</span>
+      <span style="flex:1;font-weight:500">${s.name}</span>
+      <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:11px">${s.line || '—'}</span>
+      <span style="font-size:11px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
+      <button class="ali-del" onclick="event.stopPropagation();askDelete(${i})" title="삭제">🗑</button>
+    </li>
+  `).join('') || '<li style="color:var(--text3);cursor:default;font-size:13px;font-weight:500">결과 없음</li>';
+}
+
+// ============================================================
+// ADMIN: SELECT / NEW / SAVE / DELETE
+// ============================================================
+function selectStore(i) {
+  editingIdx = i;
+  highlightListItem(i);
+  const s = STORES[i];
+  document.getElementById('edit-card-title').innerHTML = `✏️ <span style="color:var(--accent)">[${s.no}] ${s.name} 수정</span>`;
+  document.getElementById('btn-form-save').className = 'btn-save';
+  document.getElementById('btn-form-save').textContent = '저장하기';
+  document.getElementById('edit-card').className = 'edit-card';
+  fillForm(s);
+  showEditCard();
+}
+
+function openNewStoreForm() {
+  editingIdx = -2;
+  document.querySelectorAll('.astore-list li').forEach(el => el.classList.remove('selected'));
+  document.getElementById('edit-card-title').innerHTML = `➕ <span style="color:var(--accent2)">새 매장 추가</span>`;
+  document.getElementById('btn-form-save').className = 'btn-save btn-save-new';
+  document.getElementById('btn-form-save').textContent = '매장 추가';
+  document.getElementById('edit-card').className = 'edit-card is-new';
+  // 빈 폼
+  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'' });
+  showEditCard();
+}
+
+function fillForm(s) {
+  document.getElementById('f-name').value = s.name || '';
+  document.getElementById('f-type').value = s.type || '일반';
+  document.getElementById('f-rondi').value = s.rondiOne || '론디원';
+  document.getElementById('f-stype').value = s.storeType || '복합형';
+  document.getElementById('f-line').value = s.line || '';
+  document.getElementById('f-freq').value = s.frequency || '격일';
+  document.getElementById('f-open').value = s.openDate || '';
+  document.getElementById('f-sw').value = s.selfWarranty || '';
+  document.getElementById('f-dw').value = s.dryWarranty || '';
+  document.getElementById('f-as').value = s.selfAS || '';
+  document.getElementById('f-dry').value = s.dryStation || '발생';
+  document.getElementById('f-kiosk').value = s.kiosk || '';
+  document.getElementById('f-parking').value = s.parking || '';
+  document.getElementById('f-parking-url').value = s.parkingUrl || '';
+  document.getElementById('f-cctv').value = s.cctv || '';
+  document.getElementById('f-cctv-url').value = s.cctvUrl || '';
+  document.getElementById('f-sn').value = s.storeNote || '';
+  document.getElementById('f-on').value = s.ownerNote || '';
+  document.getElementById('save-msg').classList.remove('show');
+}
+
+function showEditCard() {
+  const card = document.getElementById('edit-card');
+  card.style.display = 'block';
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+function closeEditForm() {
+  document.getElementById('edit-card').style.display = 'none';
+  editingIdx = -1;
+  document.querySelectorAll('.astore-list li').forEach(el => el.classList.remove('selected'));
+}
+
+function highlightListItem(i) {
+  document.querySelectorAll('.astore-list li').forEach(el => el.classList.remove('selected'));
+  document.getElementById('ali-' + i)?.classList.add('selected');
+}
+
+async function saveStore() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('매장명을 입력해주세요.'); return; }
+
+  const btn = document.getElementById('btn-form-save');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  const data = {
+    name,
+    type: document.getElementById('f-type').value,
+    rondiOne: document.getElementById('f-rondi').value,
+    storeType: document.getElementById('f-stype').value,
+    line: document.getElementById('f-line').value.trim(),
+    frequency: document.getElementById('f-freq').value,
+    openDate: document.getElementById('f-open').value,
+    selfWarranty: document.getElementById('f-sw').value,
+    dryWarranty: document.getElementById('f-dw').value,
+    selfAS: document.getElementById('f-as').value.trim(),
+    dryStation: document.getElementById('f-dry').value,
+    kiosk: document.getElementById('f-kiosk').value,
+    parking: document.getElementById('f-parking').value.trim(),
+    parkingUrl: document.getElementById('f-parking-url').value.trim(),
+    cctv: document.getElementById('f-cctv').value.trim(),
+    cctvUrl: document.getElementById('f-cctv-url').value.trim(),
+    storeNote: document.getElementById('f-sn').value.trim(),
+    ownerNote: document.getElementById('f-on').value.trim(),
+  };
+
+  try {
+    if (editingIdx === -2) {
+      // 새 매장 추가
+      const maxNo = STORES.reduce((m, s) => Math.max(m, s.no || 0), 0);
+      data.no = maxNo + 1;
+      const result = await sbFetch('stores?select=*', {
+        method: 'POST', prefer: 'return=representation',
+        body: JSON.stringify(storeToRow(data)),
+      });
+      data._id = result[0].id;
+      STORES.push(data);
+      editingIdx = STORES.length - 1;
+      document.getElementById('edit-card-title').innerHTML = `✏️ <span style="color:var(--accent)">[${data.no}] ${data.name} 수정</span>`;
+      document.getElementById('btn-form-save').className = 'btn-save';
+      document.getElementById('edit-card').className = 'edit-card';
+    } else {
+      // 기존 매장 수정
+      data.no = STORES[editingIdx].no;
+      data._id = STORES[editingIdx]._id;
+      await sbFetch(`stores?id=eq.${data._id}`, {
+        method: 'PATCH', prefer: 'return=minimal',
+        body: JSON.stringify(storeToRow(data)),
+      });
+      STORES[editingIdx] = data;
+    }
+    const msg = document.getElementById('save-msg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2800);
+    renderList(); renderAlist();
+    setTimeout(() => highlightListItem(STORES.findIndex(s => s.no === data.no)), 100);
+  } catch(e) {
+    alert('저장 실패: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = editingIdx === -2 ? '매장 추가' : '저장하기';
+  }
+}
+
+function askDelete(i) {
+  deleteTargetIdx = i;
+  const s = STORES[i];
+  document.getElementById('confirm-desc').textContent = `"${s.name}" 매장을 삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?`;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+async function confirmDelete() {
+  if (deleteTargetIdx < 0) return;
+  const s = STORES[deleteTargetIdx];
+  try {
+    await sbFetch(`stores?id=eq.${s._id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    STORES.splice(deleteTargetIdx, 1);
+    document.getElementById('confirm-overlay').classList.remove('open');
+    if (editingIdx === deleteTargetIdx || editingIdx >= STORES.length) closeEditForm();
+    deleteTargetIdx = -1;
+    renderList(); renderAlist();
+  } catch(e) {
+    alert('삭제 실패: ' + e.message);
+    document.getElementById('confirm-overlay').classList.remove('open');
+  }
+}
+
+// ============================================================
+// ADMIN: SCHEDULE EDIT TABLE
+// ============================================================
+function renderSchedEditTable() {
+  document.getElementById('sched-edit-tbody').innerHTML = schedData.map((sd, idx) => `
+    <tr>
+      <td>
+        <div class="sched-type-label">
+          <div class="sched-dot-circle" style="background:${sd.color}"></div>
+          ${sd.label}
+        </div>
+      </td>
+      <td><input id="se-${idx}-lines" value="${sd.lines}" placeholder="해당 라인"></td>
+      <td><input id="se-${idx}-days" value="${sd.days}" placeholder="예: 월, 목, 토"></td>
+      <td><textarea id="se-${idx}-note" placeholder="예: 추석 연휴 휴무">${sd.note}</textarea></td>
+    </tr>
+  `).join('');
+}
+
+async function saveSched() {
+  const btn = document.querySelector('#apanel-sched .btn-save');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    for (let idx = 0; idx < schedData.length; idx++) {
+      const sd = schedData[idx];
+      sd.lines = document.getElementById(`se-${idx}-lines`).value;
+      sd.days  = document.getElementById(`se-${idx}-days`).value;
+      sd.note  = document.getElementById(`se-${idx}-note`).value;
+      await sbFetch(`schedules?key=eq.${sd.key}`, {
+        method: 'PATCH', prefer: 'return=minimal',
+        body: JSON.stringify({ lines: sd.lines, days: sd.days, note: sd.note, updated_at: new Date().toISOString() }),
+      });
+    }
+    renderList();
+    const msg = document.getElementById('sched-save-msg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 3000);
+  } catch(e) {
+    alert('저장 실패: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '일정 저장';
+  }
+}
+
+const SCHED_PASSWORD = '15444335';
+let schedUnlocked = false;
+
+function openPwModal() {
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').textContent = '';
+  document.getElementById('pw-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+function closePwModal() {
+  document.getElementById('pw-overlay').classList.remove('open');
+}
+function togglePwVisible() {
+  const input = document.getElementById('pw-input');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  if (val === SCHED_PASSWORD) {
+    schedUnlocked = true;
+    closePwModal();
+    // 실제 탭 전환
+    document.querySelectorAll('.atab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.apanel').forEach(el => el.classList.remove('active'));
+    document.querySelector(`.atab[onclick="switchAtab('sched')"]`).classList.add('active');
+    document.getElementById('apanel-sched').classList.add('active');
+    renderSchedEditTable();
+  } else {
+    const err = document.getElementById('pw-error');
+    err.textContent = '비밀번호가 올바르지 않습니다.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+    setTimeout(() => { err.textContent = ''; }, 2500);
+  }
+}
+
+function switchAtab(t) {
+  if (t === 'sched' && !schedUnlocked) {
+    openPwModal();
+    return;
+  }
+  document.querySelectorAll('.atab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.apanel').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.atab[onclick="switchAtab('${t}')"]`).classList.add('active');
+  document.getElementById('apanel-' + t).classList.add('active');
+}
+
+// INIT
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('confirm-overlay').classList.remove('open');
+    closePwModal();
+  }
+});
+window.addEventListener('scroll', () => {
+  document.getElementById('top-btn').classList.toggle('visible', window.scrollY > 300);
+});
+loadData();
+</script>
+<!-- 비밀번호 모달 -->
+<div class="pw-overlay" id="pw-overlay">
+  <div class="pw-box">
+    <div class="pw-icon">🔒</div>
+    <div class="pw-title">운송 일정 수정</div>
+    <div class="pw-desc">접근하려면 비밀번호를 입력하세요</div>
+    <div class="pw-input-wrap">
+      <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkPassword()">
+      <button class="pw-toggle" onclick="togglePwVisible()" id="pw-toggle-btn">👁</button>
+    </div>
+    <div class="pw-error" id="pw-error"></div>
+    <div class="pw-btns">
+      <button class="btn-pw-cancel" onclick="closePwModal()">취소</button>
+      <button class="btn-pw-confirm" onclick="checkPassword()">확인</button>
+    </div>
+  </div>
+</div>
+
+
+<button class="top-btn" id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="맨 위로">↑</button>
+
+
+</html>
