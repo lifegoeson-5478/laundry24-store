@@ -1,0 +1,1 @@
+# laundry24-store
