@@ -671,8 +671,8 @@ tbody tr.visit-today .td-name { color: #1d4ed8; }
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
         <select id="refund-filter-shinsin" onchange="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">
           <option value="all">전체</option>
-          <option value="N">상신 미완료</option>
-          <option value="Y">상신 완료</option>
+          <option value="N">처리 미완료</option>
+          <option value="Y">처리 완료</option>
         </select>
         <input type="text" id="refund-search" placeholder="매장명 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
         <input type="text" id="refund-search-customer" placeholder="고객번호 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
@@ -697,7 +697,7 @@ tbody tr.visit-today .td-name { color: #1d4ed8; }
                 <th style="padding:8px 10px;white-space:nowrap;">금액</th>
                 <th style="padding:8px 10px;white-space:nowrap;">고객번호</th>
                 <th style="padding:8px 10px;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleSort('상신예정일')">상신예정일 <span id="sort-icon-상신예정일">↕</span></th>
-                <th style="padding:8px 10px;white-space:nowrap;">상신완료</th>
+                <th style="padding:8px 10px;white-space:nowrap;">처리완료</th>
               </tr>
             </thead>
             <tbody id="refund-list-tbody"></tbody>
@@ -1739,21 +1739,32 @@ function calcShinsinDate(paymentDateStr) {
 async function savePaymentDate() {
   const val = document.getElementById('admin-payment-date').value;
   if (!val) return;
-  localStorage.setItem('nextPaymentDate', val);
-  const shinsin = calcShinsinDate(val);
-  document.getElementById('admin-payment-date-display').textContent =
-    `저장됨 → 상신 예정일: ${shinsin}`;
-  showToast('입금일이 저장되었습니다');
+  try {
+    await sbFetch('settings?key=eq.nextPaymentDate', {
+      method: 'DELETE', prefer: 'return=minimal',
+    });
+    await sbFetch('settings', {
+      method: 'POST', prefer: 'return=minimal',
+      body: JSON.stringify({ key: 'nextPaymentDate', value: val, updated_at: new Date().toISOString() }),
+    });
+    const shinsin = calcShinsinDate(val);
+    document.getElementById('admin-payment-date-display').textContent = `저장됨 → 상신 예정일: ${shinsin}`;
+    showToast('입금일이 저장되었습니다');
+  } catch(e) {
+    showToast('저장 실패: ' + e.message);
+  }
 }
 
-function loadPaymentDate() {
-  const val = localStorage.getItem('nextPaymentDate');
-  if (val) {
-    document.getElementById('admin-payment-date').value = val;
-    const shinsin = calcShinsinDate(val);
-    document.getElementById('admin-payment-date-display').textContent =
-      `상신 예정일: ${shinsin}`;
-  }
+async function loadPaymentDate() {
+  try {
+    const result = await sbFetch('settings?key=eq.nextPaymentDate&select=value');
+    const val = result?.[0]?.value;
+    if (val) {
+      document.getElementById('admin-payment-date').value = val;
+      const shinsin = calcShinsinDate(val);
+      document.getElementById('admin-payment-date-display').textContent = `상신 예정일: ${shinsin}`;
+    }
+  } catch(e) {}
 }
 
 // 환불 방법 결정
@@ -1782,7 +1793,7 @@ function onRefundMethodChange() {
   document.getElementById('rform-shinsin-wrap').style.display = 'none';
 }
 
-function openRefundForm() {
+async function openRefundForm() {
   // 론디페이 결제 시 접수 불가 경고
   if (rfPayment === '론디페이') {
     document.getElementById('rondi-alert-overlay').style.display = 'flex';
@@ -1793,11 +1804,14 @@ function openRefundForm() {
     document.getElementById('rondi-card-alert-overlay').style.display = 'flex';
     return;
   }
-  // 론디페이 결제 시 경고
-  if (rfPayment === '론디페이') {
-    alert('⚠️ 론디페이 결제 건은 결제 수단으로 환불이 원칙입니다.\n고객님께 사용한 포인트 재지급으로 안내해 주세요.');
-    return;
-  }
+
+  // 입금일 Supabase에서 로드
+  let payDate = null;
+  try {
+    const result = await sbFetch('settings?key=eq.nextPaymentDate&select=value');
+    payDate = result?.[0]?.value || null;
+  } catch(e) {}
+
   const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\. /g,'-').replace('.','');
   document.getElementById('rform-date').value = today;
   document.getElementById('rform-store').value = rfSelected?.name || '';
@@ -1832,7 +1846,6 @@ function openRefundForm() {
     document.getElementById('rform-card-section').style.display = 'none';
     document.getElementById('rform-account-section').style.display = '';
     // 상신 예정일
-    const payDate = localStorage.getItem('nextPaymentDate');
     const shinsinWrap = document.getElementById('rform-shinsin-wrap');
     shinsinWrap.style.display = payDate ? '' : 'none';
     if (payDate) document.getElementById('rform-shinsin').value = calcShinsinDate(payDate);
@@ -1909,7 +1922,7 @@ async function submitRefundForm() {
     예금주: isAccount ? document.getElementById('rform-holder').value.trim() : null,
     최종환불금액: isAccount ? document.getElementById('rform-accamt').value.trim() : null,
     상신예정일: document.getElementById('rform-shinsin').value || null,
-    상신완료: false,
+    처리완료: false,
   };
 
   const btn = document.getElementById('rform-submit-btn');
@@ -2092,7 +2105,7 @@ function renderRefundList() {
   const q = document.getElementById('refund-search').value.trim();
   const qc = document.getElementById('refund-search-customer').value.trim();
   let list = refundList.map((r, i) => ({ ...r, _idx: i + 1 }));
-  if (filter !== 'all') list = list.filter(r => (r.상신완료 ? 'Y' : 'N') === filter);
+  if (filter !== 'all') list = list.filter(r => (r.처리완료 ? 'Y' : 'N') === filter);
   if (q) list = list.filter(r => (r.매장명 || '').includes(q));
   if (qc) list = list.filter(r => (r.고객번호 || '').includes(qc));
   if (refundSortKey) {
@@ -2129,7 +2142,7 @@ function renderRefundList() {
       </tr>`;
       if (!isCollapsed) {
         groups[month].forEach(r => {
-          html += `<tr style="border-bottom:1px solid var(--border);${r.상신완료 ? 'opacity:.5;' : ''}cursor:pointer;" onclick="openRefundDetail('${r.id}')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+          html += `<tr style="border-bottom:1px solid var(--border);${r.처리완료 ? 'background:#f0fdf4;' : ''}cursor:pointer;" onclick="openRefundDetail('${r.id}')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='${r.처리완료 ? '#f0fdf4' : ''}'">
             <td style="padding:8px 10px;color:var(--text3);">${r._idx}</td>
             <td style="padding:8px 10px;white-space:nowrap;">${r.접수일자 || '-'}</td>
             <td style="padding:8px 10px;">${r.담당자명 || '-'}</td>
@@ -2141,7 +2154,8 @@ function renderRefundList() {
             <td style="padding:8px 10px;">${r.고객번호 || '-'}</td>
             <td style="padding:8px 10px;white-space:nowrap;">${r.상신예정일 || '-'}</td>
             <td style="padding:8px 10px;text-align:center;" onclick="event.stopPropagation()">
-              <input type="checkbox" ${r.상신완료 ? 'checked' : ''} onchange="toggleShinsin('${r.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;">
+              ${r.처리완료 ? '<span style="font-size:12px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:999px;font-weight:700;">✅ 완료</span>' : ''}
+              <input type="checkbox" ${r.처리완료 ? 'checked' : ''} onchange="toggleShinsin('${r.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-left:4px;">
             </td>
           </tr>`;
         });
@@ -2182,7 +2196,7 @@ function openRefundDetail(id) {
       <span style="color:var(--text);font-weight:600;">${val}</span>
     </div>`;
 
-  const shinsinBadge = r.상신완료
+  const shinsinBadge = r.처리완료
     ? `<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;">✅ 완료</span>`
     : `<span style="background:#fef9c3;color:#854d0e;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;">⏳ 미완료</span>`;
 
@@ -2217,7 +2231,7 @@ function openRefundDetail(id) {
     ${section('상신 정보', [
       row('상신예정일', r.상신예정일),
       `<div style="display:flex;gap:12px;padding:9px 14px;font-size:13px;align-items:center;">
-        <span style="color:var(--text3);min-width:90px;flex-shrink:0;font-weight:500;">상신완료</span>
+        <span style="color:var(--text3);min-width:90px;flex-shrink:0;font-weight:500;">처리완료</span>
         ${shinsinBadge}
       </div>`,
     ])}
@@ -2234,23 +2248,36 @@ function openRefundDetail(id) {
   document.getElementById('refund-detail-overlay').style.display = 'flex';
 }
 
+function showConfirmModal(title, desc, onConfirm) {
+  document.getElementById('custom-confirm-title').textContent = title;
+  document.getElementById('custom-confirm-desc').textContent = desc;
+  const okBtn = document.getElementById('custom-confirm-ok');
+  okBtn.onclick = () => {
+    document.getElementById('custom-confirm-overlay').style.display = 'none';
+    onConfirm();
+  };
+  document.getElementById('custom-confirm-overlay').style.display = 'flex';
+}
+
 async function deleteRefundDetail() {
   if (!currentDetailId) return;
   const r = refundList.find(x => x.id === currentDetailId);
-  if (!confirm(`"${r?.매장명 || ''}" 접수건을 삭제할까요?\n삭제 후 복구가 불가능합니다.`)) return;
-  try {
-    await sbFetch(`refund_requests?id=eq.${currentDetailId}`, {
-      method: 'DELETE',
-      prefer: 'return=minimal',
-    });
-    document.getElementById('refund-detail-overlay').style.display = 'none';
-    refundList = refundList.filter(x => x.id !== currentDetailId);
-    currentDetailId = null;
-    renderRefundList();
-    showToast('🗑️ 접수건이 삭제되었습니다');
-  } catch(e) {
-    showToast('삭제 실패: ' + e.message);
-  }
+  showConfirmModal(
+    '접수건 삭제',
+    `"${r?.매장명 || ''}" 접수건을 삭제할까요?\n삭제 후 복구가 불가능합니다.`,
+    async () => {
+      try {
+        await sbFetch(`refund_requests?id=eq.${currentDetailId}`, {
+          method: 'DELETE', prefer: 'return=minimal',
+        });
+        document.getElementById('refund-detail-overlay').style.display = 'none';
+        refundList = refundList.filter(x => x.id !== currentDetailId);
+        currentDetailId = null;
+        renderRefundList();
+        showToast('🗑️ 접수건이 삭제되었습니다');
+      } catch(e) { showToast('삭제 실패: ' + e.message); }
+    }
+  );
 }
 
 function copyDetailTemplate() {
@@ -2267,30 +2294,33 @@ async function toggleShinsin(id, checked) {
     await sbFetch(`refund_requests?id=eq.${id}`, {
       method: 'PATCH',
       prefer: 'return=minimal',
-      body: JSON.stringify({ 상신완료: checked }),
+      body: JSON.stringify({ 처리완료: checked }),
     });
     const item = refundList.find(r => r.id === id);
-    if (item) item.상신완료 = checked;
-    showToast(checked ? '✅ 상신 완료 처리됨' : '↩ 상신 미완료로 변경됨');
+    if (item) item.처리완료 = checked;
+    renderRefundList();
+    showToast(checked ? '✅ 처리 완료됨' : '↩ 처리 미완료로 변경됨');
   } catch(e) {
     showToast('저장 실패: ' + e.message);
   }
 }
 
 async function deleteOldRefunds() {
-  if (!confirm('6개월 이상 된 환불 접수 건을 삭제할까요?\n삭제 후 복구가 불가능합니다.')) return;
-  try {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    await sbFetch(`refund_requests?created_at=lt.${sixMonthsAgo.toISOString()}`, {
-      method: 'DELETE',
-      prefer: 'return=minimal',
-    });
-    showToast('🗑️ 6개월 이상 데이터가 삭제되었습니다');
-    loadRefundList();
-  } catch(e) {
-    showToast('삭제 실패: ' + e.message);
-  }
+  showConfirmModal(
+    '6개월 이상 데이터 삭제',
+    '6개월 이상 된 환불 접수 건을 삭제할까요?\n삭제 후 복구가 불가능합니다.',
+    async () => {
+      try {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        await sbFetch(`refund_requests?created_at=lt.${sixMonthsAgo.toISOString()}`, {
+          method: 'DELETE', prefer: 'return=minimal',
+        });
+        showToast('🗑️ 6개월 이상 데이터가 삭제되었습니다');
+        loadRefundList();
+      } catch(e) { showToast('삭제 실패: ' + e.message); }
+    }
+  );
 }
 
 // 환불 접수 버튼 표시 (rfShowResult에서 호출)
@@ -2367,6 +2397,19 @@ loadData();
         <div id="refund-detail-template" style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;font-size:13px;line-height:1.85;color:var(--text);white-space:pre-wrap;font-family:inherit;"></div>
         <button onclick="copyDetailTemplate()" id="detail-copy-btn" style="margin-top:12px;width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;">📋 복사하기</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 커스텀 Confirm 모달 -->
+<div id="custom-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:16px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
+    <div style="width:52px;height:52px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;">🗑️</div>
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px;" id="custom-confirm-title"></div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:22px;white-space:pre-line;" id="custom-confirm-desc"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="document.getElementById('custom-confirm-overlay').style.display='none'" style="flex:1;padding:12px;background:var(--bg);color:var(--text2);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">취소</button>
+      <button id="custom-confirm-ok" style="flex:1;padding:12px;background:#e24b4a;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">삭제</button>
     </div>
   </div>
 </div>
