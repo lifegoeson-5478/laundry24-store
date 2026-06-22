@@ -1979,7 +1979,7 @@ async function _openRefundFormCore() {
   document.getElementById('rform-store').value = rfSelected?.name || '';
   const devLabel = rfDevice === '잔여론디페이' ? '잔여 론디페이' : rfDevice;
   document.getElementById('rform-device').value = devLabel;
-  document.getElementById('rform-payment').value = rfPayment || '-';
+  document.getElementById('rform-payment').value = rfDevice === '잔여론디페이' ? '카드' : (rfPayment || '-');
   document.getElementById('rform-subtitle').textContent =
     `현재 입력된 매장(${rfSelected?.name}) 및 선택된 내용(${devLabel}${rfPayment ? ' · ' + rfPayment : ''})을 기준으로 환불됩니다.`;
 
