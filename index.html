@@ -1176,7 +1176,7 @@ function renderList() {
       <td class="td-no">${s.no}</td>
       <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
-      <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne}</span></td>
+      <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
       <td style="white-space:nowrap"><span class="b-line ${getLineClass(s.line, s.frequency)}">${s.line || '—'}</span></td>
       <td><span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span></td>
