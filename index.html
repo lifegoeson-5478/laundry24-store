@@ -2087,7 +2087,7 @@ async function submitRefundForm() {
     계좌번호: isAccount ? document.getElementById('rform-accno').value.trim() : null,
     예금주: isAccount ? document.getElementById('rform-holder').value.trim() : null,
     최종환불금액: isAccount ? document.getElementById('rform-accamt').value.trim() : null,
-    상신예정일: document.getElementById('rform-shinsin').value || null,
+    상신예정일: (method === '계좌입금' || method === '계좌 입금') && (rfIsRondi(rfSelected) || rfDevice === '드라이스테이션') ? (document.getElementById('rform-shinsin').value || null) : null,
     처리완료: false,
   };
 
@@ -2643,7 +2643,7 @@ async function exportRefundExcel() {
   }
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    r.환불방법 === '계좌입금'
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
   );
   if (!target.length) {
     showToast('상신 대상 접수건이 없습니다');
@@ -2654,7 +2654,7 @@ async function exportRefundExcel() {
   const rows = target.map((r, i) => {
     const store = STORES.find(s => s.name === r.매장명);
     const itemLabel = r.사용기기 + (r.기기번호 ? ' ' + r.기기번호 + '번' : '');
-    const owner = r.환불방법 === '계좌입금' ? '본사' : '점주';
+    const owner = (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') ? '본사' : '점주';
     return [
       i + 1,
       r.매장명 || '',
