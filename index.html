@@ -614,9 +614,8 @@ tbody tr.visit-today .td-name { color: #1d4ed8; }
     <!-- Gemini API 키 설정 -->
     <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;">Gemini API 키</div>
-      <input type="password" id="gemini-api-key-input" placeholder="AQ...." style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">
-      <button onclick="saveGeminiKey()" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">저장</button>
-      <span id="gemini-key-status" style="font-size:12px;color:var(--text3);"></span>
+      <input type="password" id="gemini-api-key-input" value="••••••••••••••••••••" readonly style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg);">
+      <span id="gemini-key-status" style="font-size:12px;color:var(--accent);font-weight:600;">✓ Supabase에 암호화 저장됨</span>
     </div>
     <div class="admin-tabs">
       <div class="atab active" onclick="switchAtab('store')">매장 관리</div>
@@ -2644,26 +2643,50 @@ async function toggleShinsin(id, checked) {
   }
 }
 
+const GEMINI_ENC_PASSPHRASE = 'L24RefundKey2024!';
+
+async function decryptGeminiKey(encStr) {
+  const [ivHex, encHex] = encStr.split(':');
+  const iv = new Uint8Array(ivHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const enc = new Uint8Array(encHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(GEMINI_ENC_PASSPHRASE), 'PBKDF2', false, ['deriveKey']
+  );
+  const cryptoKey = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: new TextEncoder().encode('salt'), iterations: 1, hash: 'SHA-256' },
+    keyMaterial, { name: 'AES-CBC', length: 256 }, false, ['decrypt']
+  );
+  const dec = await crypto.subtle.decrypt({ name: 'AES-CBC', iv }, cryptoKey, enc);
+  return new TextDecoder().decode(dec);
+}
+
+let cachedGeminiKey = null;
+async function getGeminiKey() {
+  if (cachedGeminiKey) return cachedGeminiKey;
+  try {
+    const result = await sbFetch('settings?key=eq.geminiApiKeyEnc&select=value');
+    const encVal = result?.[0]?.value;
+    if (!encVal) return null;
+    cachedGeminiKey = await decryptGeminiKey(encVal);
+    return cachedGeminiKey;
+  } catch(e) { return null; }
+}
+
 function saveGeminiKey() {
-  const key = document.getElementById('gemini-api-key-input').value.trim();
-  if (!key) return;
-  localStorage.setItem('geminiApiKey', key);
-  document.getElementById('gemini-key-status').textContent = '✓ 저장됨';
-  showToast('Gemini API 키가 저장되었습니다');
+  showToast('API 키는 Supabase에 암호화 저장되어 있어요');
 }
 
 function loadGeminiKey() {
-  const key = localStorage.getItem('geminiApiKey');
-  if (key) {
-    document.getElementById('gemini-api-key-input').value = key;
-    document.getElementById('gemini-key-status').textContent = '✓ 저장된 키 있음';
-  }
+  const statusEl = document.getElementById('gemini-key-status');
+  const inputEl = document.getElementById('gemini-api-key-input');
+  if (statusEl) statusEl.textContent = '✓ Supabase에 암호화 저장됨';
+  if (inputEl) inputEl.value = '••••••••••••••••••••';
 }
 
 async function generateShinsinContent() {
-  const geminiKey = localStorage.getItem('geminiApiKey');
+  const geminiKey = await getGeminiKey();
   if (!geminiKey) {
-    showToast('어드민 설정에서 Gemini API 키를 먼저 입력해 주세요');
+    showToast('Gemini API 키를 불러오지 못했습니다');
     return;
   }
   const payDate = await getNextPaymentDate();
