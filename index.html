@@ -125,11 +125,6 @@ tbody tr.visit-today .td-name { color: #1d4ed8; }
 .visit-next { font-size: 12px; font-weight: 700; color: var(--accent); }
 .visit-next2 { font-size: 11px; color: var(--text3); font-weight: 500; }
 .empty { text-align: center; padding: 80px 0; color: var(--text3); }
-/* 다음 방문 예정일 컬럼 폭 확보 */
-thead th:nth-child(8),
-tbody td:nth-child(8) {
-  min-width: 140px;
-}
 
 /* MODAL */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,30,.45); z-index: 500; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
@@ -583,7 +578,7 @@ tbody td:nth-child(8) {
         <div class="fg"><label>카드번호 *</label><input type="text" id="rform-cardno" placeholder="끝 4자리 또는 전체"></div>
         <div class="fg"><label>승인번호 <span style="font-weight:500;color:var(--text3);">(선택)</span></label><input type="text" id="rform-appno" placeholder="승인번호"></div>
         <div class="fg"><label>승인일시 *</label><input type="text" id="rform-appdate" placeholder="예: 2024-01-15 14:30"></div>
-        <div class="fg"><label>최종 취소금액 *</label><input type="text" id="rform-cardamt" placeholder="예: 3,000"></div>
+        <div class="fg"><label>최종 취소금액 *</label><input type="number" id="rform-cardamt" placeholder="예: 3000" min="0"></div>
       </div>
     </div>
 
@@ -594,7 +589,7 @@ tbody td:nth-child(8) {
         <div class="fg"><label>은행명 *</label><input type="text" id="rform-bank" placeholder="예: 국민, 신한, 카카오"></div>
         <div class="fg"><label>계좌번호 *</label><input type="text" id="rform-accno" placeholder="계좌번호"></div>
         <div class="fg"><label>예금주 *</label><input type="text" id="rform-holder" placeholder="예금주명"></div>
-        <div class="fg"><label>최종 환불금액 *</label><input type="text" id="rform-accamt" placeholder="예: 3,000"></div>
+        <div class="fg"><label>최종 환불금액 *</label><input type="number" id="rform-accamt" placeholder="예: 3000" min="0"></div>
         <div class="fg" id="rform-shinsin-wrap" style="display:none;">
           <label>다음 입금일</label>
           <input type="text" id="rform-shinsin" readonly style="background:var(--bg);">
@@ -614,6 +609,14 @@ tbody td:nth-child(8) {
     <div class="admin-hd">
       <h2>어드민 관리</h2>
       <p>매장 추가·수정·삭제 및 운송 일정을 관리합니다. 변경사항은 <strong>별도 DB에 저장</strong>되어 모든 팀원과 실시간 공유됩니다.</p>
+    </div>
+
+    <!-- Gemini API 키 설정 -->
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;">Gemini API 키</div>
+      <input type="password" id="gemini-api-key-input" placeholder="AQ...." style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">
+      <button onclick="saveGeminiKey()" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">저장</button>
+      <span id="gemini-key-status" style="font-size:12px;color:var(--text3);"></span>
     </div>
     <div class="admin-tabs">
       <div class="atab active" onclick="switchAtab('store')">매장 관리</div>
@@ -738,6 +741,7 @@ tbody td:nth-child(8) {
       <input type="text" id="refund-search-customer" placeholder="고객번호 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
       <button onclick="loadRefundList()" style="padding:7px 14px;background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">새로고침</button>
       <button onclick="exportRefundExcel()" style="padding:7px 14px;background:#e6f7f5;color:#0f6e56;border:1.5px solid #9FE1CB;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">상신 엑셀 다운로드</button>
+      <button onclick="generateShinsinContent()" style="padding:7px 14px;background:#e6f0fb;color:#3b5bdb;border:1.5px solid #a5b4fc;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">상신 내용 생성</button>
       <button onclick="deleteOldRefunds()" style="padding:7px 14px;background:#fee2e2;color:#b91c1c;border:1.5px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">6개월 이상 삭제</button>
     </div>
 
@@ -1278,7 +1282,7 @@ function switchPage(p) {
   const idx = { list: 0, schedule: 1, refund: 2, refundlist: 3 };
   if (idx[p] !== undefined) document.querySelectorAll('.nav-tab')[idx[p]]?.classList.add('active');
   if (p === 'schedule') renderSchedDisplay();
-  if (p === 'admin') { renderAlist(); renderSchedEditTable(); }
+  if (p === 'admin') { renderAlist(); renderSchedEditTable(); loadGeminiKey(); }
   if (p === 'refund' && rfStores.length === 0) loadRefundStores();
   if (p === 'refundlist') { loadPaymentDate(); loadRefundList(); renderPaymentDateList(); }
 }
@@ -2640,6 +2644,129 @@ async function toggleShinsin(id, checked) {
   }
 }
 
+function saveGeminiKey() {
+  const key = document.getElementById('gemini-api-key-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('geminiApiKey', key);
+  document.getElementById('gemini-key-status').textContent = '✓ 저장됨';
+  showToast('Gemini API 키가 저장되었습니다');
+}
+
+function loadGeminiKey() {
+  const key = localStorage.getItem('geminiApiKey');
+  if (key) {
+    document.getElementById('gemini-api-key-input').value = key;
+    document.getElementById('gemini-key-status').textContent = '✓ 저장된 키 있음';
+  }
+}
+
+async function generateShinsinContent() {
+  const geminiKey = localStorage.getItem('geminiApiKey');
+  if (!geminiKey) {
+    showToast('어드민 설정에서 Gemini API 키를 먼저 입력해 주세요');
+    return;
+  }
+  const payDate = await getNextPaymentDate();
+  if (!payDate) {
+    showToast('입금일을 먼저 등록해 주세요');
+    return;
+  }
+
+  const target = refundList.filter(r =>
+    !r.처리완료 &&
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
+  );
+
+  if (!target.length) {
+    showToast('상신 대상 접수건이 없습니다');
+    return;
+  }
+
+  const totalAmt = target.reduce((sum, r) => {
+    const amt = parseInt((r.최종환불금액 || '0').toString().replace(/[,원]/g, '')) || 0;
+    return sum + amt;
+  }, 0);
+
+  // 모달 열기
+  const overlay = document.getElementById('shinsin-content-overlay');
+  document.getElementById('shinsin-content-subtitle').textContent =
+    `입금일 ${payDate} 기준 ${target.length}건 · 총 ${totalAmt.toLocaleString()}원`;
+  document.getElementById('shinsin-content-loading').style.display = 'block';
+  document.getElementById('shinsin-content-result').style.display = 'none';
+  document.getElementById('shinsin-content-error').style.display = 'none';
+  overlay.style.display = 'flex';
+
+  // Gemini에 보낼 데이터 정리
+  const cases = target.map((r, i) => {
+    const store = STORES.find(s => s.name === r.매장명);
+    const isRondi = store?.rondiOne === '론디원';
+    const isDirect = store?.type === '직영' || store?.type === '일반/직영';
+    return `${i+1}. 매장: ${r.매장명}(${isRondi ? '론디원' : '비론디원'}${isDirect ? '/직영' : ''}), 기기: ${r.사용기기}${r.기기번호 ? ' ' + r.기기번호 : ''}, 결제수단: ${r.결제수단}, 상세원인: ${r.상세원인}, 취소사유: ${r.취소사유}, 금액: ${r.최종환불금액}원`;
+  }).join('\n');
+
+  const prompt = `아래는 런드리24 고객 환불 접수 목록입니다. 이 내용을 분석해서 재무팀에 제출할 상신 문서 내용을 작성해주세요.
+
+환불 접수 목록:
+${cases}
+
+작성 형식:
+1. 목적: 런드리24 고객환불금 지급
+2. 금액: ${totalAmt.toLocaleString()}원
+3. 환불 상세사유 (총 ${target.length}건)
+   * [사유 설명]: [건수]건 ([금액]원)
+   * [사유 설명]: [건수]건 ([금액]원)
+   ...
+
+작성 규칙:
+- 상세원인뿐 아니라 취소사유 텍스트 내용까지 함께 읽고 의미를 파악해서 비슷한 건끼리 자연스럽게 묶어주세요
+- 각 그룹 사유 설명은 구체적이고 자연스러운 문장으로 작성해주세요
+- 예시: "론디원 매장 잔여 론디페이 환불", "직영 매장 건조기 오류로 환불", "세탁불만족으로 환불", "타인 세탁물 오등록 세탁비 환불"
+- 기기 정보(세탁기/건조기/잔여 론디페이 등)와 매장 유형(론디원/직영 등)을 사유에 자연스럽게 반영해주세요
+- 금액은 각 그룹의 합산 금액이며 쉼표 구분자 사용해주세요 (예: 129,000원)
+- 총 금액과 총 건수는 위에 적힌 값 그대로 사용하세요
+- 형식 외 다른 설명, 서문, 후기는 절대 추가하지 마세요
+- 한국어로 작성해주세요`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2 }
+        })
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`API 오류 ${res.status}: ${data.error?.message || JSON.stringify(data)}`);
+    }
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('응답 내용이 비어있습니다: ' + JSON.stringify(data));
+
+    document.getElementById('shinsin-content-text').textContent = text.trim();
+    document.getElementById('shinsin-content-loading').style.display = 'none';
+    document.getElementById('shinsin-content-result').style.display = 'block';
+    document.getElementById('shinsin-copy-btn').textContent = '복사하기';
+  } catch(e) {
+    document.getElementById('shinsin-content-loading').style.display = 'none';
+    const errEl = document.getElementById('shinsin-content-error');
+    errEl.textContent = '생성 실패: ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function copyShinsinContent() {
+  const text = document.getElementById('shinsin-content-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('shinsin-copy-btn');
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '복사하기', 2000);
+  });
+}
+
 async function exportRefundExcel() {
   const payDate = await getNextPaymentDate();
   if (!payDate) {
@@ -2838,6 +2965,30 @@ loadData();
         <div id="refund-detail-template" style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;font-size:13px;line-height:1.85;color:var(--text);white-space:pre-wrap;font-family:inherit;"></div>
         <button onclick="copyDetailTemplate()" id="detail-copy-btn" style="margin-top:12px;width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;">복사하기</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 상신 내용 생성 모달 -->
+<div id="shinsin-content-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:16px;padding:0;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);overflow:hidden;">
+    <div style="background:#3b5bdb;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="color:white;">
+        <div style="font-size:15px;font-weight:800;">상신 내용 생성</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px;" id="shinsin-content-subtitle"></div>
+      </div>
+      <button onclick="document.getElementById('shinsin-content-overlay').style.display='none'" style="background:rgba(255,255,255,.2);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:white;">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <div id="shinsin-content-loading" style="text-align:center;padding:30px;color:var(--text3);font-size:14px;">
+        <div style="font-size:24px;margin-bottom:12px;">AI 분석 중...</div>
+        <div>취소사유를 분석하고 상신 내용을 작성하고 있어요</div>
+      </div>
+      <div id="shinsin-content-result" style="display:none;">
+        <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:inherit;max-height:400px;overflow-y:auto;" id="shinsin-content-text"></div>
+        <button onclick="copyShinsinContent()" id="shinsin-copy-btn" style="margin-top:12px;width:100%;padding:12px;background:#3b5bdb;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">복사하기</button>
+      </div>
+      <div id="shinsin-content-error" style="display:none;color:#e24b4a;font-size:13px;text-align:center;padding:20px;"></div>
     </div>
   </div>
 </div>
