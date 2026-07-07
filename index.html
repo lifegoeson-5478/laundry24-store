@@ -2724,52 +2724,39 @@ async function generateShinsinContent() {
     const store = STORES.find(s => s.name === r.매장명);
     const isRondi = store?.rondiOne === '론디원';
     const isDirect = store?.type === '직영' || store?.type === '일반/직영';
-    return `${i+1}. 매장: ${r.매장명}(${isRondi ? '론디원' : '비론디원'}${isDirect ? '/직영' : ''}), 기기: ${r.사용기기}${r.기기번호 ? ' ' + r.기기번호 : ''}, 결제수단: ${r.결제수단}, 상세원인: ${r.상세원인}, 취소사유: ${r.취소사유}, 금액: ${r.최종환불금액}원`;
+    return (i+1) + '. 매장: ' + r.매장명 + '(' + (isRondi ? '론디원' : '비론디원') + (isDirect ? '/직영' : '') + '), 기기: ' + r.사용기기 + (r.기기번호 ? ' ' + r.기기번호 : '') + ', 결제수단: ' + r.결제수단 + ', 상세원인: ' + r.상세원인 + ', 취소사유: ' + r.취소사유 + ', 금액: ' + r.최종환불금액 + '원';
   }).join('\n');
 
-  const prompt = `아래는 런드리24 고객 환불 접수 목록입니다. 이 내용을 분석해서 재무팀에 제출할 상신 문서 내용을 작성해주세요.
-
-환불 접수 목록:
-${cases}
-
-작성 형식:
-1. 목적: 런드리24 고객환불금 지급
-2. 금액: ${totalAmt.toLocaleString()}원
-3. 환불 상세사유 (총 ${target.length}건)
-   * [사유 설명]: [건수]건 ([금액]원)
-   * [사유 설명]: [건수]건 ([금액]원)
-   ...
-
-작성 규칙:
-- 상세원인뿐 아니라 취소사유 텍스트 내용까지 함께 읽고 의미를 파악해서 비슷한 건끼리 자연스럽게 묶어주세요
-- 각 그룹 사유 설명은 구체적이고 자연스러운 문장으로 작성해주세요
-- 예시: "론디원 매장 잔여 론디페이 환불", "직영 매장 건조기 오류로 환불", "세탁불만족으로 환불", "타인 세탁물 오등록 세탁비 환불"
-- 기기 정보(세탁기/건조기/잔여 론디페이 등)와 매장 유형(론디원/직영 등)을 사유에 자연스럽게 반영해주세요
-- 금액은 각 그룹의 합산 금액이며 쉼표 구분자 사용해주세요 (예: 129,000원)
-- 총 금액과 총 건수는 위에 적힌 값 그대로 사용하세요
-- 형식 외 다른 설명, 서문, 후기는 절대 추가하지 마세요
-- 한국어로 작성해주세요`;
+  const promptText = '아래는 런드리24 고객 환불 접수 목록입니다. 각 건을 비슷한 사유끼리 그룹으로 묶어주세요.\n\n환불 접수 목록:\n' + cases + '\n\n응답 형식 (JSON만, 다른 설명 없이):\n{"groups": [{"label": "사유 설명", "indices": [1, 2]}, {"label": "사유 설명", "indices": [3]}]}\n\n규칙:\n- 상세원인과 취소사유 텍스트를 함께 읽고 의미가 비슷한 건끼리 묶어주세요\n- label은 구체적이고 자연스러운 한국어 문장으로 작성 (예: "론디원 매장 잔여 론디페이 환불", "직영 매장 건조기 오류로 환불", "세탁불만족으로 환불")\n- 기기 정보와 매장 유형을 label에 자연스럽게 반영\n- indices는 위 목록의 번호(1부터 시작)\n- 모든 건이 반드시 하나의 그룹에 포함되어야 함\n- JSON 외 다른 텍스트 절대 금지';
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + geminiKey,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2 }
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
         })
       }
     );
     const data = await res.json();
-    if (!res.ok) {
-      throw new Error(`API 오류 ${res.status}: ${data.error?.message || JSON.stringify(data)}`);
-    }
+    if (!res.ok) throw new Error('API 오류 ' + res.status + ': ' + (data.error?.message || JSON.stringify(data)));
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error('응답 내용이 비어있습니다: ' + JSON.stringify(data));
 
-    document.getElementById('shinsin-content-text').textContent = text.trim();
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    const lineArr = parsed.groups.map(g => {
+      const items = g.indices.map(idx => target[idx - 1]).filter(Boolean);
+      const count = items.length;
+      const amt = items.reduce((sum, r) => sum + (parseInt((r.최종환불금액 || '0').toString().replace(/[,원]/g, '')) || 0), 0);
+      return '   * ' + g.label + ': ' + count + '건 (' + amt.toLocaleString() + '원)';
+    });
+    const result = '1. 목적: 런드리24 고객환불금 지급\n2. 금액: ' + totalAmt.toLocaleString() + '원\n3. 환불 상세사유 (총 ' + target.length + '건)\n' + lineArr.join('\n');
+
+    document.getElementById('shinsin-content-text').textContent = result;
     document.getElementById('shinsin-content-loading').style.display = 'none';
     document.getElementById('shinsin-content-result').style.display = 'block';
     document.getElementById('shinsin-copy-btn').textContent = '복사하기';
