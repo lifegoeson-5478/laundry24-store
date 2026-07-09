@@ -1727,14 +1727,14 @@ function rfCalc() {
   if (!rfPayment) return;
 
   let isBonsa = false;
-  if (rondi) { isBonsa = !(rfPayment === '현금' || rfPayment === '지역화폐'); }
-  else if (rfIsDirect(rfSelected)) { isBonsa = true; }
+  if (rfIsDirect(rfSelected)) { isBonsa = true; }
+  else if (rondi) { isBonsa = !(rfPayment === '현금' || rfPayment === '지역화폐'); }
   else { isBonsa = rfDevice === '드라이스테이션'; }
   const c = isBonsa ? CT : CA;
 
   let steps = '';
   if (isBonsa) {
-    if (rfPayment === '카드' && RF_CARD_DEVICES.has(rfDevice)) {
+    if (rfPayment === '카드' && RF_CARD_DEVICES.has(rfDevice) && !rfIsDirect(rfSelected)) {
       steps = `
         <div class="rf-step-row"><div class="rf-snum" style="background:${c.s1};color:${c.s1t};">1</div><div>론디페이로 환불 제안</div></div>
         <div class="rf-step-row"><div class="rf-snum" style="background:${c.s2};color:${c.s2t};">2</div><div>고객이 거절 시 → <strong>망치에서 카드 취소 가능</strong></div></div>`;
@@ -1999,10 +1999,10 @@ async function _openRefundFormCore() {
   // 본사/점주 판단
   const rondi = rfIsRondi(rfSelected);
   const isBonsa = rfDevice === '잔여론디페이'
-    ? rondi
+    ? (rfIsDirect(rfSelected) || rondi)
+    : rfIsDirect(rfSelected) ? true
     : rondi
       ? !(rfPayment === '현금' || rfPayment === '지역화폐')
-      : rfIsDirect(rfSelected) ? true
       : rfDevice === '드라이스테이션';
 
   const methodReadonly = document.getElementById('rform-method-readonly');
@@ -2095,7 +2095,7 @@ async function submitRefundForm() {
     계좌번호: isAccount ? document.getElementById('rform-accno').value.trim() : null,
     예금주: isAccount ? document.getElementById('rform-holder').value.trim() : null,
     최종환불금액: isAccount ? document.getElementById('rform-accamt').value.trim() : null,
-    상신예정일: (method === '계좌입금' || method === '계좌 입금') && (rfIsRondi(rfSelected) || rfDevice === '드라이스테이션' || rfIsDirect(rfSelected)) ? (document.getElementById('rform-shinsin').value || null) : null,
+    상신예정일: (method === '계좌입금' || method === '계좌 입금' || method === '현금입금') && (rfIsRondi(rfSelected) || rfDevice === '드라이스테이션' || rfIsDirect(rfSelected)) ? (document.getElementById('rform-shinsin').value || null) : null,
     처리완료: false,
   };
 
@@ -2697,7 +2697,7 @@ async function generateShinsinContent() {
 
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금')
   );
 
   if (!target.length) {
@@ -2727,7 +2727,7 @@ async function generateShinsinContent() {
     return (i+1) + '. 매장: ' + r.매장명 + '(' + (isRondi ? '론디원' : '비론디원') + (isDirect ? '/직영' : '') + '), 기기: ' + r.사용기기 + (r.기기번호 ? ' ' + r.기기번호 : '') + ', 결제수단: ' + r.결제수단 + ', 상세원인: ' + r.상세원인 + ', 취소사유: ' + r.취소사유 + ', 금액: ' + r.최종환불금액 + '원';
   }).join('\n');
 
-  const promptText = '아래는 런드리24 고객 환불 접수 목록입니다. 각 건을 적절한 크기로 묶어주세요.\n\n환불 접수 목록:\n' + cases + '\n\n응답 형식 (JSON만, 다른 설명 없이):\n{"groups": [{"label": "사유 설명", "indices": [1, 2]}, {"label": "사유 설명", "indices": [3]}]}\n\n그룹핑 기준 (중요):\n- 기기 종류가 다르거나 사유 성격이 다르면 반드시 분리해주세요\n- 아래 사유들은 반드시 별도 그룹으로 구분:\n  1) 오결제/이중결제: "오결제로 인한 환불"\n  2) 세탁물 손상 보상: "세탁물 손상으로 인한 보상 처리 세탁비 환불"\n  3) 세탁 불만족: "세탁 불만족으로 인한 환불"\n  4) 재케어 오과금: "재케어 오과금으로 인한 환불"\n  5) 이사/폐점으로 잔여 론디페이 환불: "이사로 인한 론디페이 환불 요청"\n  6) 장비 오류(타인 의류 오매칭, 고객센터 미개선 등): "장비 오류로 인한 환불"\n  7) 품목 오등록: "품목 오등록으로 인한 차액 환불"\n- 직영 매장인 경우 label에 "직영매장"을 앞에 붙여주세요\n- 매장명은 label에 포함하지 마세요\n- 그룹 수는 4~8개가 적당해요\n- indices는 위 목록의 번호(1부터 시작), 모든 건이 반드시 하나의 그룹에 포함\n- JSON 외 다른 텍스트 절대 금지';
+  const promptText = '아래는 런드리24 고객 환불 접수 목록입니다. 각 건을 적절한 크기로 묶어주세요.\n\n환불 접수 목록:\n' + cases + '\n\n응답 형식 (JSON만, 다른 설명 없이):\n{"groups": [{"label": "사유 설명", "indices": [1, 2]}, {"label": "사유 설명", "indices": [3]}]}\n\n그룹핑 기준 (중요):\n- 기기 종류가 다르거나 사유 성격이 다르면 반드시 분리해주세요\n- 아래 사유들은 반드시 별도 그룹으로 구분:\n  1) 오결제/이중결제: "오결제로 인한 환불"\n  2) 세탁물 손상 보상: "세탁물 손상으로 인한 보상 처리 세탁비 환불"\n  3) 세탁 불만족: "세탁 불만족으로 인한 환불"\n  4) 재케어 오과금: "재케어 오과금으로 인한 환불"\n  5) 잔여 론디페이 환불 (사유 무관): "이사로 인한 론디페이 환불 요청"\n  6) 기기 장비 오류(타인 의류 오매칭, 고객센터 미개선 등, 론디페이 아닌 경우): "장비 오류로 인한 환불"\n  7) 품목 오등록: "품목 오등록으로 인한 차액 환불"\n- 직영 매장인 경우 label에 "직영매장"을 앞에 붙여주세요\n- 매장명은 label에 포함하지 마세요\n- 그룹 수는 4~8개가 적당해요\n- indices는 위 목록의 번호(1부터 시작), 모든 건이 반드시 하나의 그룹에 포함\n- JSON 외 다른 텍스트 절대 금지';
 
   try {
     const res = await fetch(
@@ -2785,7 +2785,7 @@ async function exportRefundExcel() {
   }
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금')
   );
   if (!target.length) {
     showToast('상신 대상 접수건이 없습니다');
