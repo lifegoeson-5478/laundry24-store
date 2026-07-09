@@ -2697,7 +2697,7 @@ async function generateShinsinContent() {
 
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금')
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금') && r.상신예정일
   );
 
   if (!target.length) {
@@ -2785,7 +2785,7 @@ async function exportRefundExcel() {
   }
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금')
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금') && r.상신예정일
   );
   if (!target.length) {
     showToast('상신 대상 접수건이 없습니다');
