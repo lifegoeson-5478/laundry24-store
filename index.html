@@ -827,6 +827,35 @@ const SUPABASE_URL  = 'https://ebiepxqkqeyyxewnddov.supabase.co';   // 예: http
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaWVweHFrcWV5eXhld25kZG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzA3NjIsImV4cCI6MjA5NjM0Njc2Mn0.LF0mgkF1o7_k-6HaI3O0r_DxRGRchq2FWuGVj37W5x8';        // anon public key
 
 // ============================================================
+// REALTIME (어드민에서 저장하면 랜딩페이지에 자동 반영)
+// ============================================================
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let realtimeReloadTimer = null;
+
+function scheduleRealtimeReload(msg) {
+  // 짧은 시간에 여러 변경이 몰려도 한 번만 새로고침하도록 살짝 지연
+  clearTimeout(realtimeReloadTimer);
+  realtimeReloadTimer = setTimeout(() => {
+    loadData();
+    if (msg) showToast(msg, 'success', 2000);
+  }, 400);
+}
+
+function setupRealtime() {
+  sbClient.channel('public:schedules')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'schedules' }, () => {
+      scheduleRealtimeReload('운송 일정이 업데이트되었습니다');
+    })
+    .subscribe();
+
+  sbClient.channel('public:stores')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'stores' }, () => {
+      scheduleRealtimeReload('매장 정보가 업데이트되었습니다');
+    })
+    .subscribe();
+}
+
+// ============================================================
 // DATA
 // ============================================================
 let STORES = [];
@@ -941,6 +970,21 @@ async function loadData() {
 // 요일명 → JS getDay() 숫자 매핑
 const DAY_MAP = { '일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6 };
 
+// "B·D·F·H: 짝수일 / A·C·E·G: 홀수일" 같은 어드민 입력 텍스트를 파싱해서
+// 실제 라인 → 홀짝 매핑을 만든다. (더 이상 코드에 하드코딩하지 않음)
+function parseLineParityMap(pattern) {
+  const map = {};
+  if (!pattern) return map;
+  const regex = /([A-Za-z·,\s]+):\s*(홀수일|짝수일)/g;
+  let m;
+  while ((m = regex.exec(pattern)) !== null) {
+    const lines = m[1].split(/[·,\s]+/).filter(Boolean);
+    const parity = m[2] === '홀수일' ? 'odd' : 'even';
+    lines.forEach(l => { map[l.toUpperCase()] = parity; });
+  }
+  return map;
+}
+
 // 패턴 문자열에서 요일 목록 추출
 // 지원 패턴:
 //   "매일 (월~일)" → [0,1,2,3,4,5,6]
@@ -956,17 +1000,14 @@ function parseDaysFromPattern(pattern, line) {
     return { type: 'fixed', days: [0,1,2,3,4,5,6] };
   }
 
-  // 홀수일 / 짝수일 분기 (격일 복합 패턴)
+  // 홀수일 / 짝수일 분기 (격일 복합 패턴) — 어드민이 입력한 텍스트를 실시간으로 파싱
   if (pattern.includes('홀수일') || pattern.includes('짝수일')) {
-    // 라인 기준으로 홀수/짝수 결정
-    const altOdd  = ['B','D','F','H'];  // 파랑 = 홀수일
-    const altEven = ['A','C','E','G'];  // 빨강 = 짝수일
+    const map = parseLineParityMap(pattern);
     const upperLine = (line || '').toUpperCase().trim();
-    if (altOdd.includes(upperLine))  return { type: 'date_parity', parity: 'odd' };
-    if (altEven.includes(upperLine)) return { type: 'date_parity', parity: 'even' };
-    // 라인 없으면 패턴에서 직접 읽기
-    if (pattern.includes('홀수일')) return { type: 'date_parity', parity: 'odd' };
-    if (pattern.includes('짝수일')) return { type: 'date_parity', parity: 'even' };
+    if (map[upperLine]) return { type: 'date_parity', parity: map[upperLine] };
+    // 라인 매칭이 안 되면(라인 미기입 등) 패턴 전체에서 단일 값으로 판단
+    if (pattern.includes('홀수일') && !pattern.includes('짝수일')) return { type: 'date_parity', parity: 'odd' };
+    if (pattern.includes('짝수일') && !pattern.includes('홀수일')) return { type: 'date_parity', parity: 'even' };
   }
 
   // "월, 목, 토" 형태 — 한글 요일 추출
@@ -1086,8 +1127,13 @@ function isVisitingToday(s) {
 
   if (s.frequency === '매일') return true;
   if (s.frequency === '격일') {
-    if (['B','D','F','H'].includes(l)) return dateNum % 2 === 1; // 파랑 = 홀수일
-    if (['A','C','E','G'].includes(l)) return dateNum % 2 === 0; // 빨강 = 짝수일
+    const sd = getSchedByFreq('격일');
+    if (sd) {
+      const map = parseLineParityMap(sd.days);
+      const parity = map[l];
+      if (parity === 'odd')  return dateNum % 2 === 1;
+      if (parity === 'even') return dateNum % 2 === 0;
+    }
   }
   if (s.frequency === '부산/대구' || s.frequency === '대전') {
     return [1, 4, 6].includes(dow); // 월=1, 목=4, 토=6
@@ -1517,9 +1563,9 @@ async function saveSched() {
       sd.lines = document.getElementById(`se-${idx}-lines`).value;
       sd.days  = document.getElementById(`se-${idx}-days`).value;
       sd.note  = document.getElementById(`se-${idx}-note`).value;
-      await sbFetch(`schedules?key=eq.${sd.key}`, {
-        method: 'PATCH', prefer: 'return=minimal',
-        body: JSON.stringify({ lines: sd.lines, days: sd.days, note: sd.note, updated_at: new Date().toISOString() }),
+      await sbFetch(`schedules?on_conflict=key`, {
+        method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
+        body: JSON.stringify({ key: sd.key, label: sd.label, color: sd.color, lines: sd.lines, days: sd.days, note: sd.note, updated_at: new Date().toISOString() }),
       });
     }
     renderList();
@@ -2901,6 +2947,7 @@ function showRefundApplyBtn() {
 }
 
 loadData();
+setupRealtime();
 </script>
 <!-- 론디페이 경고 모달 -->
 <div id="rondi-alert-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
