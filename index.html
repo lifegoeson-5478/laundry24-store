@@ -117,14 +117,8 @@ tbody tr.visit-today:hover { background: #dbeafe; }
 tbody tr.visit-today .td-name { color: #1d4ed8; }
 .today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
-tbody tr.store-closed { opacity: .55; position: relative; }
-tbody tr.store-closed:hover { opacity: .8; }
-tbody tr.store-closed .td-name { color: var(--text2); }
-tbody tr.store-closed::before {
-  content: '매장 폐점';
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%) rotate(-3deg);
+.closed-stamp-cell {
+  display: inline-block;
   background: #fff5f5;
   color: #dc2626;
   border: 2px solid #dc2626;
@@ -134,10 +128,12 @@ tbody tr.store-closed::before {
   padding: 3px 14px;
   border-radius: 6px;
   box-shadow: 0 1px 5px rgba(220,38,38,.25);
-  z-index: 2;
-  pointer-events: none;
+  transform: rotate(-3deg);
   white-space: nowrap;
 }
+tbody tr.store-closed { opacity: .55; position: relative; }
+tbody tr.store-closed:hover { opacity: .8; }
+tbody tr.store-closed .td-name { color: var(--text2); }
 tbody tr.store-closed::after {
   content: '';
   position: absolute;
@@ -1252,7 +1248,7 @@ function renderList() {
     // 다음 방문 예정일 계산 (폐점 매장은 계산하지 않음)
     let visitHtml = '<span style="font-size:12px;color:var(--text3)">—</span>';
     if (s.isClosed) {
-      visitHtml = '<span style="font-size:12px;color:var(--text3);font-weight:700;">폐점</span>';
+      visitHtml = '<span class="closed-stamp-cell">매장 폐점</span>';
     } else if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
       const dates = getNextTwoDates(s.frequency, s.line);
       if (dates && dates.length >= 2) {
