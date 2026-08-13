@@ -115,7 +115,13 @@ tbody td { padding: 12px 14px; vertical-align: middle; }
 tbody tr.visit-today { background: #eff6ff; }
 tbody tr.visit-today:hover { background: #dbeafe; }
 tbody tr.visit-today .td-name { color: #1d4ed8; }
-.today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
+.today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; text-decoration: none; }
+.closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; text-decoration: none; }
+.closed-stamp { display: inline-block; background: #fff5f5; color: #dc2626; border: 2px solid #dc2626; font-weight: 800; font-size: 11px; letter-spacing: .5px; padding: 2px 10px; border-radius: 6px; margin-left: 8px; transform: rotate(-3deg); vertical-align: middle; white-space: nowrap; box-shadow: 0 1px 4px rgba(220,38,38,.2); text-decoration: none; }
+tbody tr.store-closed { opacity: .55; }
+tbody tr.store-closed:hover { opacity: .8; }
+tbody tr.store-closed .td-name { color: var(--text2); }
+tbody tr.store-closed td { text-decoration: line-through; text-decoration-color: #ef4444; text-decoration-thickness: 2px; }
 /* 키오스크 버전 배지 */
 .kiosk-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 800; border: 1.5px solid; }
 .kiosk-v1 { background: #fef9c3; color: #a16207; border-color: #fde047; }
@@ -660,6 +666,8 @@ tbody tr.visit-today .td-name { color: #1d4ed8; }
             <div class="fg"><label>셀프장비 A/S</label><input type="text" id="f-as" placeholder="예: 유니룩스"></div>
             <div class="fg"><label>드라이스테이션 출장비</label><select id="f-dry"><option>발생</option><option>미발생</option></select></div>
             <div class="fg"><label>키오스크 버전</label><select id="f-kiosk"><option value="">없음</option><option value="V1">V1</option><option value="V2">V2</option></select></div>
+            <div class="fg"><label>영업 상태</label><select id="f-closed" onchange="onClosedSelectChange()"><option value="false">영업중</option><option value="true">폐점</option></select></div>
+            <div class="fg"><label>폐점일 <span style="font-weight:500;color:var(--text3);">(입력하면 자동으로 폐점 처리됩니다)</span></label><input type="date" id="f-closed-date" oninput="onClosedDateInput()"></div>
             <div class="fg full"><label>🅿 주차 정보</label><textarea id="f-parking" rows="3" placeholder="예: 지하 1층 무료 2시간&#10;아이디: laundry / 비밀번호: 1234&#10;엔터로 줄바꿈 가능"></textarea></div>
             <div class="fg full"><label>🅿 주차 등록 링크 (있는 경우만)</label><input type="url" id="f-parking-url" placeholder="https://..."></div>
             <div class="fg full"><label>CCTV 정보</label><textarea id="f-cctv" rows="2" placeholder="예: 4채널 / 업체명&#10;엔터로 줄바꿈 가능"></textarea></div>
@@ -906,6 +914,8 @@ function rowToStore(r) {
     localCurrencyAvailable: r.local_currency_available !== false,
     selfDeviceManaged: r.self_device_managed !== false,
     refundNote: r.refund_note || '',
+    isClosed: r.is_closed === true,
+    closedDate: r.closed_date || '',
   };
 }
 
@@ -925,6 +935,8 @@ function storeToRow(s) {
     local_currency_available: s.localCurrencyAvailable !== false,
     self_device_managed: s.selfDeviceManaged !== false,
     refund_note: s.refundNote || null,
+    is_closed: s.isClosed === true,
+    closed_date: s.closedDate || null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -1119,6 +1131,7 @@ function getLineClass(line, frequency) {
 // 매일 라인은 항상 today, 부산/대구/대전은 월/목/토 체크
 // ============================================================
 function isVisitingToday(s) {
+  if (s.isClosed) return false;
   const today = new Date();
   today.setHours(0,0,0,0);
   const dateNum = today.getDate();
@@ -1211,9 +1224,11 @@ function renderList() {
   renderStats(filtered.map(x => x.s));
 
   document.getElementById('store-tbody').innerHTML = filtered.map(({ s, i }) => {
-    // 다음 방문 예정일 계산
+    // 다음 방문 예정일 계산 (폐점 매장은 계산하지 않음)
     let visitHtml = '<span style="font-size:12px;color:var(--text3)">—</span>';
-    if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
+    if (s.isClosed) {
+      visitHtml = '<span style="font-size:12px;color:var(--text3);font-weight:700;">폐점</span>';
+    } else if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
       const dates = getNextTwoDates(s.frequency, s.line);
       if (dates && dates.length >= 2) {
         visitHtml = `<div class="visit-dates">
@@ -1222,9 +1237,10 @@ function renderList() {
         </div>`;
       }
     }
-    return `<tr onclick="openModal(${i})" ${isVisitingToday(s) ? 'class="visit-today"' : ''}>
+    const rowCls = [isVisitingToday(s) ? 'visit-today' : '', s.isClosed ? 'store-closed' : ''].filter(Boolean).join(' ');
+    return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
       <td class="td-no">${s.no}</td>
-      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}</td>
+      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${s.isClosed ? '<span class="closed-stamp">매장 폐점</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
@@ -1260,6 +1276,7 @@ function openModal(i) {
     <span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne}</span>
     <span class="badge b-${s.storeType}">${s.storeType}</span>
     <span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span>
+    ${s.isClosed ? `<span class="closed-tag" style="font-size:11px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
   `;
 
   // 방문 예정일 계산
@@ -1362,11 +1379,12 @@ function renderAlist() {
     .filter(({ s }) => !q || s.name.toLowerCase().includes(q));
 
   document.getElementById('alist').innerHTML = items.map(({ s, i }) => `
-    <li onclick="selectStore(${i})" id="ali-${i}">
+    <li onclick="selectStore(${i})" id="ali-${i}" style="${s.isClosed ? 'opacity:.55' : ''}">
       <span class="ali-no">${s.no}</span>
-      <span style="flex:1;font-weight:500">${s.name}</span>
+      <span style="flex:1;font-weight:500">${s.name}${s.isClosed ? '<span class="closed-tag">폐점</span>' : ''}</span>
       <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:11px">${s.line || '—'}</span>
       <span style="font-size:11px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
+      <button class="ali-del" onclick="event.stopPropagation();askToggleClosed(${i})" title="${s.isClosed ? '폐점 해제' : '폐점 처리'}" style="margin-left:auto;${s.isClosed ? 'color:var(--accent2)' : ''}">${s.isClosed ? '↺' : '🔒'}</button>
       <button class="ali-del" onclick="event.stopPropagation();askDelete(${i})" title="삭제"></button>
     </li>
   `).join('') || '<li style="color:var(--text3);cursor:default;font-size:13px;font-weight:500">결과 없음</li>';
@@ -1396,7 +1414,7 @@ function openNewStoreForm() {
   document.getElementById('btn-form-save').textContent = '매장 추가';
   document.getElementById('edit-card').className = 'edit-card is-new';
   // 빈 폼
-  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'', cardCancelPossible:true, localCurrencyAvailable:true, selfDeviceManaged:true, refundNote:'' });
+  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'', cardCancelPossible:true, localCurrencyAvailable:true, selfDeviceManaged:true, refundNote:'', isClosed:false, closedDate:'' });
   switchEtab('store');
   showEditCard();
 }
@@ -1414,6 +1432,8 @@ function fillForm(s) {
   document.getElementById('f-as').value = s.selfAS || '';
   document.getElementById('f-dry').value = s.dryStation || '발생';
   document.getElementById('f-kiosk').value = s.kiosk || '';
+  document.getElementById('f-closed').value = s.isClosed ? 'true' : 'false';
+  document.getElementById('f-closed-date').value = s.closedDate || '';
   document.getElementById('f-parking').value = s.parking || '';
   document.getElementById('f-parking-url').value = s.parkingUrl || '';
   document.getElementById('f-cctv').value = s.cctv || '';
@@ -1425,6 +1445,23 @@ function fillForm(s) {
   document.getElementById('f-self-managed').value = s.selfDeviceManaged === false ? 'false' : 'true';
   document.getElementById('f-refund-note').value = s.refundNote || '';
   document.getElementById('save-msg').classList.remove('show');
+}
+
+// 폐점일을 입력하면 자동으로 "폐점"으로, 지우면 자동으로 "영업중"으로 동기화
+function onClosedDateInput() {
+  const val = document.getElementById('f-closed-date').value;
+  document.getElementById('f-closed').value = val ? 'true' : 'false';
+}
+
+// 영업 상태를 직접 바꾸면 폐점일도 그에 맞게 동기화
+function onClosedSelectChange() {
+  const closed = document.getElementById('f-closed').value === 'true';
+  const dateInput = document.getElementById('f-closed-date');
+  if (!closed) {
+    dateInput.value = '';
+  } else if (!dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
 }
 
 function showEditCard() {
@@ -1474,6 +1511,8 @@ async function saveStore() {
     localCurrencyAvailable: document.getElementById('f-local-currency').value !== 'false',
     selfDeviceManaged: document.getElementById('f-self-managed').value !== 'false',
     refundNote: document.getElementById('f-refund-note').value.trim(),
+    isClosed: document.getElementById('f-closed').value === 'true',
+    closedDate: document.getElementById('f-closed-date').value || null,
   };
 
   try {
@@ -1517,6 +1556,47 @@ function askDelete(i) {
   const s = STORES[i];
   document.getElementById('confirm-desc').textContent = `"${s.name}" 매장을 삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?`;
   document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function askToggleClosed(i) {
+  const s = STORES[i];
+  if (!s.isClosed) {
+    // 폐점 처리는 편집 폼의 "폐점일" 입력을 통해서만 이루어지도록 유도
+    selectStore(i);
+    switchEtab('store');
+    showToast('편집 폼에서 "폐점일"을 입력하면 자동으로 폐점 처리됩니다', 'warn', 3500);
+    setTimeout(() => {
+      const dateInput = document.getElementById('f-closed-date');
+      if (dateInput) {
+        dateInput.focus();
+        dateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  } else {
+    showConfirmModal(
+      '폐점 해제',
+      `"${s.name}" 매장의 폐점 상태를 해제할까요?\n다시 정상 매장으로 돌아가 방문 일정 계산에 포함됩니다.`,
+      () => setClosedStatus(i, false)
+    );
+  }
+}
+
+async function setClosedStatus(i, closed) {
+  const s = STORES[i];
+  const closedDate = closed ? new Date().toISOString().split('T')[0] : null;
+  try {
+    await sbFetch(`stores?id=eq.${s._id}`, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: JSON.stringify({ is_closed: closed, closed_date: closedDate, updated_at: new Date().toISOString() }),
+    });
+    s.isClosed = closed;
+    s.closedDate = closedDate || '';
+    renderList(); renderAlist();
+    if (editingIdx === i) fillForm(s);
+    showToast(closed ? '폐점 처리되었습니다' : '폐점이 해제되었습니다', 'success');
+  } catch(e) {
+    showToast('처리 실패: ' + e.message, 'error', 4000);
+  }
 }
 
 async function confirmDelete() {
