@@ -2000,6 +2000,54 @@ async function savePaymentDates(dates) {
   } catch(e) { showToast('저장 실패: ' + e.message); }
 }
 
+// ============================================================
+// 상신 내용 생성 "학습" — 관리자가 직접 다듬은 결과물을 예시로 저장해두고
+// 다음 생성 시 few-shot 예시로 함께 넘겨서 AI가 스타일을 참고하게 함
+// ============================================================
+async function getShinsinExamples() {
+  try {
+    const result = await sbFetch('settings?key=eq.shinsinExamples&select=value');
+    const val = result?.[0]?.value;
+    if (!val) return [];
+    const arr = JSON.parse(val);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+
+async function saveShinsinExamplesList(examples) {
+  const value = JSON.stringify(examples);
+  try {
+    await sbFetch('settings?key=eq.shinsinExamples', { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch('settings', {
+      method: 'POST', prefer: 'return=minimal',
+      body: JSON.stringify({ key: 'shinsinExamples', value, updated_at: new Date().toISOString() }),
+    });
+  } catch(e) { showToast('학습 예시 저장 실패: ' + e.message); throw e; }
+}
+
+let _lastShinsinCasesText = '';
+
+async function saveShinsinExampleFromCurrent() {
+  const finalText = document.getElementById('shinsin-content-text').value.trim();
+  if (!finalText) { showToast('저장할 내용이 없습니다', 'warn'); return; }
+  if (!_lastShinsinCasesText) { showToast('참고할 원본 접수 목록 정보가 없습니다. 다시 생성해주세요', 'warn'); return; }
+  const btn = document.getElementById('shinsin-learn-btn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    const examples = await getShinsinExamples();
+    examples.push({ cases: _lastShinsinCasesText, output: finalText, savedAt: new Date().toISOString() });
+    // 최근 5개까지만 유지 (오래된 예시는 자동 정리)
+    const trimmed = examples.slice(-5);
+    await saveShinsinExamplesList(trimmed);
+    showToast('학습 예시로 저장했습니다. 다음 생성 시 이 스타일을 참고합니다', 'success', 3500);
+    btn.textContent = '✓ 이 내용으로 학습 저장';
+  } catch(e) {
+    btn.textContent = '✓ 이 내용으로 학습 저장';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function addPaymentDate() {
   const val = document.getElementById('admin-payment-date').value;
   if (!val) return;
@@ -2153,7 +2201,8 @@ async function openPartialCancelForm() {
   document.getElementById('refund-form-overlay').style.alignItems = 'flex-start';
 }
 
-async function _openRefundFormCore() {
+async function _openRefundFormCore(opts = {}) {
+  const forceOwnerCash = !!opts.forceOwnerCash;
   isPartialCancel = false;
   document.getElementById('rform-title').textContent = '환불 접수';
 
@@ -2166,8 +2215,9 @@ async function _openRefundFormCore() {
   const devLabel = rfDevice === '잔여론디페이' ? '잔여 론디페이' : rfDevice;
   document.getElementById('rform-device').value = devLabel;
   document.getElementById('rform-payment').value = rfDevice === '잔여론디페이' ? '카드' : (rfPayment || '-');
-  document.getElementById('rform-subtitle').textContent =
-    `현재 입력된 매장(${rfSelected?.name}) 및 선택된 내용(${devLabel}${rfPayment ? ' · ' + rfPayment : ''})을 기준으로 환불됩니다.`;
+  document.getElementById('rform-subtitle').textContent = forceOwnerCash
+    ? `론디페이 지급 거부로 인한 예외 처리입니다. 매장(${rfSelected?.name})의 점주 부담 현금 환불로 접수됩니다.`
+    : `현재 입력된 매장(${rfSelected?.name}) 및 선택된 내용(${devLabel}${rfPayment ? ' · ' + rfPayment : ''})을 기준으로 환불됩니다.`;
 
   // 기기번호 필드
   const needDevNum = rfDevice === '세탁기' || rfDevice === '건조기';
@@ -2176,12 +2226,14 @@ async function _openRefundFormCore() {
 
   // 본사/점주 판단
   const rondi = rfIsRondi(rfSelected);
-  const isBonsa = rfDevice === '잔여론디페이'
-    ? (rfIsDirect(rfSelected) || rondi)
-    : rfIsDirect(rfSelected) ? true
-    : rondi
-      ? !(rfPayment === '현금' || rfPayment === '지역화폐')
-      : rfDevice === '드라이스테이션';
+  const isBonsa = forceOwnerCash ? false : (
+    rfDevice === '잔여론디페이'
+      ? (rfIsDirect(rfSelected) || rondi)
+      : rfIsDirect(rfSelected) ? true
+      : rondi
+        ? !(rfPayment === '현금' || rfPayment === '지역화폐')
+        : rfDevice === '드라이스테이션'
+  );
 
   const methodReadonly = document.getElementById('rform-method-readonly');
   const methodSelect = document.getElementById('rform-method-select');
@@ -2201,14 +2253,16 @@ async function _openRefundFormCore() {
     // 점주: 카드 취소 / 현금 입금 선택
     methodReadonly.style.display = 'none';
     methodSelect.style.display = '';
-    // 지역화폐면 카드 취소 기본
-    if (rfPayment === '지역화폐') {
-      methodSelect.value = '카드취소';
+    if (forceOwnerCash) {
+      // 론디페이 거부로 인한 예외: 점주가 현금(계좌입금)으로 지급
+      methodSelect.value = '현금입금';
+      document.getElementById('rform-card-section').style.display = 'none';
+      document.getElementById('rform-account-section').style.display = '';
     } else {
       methodSelect.value = '카드취소';
+      document.getElementById('rform-card-section').style.display = '';
+      document.getElementById('rform-account-section').style.display = 'none';
     }
-    document.getElementById('rform-card-section').style.display = '';
-    document.getElementById('rform-account-section').style.display = 'none';
     document.getElementById('rform-shinsin-wrap').style.display = 'none';
   }
 
@@ -2273,7 +2327,7 @@ async function submitRefundForm() {
     계좌번호: isAccount ? document.getElementById('rform-accno').value.trim() : null,
     예금주: isAccount ? document.getElementById('rform-holder').value.trim() : null,
     최종환불금액: isAccount ? document.getElementById('rform-accamt').value.trim() : null,
-    상신예정일: (method === '계좌입금' || method === '계좌 입금' || method === '현금입금') && (rfIsRondi(rfSelected) || rfDevice === '드라이스테이션' || rfIsDirect(rfSelected)) ? (document.getElementById('rform-shinsin').value || null) : null,
+    상신예정일: (method === '계좌입금' || method === '계좌 입금') && (rfIsRondi(rfSelected) || rfDevice === '드라이스테이션' || rfIsDirect(rfSelected)) ? (document.getElementById('rform-shinsin').value || null) : null,
     처리완료: false,
   };
 
@@ -2760,8 +2814,8 @@ function onRondiCardExceptionChange() {
 
 async function proceedRondiCardException() {
   closeRondiCardAlert();
-  // 론디페이 거부 현금지급 예외로 openRefundForm 직접 실행 (카드 체크 우회)
-  await _openRefundFormCore();
+  // 론디페이 거부로 인한 현금지급 예외: 점주 부담으로 강제 분류 (본사 상신 대상에서 제외됨)
+  await _openRefundFormCore({ forceOwnerCash: true });
 }
 
 function showConfirmModal(title, desc, onConfirm) {
@@ -2875,7 +2929,7 @@ async function generateShinsinContent() {
 
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금') && r.상신예정일
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일
   );
 
   if (!target.length) {
@@ -2904,8 +2958,18 @@ async function generateShinsinContent() {
     const isDirect = store?.type === '직영' || store?.type === '일반/직영';
     return (i+1) + '. 매장: ' + r.매장명 + '(' + (isRondi ? '론디원' : '비론디원') + (isDirect ? '/직영' : '') + '), 기기: ' + r.사용기기 + (r.기기번호 ? ' ' + r.기기번호 : '') + ', 결제수단: ' + r.결제수단 + ', 상세원인: ' + r.상세원인 + ', 취소사유: ' + r.취소사유 + ', 금액: ' + r.최종환불금액 + '원';
   }).join('\n');
+  _lastShinsinCasesText = cases;
 
-  const promptText = '아래는 런드리24 고객 환불 접수 목록입니다. 각 건을 적절한 크기로 묶어주세요.\n\n환불 접수 목록:\n' + cases + '\n\n응답 형식 (JSON만, 다른 설명 없이):\n{"groups": [{"label": "사유 설명", "indices": [1, 2]}, {"label": "사유 설명", "indices": [3]}]}\n\n그룹핑 규칙 (반드시 지켜주세요):\n1) 오결제, 이중결제는 반드시 하나로 합쳐서 label: "오결제로 인한 환불"\n2) 세탁물 손상/보상은 label: "세탁물 손상으로 인한 보상 처리 세탁비 환불"\n3) 세탁 불만족은 label: "세탁 불만족으로 인한 환불"\n4) 재케어 오과금은 label: "재케어 오과금으로 인한 환불"\n5) 잔여 론디페이 환불은 사유 무관하게 전부 label: "이사로 인한 론디페이 환불 요청" (반드시 이 label 사용)\n6) 기기 장비 오류(론디페이 아닌 경우)는 label: "장비 오류로 인한 환불"\n7) 품목 오등록은 label: "품목 오등록으로 인한 차액 환불"\n- 직영 매장 건은 label 앞에 "직영매장 " 추가\n- 매장명은 label에 절대 포함하지 말 것\n- 그룹 수는 4~8개\n- 모든 건이 반드시 하나의 그룹에 포함\n- JSON 외 다른 텍스트 절대 금지';
+  // 관리자가 과거에 직접 다듬어 저장한 예시 (few-shot) 불러오기
+  const learnedExamples = await getShinsinExamples();
+  let exampleBlock = '';
+  if (learnedExamples.length) {
+    exampleBlock = '\n\n다음은 과거에 관리자가 직접 다듬어 최종 확정한 예시입니다. 그룹을 나누는 기준과 label 문구 스타일을 최대한 이 예시들에 맞춰주세요.\n\n' +
+      learnedExamples.map((ex, idx) => `[예시 ${idx + 1} - 접수 목록]\n${ex.cases}\n[예시 ${idx + 1} - 관리자가 확정한 결과]\n${ex.output}`).join('\n\n') +
+      '\n\n이제 아래의 실제 접수 목록에 대해 위 예시들의 스타일을 참고하여 답변하세요.\n';
+  }
+
+  const promptText = '아래는 런드리24 고객 환불 접수 목록입니다. 각 건을 적절한 크기로 묶어주세요.' + exampleBlock + '\n\n환불 접수 목록:\n' + cases + '\n\n응답 형식 (JSON만, 다른 설명 없이):\n{"groups": [{"label": "사유 설명", "indices": [1, 2]}, {"label": "사유 설명", "indices": [3]}]}\n\n그룹핑 규칙 (반드시 지켜주세요):\n1) 오결제, 이중결제는 반드시 하나로 합쳐서 label: "오결제로 인한 환불"\n2) 세탁물 손상/보상은 label: "세탁물 손상으로 인한 보상 처리 세탁비 환불"\n3) 세탁 불만족은 label: "세탁 불만족으로 인한 환불"\n4) 재케어 오과금은 label: "재케어 오과금으로 인한 환불"\n5) 잔여 론디페이 환불은 사유 무관하게 전부 label: "이사로 인한 론디페이 환불 요청" (반드시 이 label 사용)\n6) 기기 장비 오류(론디페이 아닌 경우)는 label: "장비 오류로 인한 환불"\n7) 품목 오등록은 label: "품목 오등록으로 인한 차액 환불"\n- 직영 매장 건은 label 앞에 "직영매장 " 추가\n- 매장명은 label에 절대 포함하지 말 것\n- 그룹 수는 4~8개\n- 모든 건이 반드시 하나의 그룹에 포함\n- JSON 외 다른 텍스트 절대 금지';
 
   try {
     const res = await fetch(
@@ -2934,7 +2998,7 @@ async function generateShinsinContent() {
     });
     const result = '1. 목적: 런드리24 고객환불금 지급\n2. 금액: ' + totalAmt.toLocaleString() + '원\n3. 환불 상세사유 (총 ' + target.length + '건)\n' + lineArr.join('\n');
 
-    document.getElementById('shinsin-content-text').textContent = result;
+    document.getElementById('shinsin-content-text').value = result;
     document.getElementById('shinsin-content-loading').style.display = 'none';
     document.getElementById('shinsin-content-result').style.display = 'block';
     document.getElementById('shinsin-copy-btn').textContent = '복사하기';
@@ -2947,7 +3011,7 @@ async function generateShinsinContent() {
 }
 
 function copyShinsinContent() {
-  const text = document.getElementById('shinsin-content-text').textContent;
+  const text = document.getElementById('shinsin-content-text').value;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('shinsin-copy-btn');
     btn.textContent = '복사됨!';
@@ -2963,7 +3027,7 @@ async function exportRefundExcel() {
   }
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금' || r.환불방법 === '본사계좌입금또는카드취소' || r.환불방법 === '현금입금') && r.상신예정일
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일
   );
   if (!target.length) {
     showToast('상신 대상 접수건이 없습니다');
@@ -3174,8 +3238,12 @@ setupRealtime();
         <div>취소사유를 분석하고 상신 내용을 작성하고 있어요</div>
       </div>
       <div id="shinsin-content-result" style="display:none;">
-        <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:inherit;max-height:400px;overflow-y:auto;" id="shinsin-content-text"></div>
-        <button onclick="copyShinsinContent()" id="shinsin-copy-btn" style="margin-top:12px;width:100%;padding:12px;background:#3b5bdb;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">복사하기</button>
+        <textarea id="shinsin-content-text" style="width:100%;min-height:280px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;line-height:1.6;">✏️ 내용을 직접 수정할 수 있습니다. 수정한 내용을 "학습 저장"하면 다음 생성 시 AI가 참고합니다.</div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button onclick="copyShinsinContent()" id="shinsin-copy-btn" style="flex:1;padding:12px;background:#3b5bdb;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">복사하기</button>
+          <button onclick="saveShinsinExampleFromCurrent()" id="shinsin-learn-btn" style="flex:1;padding:12px;background:var(--white);color:#3b5bdb;border:1.5px solid #3b5bdb;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ 이 내용으로 학습 저장</button>
+        </div>
       </div>
       <div id="shinsin-content-error" style="display:none;color:#e24b4a;font-size:13px;text-align:center;padding:20px;"></div>
     </div>
