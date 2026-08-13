@@ -73,7 +73,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); posit
 
 /* TABLE */
 .table-outer { max-width: 1280px; margin: 0 auto; padding: 0 24px 48px; }
-.table-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.table-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); position: relative; }
 .table-toolbar { padding: 14px 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border); }
 .result-count { font-size: 13px; color: var(--text2); }
 .result-count strong { color: var(--text); font-weight: 700; }
@@ -117,8 +117,10 @@ tbody tr.visit-today:hover { background: #dbeafe; }
 tbody tr.visit-today .td-name { color: #1d4ed8; }
 .today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
-.closed-stamp-cell {
-  display: inline-block;
+.row-closed-stamp {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-3deg);
   background: #fff5f5;
   color: #dc2626;
   border: 2px solid #dc2626;
@@ -128,8 +130,9 @@ tbody tr.visit-today .td-name { color: #1d4ed8; }
   padding: 3px 14px;
   border-radius: 6px;
   box-shadow: 0 1px 5px rgba(220,38,38,.25);
-  transform: rotate(-3deg);
   white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
 }
 tbody tr.store-closed { opacity: .55; position: relative; }
 tbody tr.store-closed:hover { opacity: .8; }
@@ -1248,7 +1251,7 @@ function renderList() {
     // 다음 방문 예정일 계산 (폐점 매장은 계산하지 않음)
     let visitHtml = '<span style="font-size:12px;color:var(--text3)">—</span>';
     if (s.isClosed) {
-      visitHtml = '<span class="closed-stamp-cell">매장 폐점</span>';
+      visitHtml = '<span style="font-size:12px;color:var(--text3);font-weight:700;">폐점</span>';
     } else if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
       const dates = getNextTwoDates(s.frequency, s.line);
       if (dates && dates.length >= 2) {
@@ -1273,7 +1276,34 @@ function renderList() {
       <td>${s.storeNote ? `<span class="note-preview"> ${s.storeNote.split('\n')[0]}</span>` : ''}</td>
     </tr>`;
   }).join('');
+  positionClosedStamps();
 }
+
+// ============================================================
+// 폐점 도장 오버레이 위치 계산
+// 각 셀 내용과 무관하게, 테이블 카드 전체의 가로 중앙에 고정하고
+// 세로 위치만 각 폐점 행의 실제 위치에 맞춰 배치한다.
+// ============================================================
+function positionClosedStamps() {
+  const card = document.querySelector('#page-list .table-card');
+  if (!card) return;
+  card.querySelectorAll('.row-closed-stamp').forEach(el => el.remove());
+  const cardRect = card.getBoundingClientRect();
+  card.querySelectorAll('tbody tr.store-closed').forEach(tr => {
+    const r = tr.getBoundingClientRect();
+    const stamp = document.createElement('div');
+    stamp.className = 'row-closed-stamp';
+    stamp.textContent = '매장 폐점';
+    stamp.style.top = (r.top - cardRect.top + r.height / 2) + 'px';
+    card.appendChild(stamp);
+  });
+}
+
+let _stampResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_stampResizeTimer);
+  _stampResizeTimer = setTimeout(positionClosedStamps, 150);
+});
 
 function toggleFilter(val, btn) {
   activeFilters.has(val) ? (activeFilters.delete(val), btn.classList.remove('on')) : (activeFilters.add(val), btn.classList.add('on'));
