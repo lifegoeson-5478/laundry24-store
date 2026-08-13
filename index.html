@@ -115,13 +115,38 @@ tbody td { padding: 12px 14px; vertical-align: middle; }
 tbody tr.visit-today { background: #eff6ff; }
 tbody tr.visit-today:hover { background: #dbeafe; }
 tbody tr.visit-today .td-name { color: #1d4ed8; }
-.today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; text-decoration: none; }
-.closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; text-decoration: none; }
-.closed-stamp { display: inline-block; background: #fff5f5; color: #dc2626; border: 2px solid #dc2626; font-weight: 800; font-size: 11px; letter-spacing: .5px; padding: 2px 10px; border-radius: 6px; margin-left: 8px; transform: rotate(-3deg); vertical-align: middle; white-space: nowrap; box-shadow: 0 1px 4px rgba(220,38,38,.2); text-decoration: none; }
-tbody tr.store-closed { opacity: .55; }
+.today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
+.closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
+tbody tr.store-closed { opacity: .55; position: relative; }
 tbody tr.store-closed:hover { opacity: .8; }
 tbody tr.store-closed .td-name { color: var(--text2); }
-tbody tr.store-closed td { text-decoration: line-through; text-decoration-color: #ef4444; text-decoration-thickness: 2px; }
+tbody tr.store-closed::before {
+  content: '매장 폐점';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) rotate(-3deg);
+  background: #fff5f5;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 3px 14px;
+  border-radius: 6px;
+  box-shadow: 0 1px 5px rgba(220,38,38,.25);
+  z-index: 2;
+  pointer-events: none;
+  white-space: nowrap;
+}
+tbody tr.store-closed::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 2px;
+  background: #ef4444;
+  z-index: 1;
+  pointer-events: none;
+}
 /* 키오스크 버전 배지 */
 .kiosk-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 800; border: 1.5px solid; }
 .kiosk-v1 { background: #fef9c3; color: #a16207; border-color: #fde047; }
@@ -1240,7 +1265,7 @@ function renderList() {
     const rowCls = [isVisitingToday(s) ? 'visit-today' : '', s.isClosed ? 'store-closed' : ''].filter(Boolean).join(' ');
     return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
       <td class="td-no">${s.no}</td>
-      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${s.isClosed ? '<span class="closed-stamp">매장 폐점</span>' : ''}</td>
+      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${s.isClosed ? '<span class="closed-tag">폐점</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
