@@ -286,7 +286,6 @@ async function saveSched() {
   }
 }
 
-const SCHED_PASSWORD = '15444335';
 let schedUnlocked = false;
 
 function openPwModal() {
@@ -302,9 +301,22 @@ function togglePwVisible() {
   const input = document.getElementById('pw-input');
   input.type = input.type === 'password' ? 'text' : 'password';
 }
-function checkPassword() {
+async function checkPassword() {
   const val = document.getElementById('pw-input').value;
-  if (val === SCHED_PASSWORD) {
+  const btn = document.querySelector('.btn-pw-confirm');
+  btn.disabled = true;
+  let ok = false;
+  try {
+    ok = await sbFetch('rpc/verify_sched_password', {
+      method: 'POST',
+      body: JSON.stringify({ pwd: val }),
+    });
+  } catch (e) {
+    ok = false;
+  }
+  btn.disabled = false;
+
+  if (ok === true) {
     schedUnlocked = true;
     closePwModal();
     // 실제 탭 전환
