@@ -15,6 +15,9 @@ function showToast(msg, type = 'success', duration = 3000) {
   }, duration);
 }
 
+// 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
+const APP_VERSION = '1.4.1';
+
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
 const SUPABASE_URL  = 'https://ebiepxqkqeyyxewnddov.supabase.co';   // 예: https://xxxx.supabase.co
@@ -411,6 +414,7 @@ function switchPage(p) {
 // ============================================================
 // INIT (global listeners)
 // ============================================================
+document.getElementById('app-version').textContent = 'v' + APP_VERSION;
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('overlay').classList.remove('open');
