@@ -421,3 +421,22 @@ document.addEventListener('keydown', e => {
 window.addEventListener('scroll', () => {
   document.getElementById('top-btn').classList.toggle('visible', window.scrollY > 300);
 });
+
+// ============================================================
+// 새 버전 배포 감지 → 자동 새로고침
+// 서버가 보내는 ETag/Last-Modified가 처음 로드했을 때와 달라지면 새 배포로 간주
+// ============================================================
+let _versionTag = null;
+async function checkForNewVersion() {
+  try {
+    const res = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' });
+    const tag = res.headers.get('etag') || res.headers.get('last-modified');
+    if (!tag) return;
+    if (_versionTag === null) { _versionTag = tag; return; }
+    if (tag !== _versionTag) {
+      showToast('새 버전이 배포되어 새로고침합니다', 'success', 1500);
+      setTimeout(() => location.reload(), 1200);
+    }
+  } catch (e) { /* 오프라인 등 - 다음 주기에 재시도 */ }
+}
+setInterval(checkForNewVersion, 60000);
