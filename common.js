@@ -103,6 +103,10 @@ function rowToStore(r) {
     isClosed: r.is_closed === true,
     closedDate: r.closed_date || '',
     rondiTopupBlocked: r.rondi_topup_blocked === true,
+    closedNoticeReceiptDate: r.closed_notice_receipt_date || '',
+    closedNoticeLastDeliveryDate: r.closed_notice_last_delivery_date || '',
+    closedNoticePickupDate: r.closed_notice_pickup_date || '',
+    closedNoticeNote: r.closed_notice_note || '',
   };
 }
 
@@ -125,6 +129,10 @@ function storeToRow(s) {
     is_closed: s.isClosed === true,
     closed_date: s.closedDate || null,
     rondi_topup_blocked: s.rondiTopupBlocked === true,
+    closed_notice_receipt_date: s.closedNoticeReceiptDate || null,
+    closed_notice_last_delivery_date: s.closedNoticeLastDeliveryDate || null,
+    closed_notice_pickup_date: s.closedNoticePickupDate || null,
+    closed_notice_note: s.closedNoticeNote || null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -313,13 +321,35 @@ function getLineClass(line, frequency) {
   return 'line-etc';
 }
 
+// 폐점일을 미리 등록해두는 경우가 있어, 폐점 처리는 등록된 폐점일이 되어야 실제로 반영된다
+function isEffectivelyClosed(s) {
+  if (!s.isClosed) return false;
+  if (!s.closedDate) return true;
+  const todayStr = new Date().toISOString().split('T')[0];
+  return s.closedDate <= todayStr;
+}
+
+// 폐점 예정 매장의 진행 단계 (세탁접수마감 → 배송완료 → 찾기마감) — 폐점일 도래 후에는 기존 폐점 도장이 대신 표시된다
+function closureStageTag(s) {
+  if (!s.isClosed || isEffectivelyClosed(s)) return null;
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (s.closedNoticePickupDate && todayStr >= s.closedNoticePickupDate) return { cls: 'done', text: '찾기 마감' };
+  if (s.closedNoticeLastDeliveryDate && todayStr >= s.closedNoticeLastDeliveryDate) return { cls: 'warn2', text: '배송 완료' };
+  if (s.closedNoticeReceiptDate && todayStr >= s.closedNoticeReceiptDate) return { cls: 'warn1', text: '세탁접수 마감' };
+  return { cls: 'warn1', text: '폐점예정 · ' + s.closedDate };
+}
+function closureStageTagHtml(s) {
+  const t = closureStageTag(s);
+  return t ? `<span class="stage-tag ${t.cls}">${t.text}</span>` : '';
+}
+
 // ============================================================
 // TODAY VISIT CHECKER
 // B·D·F·H 라인(홀수일) 또는 A·C·E·G(짝수일) 기준으로 오늘 방문인지 판단
 // 매일 라인은 항상 today, 부산/대구/대전은 월/목/토 체크
 // ============================================================
 function isVisitingToday(s) {
-  if (s.isClosed) return false;
+  if (isEffectivelyClosed(s)) return false;
   const today = new Date();
   today.setHours(0,0,0,0);
   const dateNum = today.getDate();

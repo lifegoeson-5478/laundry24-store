@@ -7,16 +7,20 @@ function renderAlist() {
     .map((s, i) => ({ s, i }))
     .filter(({ s }) => !q || s.name.toLowerCase().includes(q));
 
-  document.getElementById('alist').innerHTML = items.map(({ s, i }) => `
-    <li onclick="selectStore(${i})" id="ali-${i}" style="${s.isClosed ? 'opacity:.55' : ''}">
+  document.getElementById('alist').innerHTML = items.map(({ s, i }) => {
+    const closedNow = isEffectivelyClosed(s);
+    const statusTag = closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s);
+    return `
+    <li onclick="selectStore(${i})" id="ali-${i}" style="${closedNow ? 'opacity:.55' : ''}">
       <span class="ali-no">${s.no}</span>
-      <span style="flex:1;font-weight:500">${s.name}${s.isClosed ? '<span class="closed-tag">폐점</span>' : ''}</span>
+      <span style="flex:1;font-weight:500">${s.name}${statusTag}</span>
       <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:11px">${s.line || '—'}</span>
       <span style="font-size:11px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
       <button class="ali-del" onclick="event.stopPropagation();askToggleClosed(${i})" title="${s.isClosed ? '폐점 해제' : '폐점 처리'}" style="margin-left:auto;${s.isClosed ? 'color:var(--accent2)' : ''}">${s.isClosed ? '↺' : '🔒'}</button>
       <button class="ali-del" onclick="event.stopPropagation();askDelete(${i})" title="삭제"></button>
     </li>
-  `).join('') || '<li style="color:var(--text3);cursor:default;font-size:13px;font-weight:500">결과 없음</li>';
+  `;
+  }).join('') || '<li style="color:var(--text3);cursor:default;font-size:13px;font-weight:500">결과 없음</li>';
 }
 
 // ============================================================
@@ -43,7 +47,7 @@ function openNewStoreForm() {
   document.getElementById('btn-form-save').textContent = '매장 추가';
   document.getElementById('edit-card').className = 'edit-card is-new';
   // 빈 폼
-  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'', cardCancelPossible:true, localCurrencyAvailable:true, selfDeviceManaged:true, rondiTopupBlocked:false, refundNote:'', isClosed:false, closedDate:'' });
+  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'', cardCancelPossible:true, localCurrencyAvailable:true, selfDeviceManaged:true, rondiTopupBlocked:false, refundNote:'', isClosed:false, closedDate:'', closedNoticeReceiptDate:'', closedNoticeLastDeliveryDate:'', closedNoticePickupDate:'', closedNoticeNote:'' });
   switchEtab('store');
   showEditCard();
 }
@@ -63,6 +67,10 @@ function fillForm(s) {
   document.getElementById('f-kiosk').value = s.kiosk || '';
   document.getElementById('f-closed').value = s.isClosed ? 'true' : 'false';
   document.getElementById('f-closed-date').value = s.closedDate || '';
+  document.getElementById('f-closed-receipt').value = s.closedNoticeReceiptDate || '';
+  document.getElementById('f-closed-lastdelivery').value = s.closedNoticeLastDeliveryDate || '';
+  document.getElementById('f-closed-pickup').value = s.closedNoticePickupDate || '';
+  document.getElementById('f-closed-note').value = s.closedNoticeNote || '';
   document.getElementById('f-parking').value = s.parking || '';
   document.getElementById('f-parking-url').value = s.parkingUrl || '';
   document.getElementById('f-cctv').value = s.cctv || '';
@@ -144,6 +152,10 @@ async function saveStore() {
     refundNote: document.getElementById('f-refund-note').value.trim(),
     isClosed: document.getElementById('f-closed').value === 'true',
     closedDate: document.getElementById('f-closed-date').value || null,
+    closedNoticeReceiptDate: document.getElementById('f-closed-receipt').value || null,
+    closedNoticeLastDeliveryDate: document.getElementById('f-closed-lastdelivery').value || null,
+    closedNoticePickupDate: document.getElementById('f-closed-pickup').value || null,
+    closedNoticeNote: document.getElementById('f-closed-note').value.trim(),
   };
 
   try {
@@ -337,14 +349,12 @@ async function checkPassword() {
 }
 
 function switchEtab(t) {
-  document.getElementById('epanel-store').style.display = t === 'store' ? 'block' : 'none';
-  document.getElementById('epanel-refund').style.display = t === 'refund' ? 'block' : 'none';
-  const storeTab = document.getElementById('etab-store');
-  const refundTab = document.getElementById('etab-refund');
-  storeTab.style.borderBottomColor = t === 'store' ? 'var(--accent)' : 'transparent';
-  storeTab.style.color = t === 'store' ? 'var(--accent)' : 'var(--text3)';
-  refundTab.style.borderBottomColor = t === 'refund' ? 'var(--accent)' : 'transparent';
-  refundTab.style.color = t === 'refund' ? 'var(--accent)' : 'var(--text3)';
+  ['store', 'refund', 'closed'].forEach(name => {
+    document.getElementById('epanel-' + name).style.display = name === t ? 'block' : 'none';
+    const tab = document.getElementById('etab-' + name);
+    tab.style.borderBottomColor = name === t ? 'var(--accent)' : 'transparent';
+    tab.style.color = name === t ? 'var(--accent)' : 'var(--text3)';
+  });
 }
 
 function switchAtab(t) {

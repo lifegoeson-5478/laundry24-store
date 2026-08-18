@@ -290,6 +290,7 @@
         <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;gap:0;">
           <div id="etab-store" onclick="switchEtab('store')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid var(--accent);margin-bottom:-2px;color:var(--accent);">매장 정보 수정</div>
           <div id="etab-refund" onclick="switchEtab('refund')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text3);">↩ 환불 설정</div>
+          <div id="etab-closed" onclick="switchEtab('closed')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text3);">폐점 정보</div>
         </div>
 
         <!-- 매장 정보 패널 -->
@@ -307,8 +308,6 @@
             <div class="fg"><label>셀프장비 A/S</label><input type="text" id="f-as" placeholder="예: 유니룩스"></div>
             <div class="fg"><label>드라이스테이션 출장비</label><select id="f-dry"><option>발생</option><option>미발생</option></select></div>
             <div class="fg"><label>키오스크 버전</label><select id="f-kiosk"><option value="">없음</option><option value="V1">V1</option><option value="V2">V2</option></select></div>
-            <div class="fg"><label>영업 상태</label><select id="f-closed" onchange="onClosedSelectChange()"><option value="false">영업중</option><option value="true">폐점</option></select></div>
-            <div class="fg"><label>폐점일 <span style="font-weight:500;color:var(--text3);">(입력하면 자동으로 폐점 처리됩니다)</span></label><input type="date" id="f-closed-date" oninput="onClosedDateInput()"></div>
             <div class="fg full"><label>🅿 주차 정보</label><textarea id="f-parking" rows="3" placeholder="예: 지하 1층 무료 2시간&#10;아이디: laundry / 비밀번호: 1234&#10;엔터로 줄바꿈 가능"></textarea></div>
             <div class="fg full"><label>🅿 주차 등록 링크 (있는 경우만)</label><input type="url" id="f-parking-url" placeholder="https://..."></div>
             <div class="fg full"><label>CCTV 정보</label><textarea id="f-cctv" rows="2" placeholder="예: 4채널 / 업체명&#10;엔터로 줄바꿈 가능"></textarea></div>
@@ -326,6 +325,18 @@
             <div class="fg"><label>셀프장비 고객센터 안내 여부</label><select id="f-self-managed"><option value="true">안내 중</option><option value="false">미안내</option></select></div>
             <div class="fg"><label>론디페이 고객센터 지급</label><select id="f-rondi-topup"><option value="false">가능</option><option value="true">불가 (기존 잔액만 사용 가능)</option></select></div>
             <div class="fg full"><label>환불 특이사항 <span style="font-weight:500;color:var(--text3);">(결과 화면에 표시)</span></label><textarea id="f-refund-note" rows="3" placeholder="예: 카드 결제건은 본사입금 1차 처리 후 고객 거절 시 카드취소&#10;예: 이지페이에서 취소 필요"></textarea></div>
+          </div>
+        </div>
+
+        <!-- 폐점 정보 패널 -->
+        <div id="epanel-closed" style="display:none;">
+          <div class="fgrid">
+            <div class="fg"><label>영업 상태</label><select id="f-closed" onchange="onClosedSelectChange()"><option value="false">영업중</option><option value="true">폐점</option></select></div>
+            <div class="fg"><label>폐점일 <span style="font-weight:500;color:var(--text3);">(입력한 일자에 자동으로 폐점 처리됩니다)</span></label><input type="date" id="f-closed-date" oninput="onClosedDateInput()"></div>
+            <div class="fg"><label>세탁접수 마감일</label><input type="date" id="f-closed-receipt"></div>
+            <div class="fg"><label>마지막 세탁물 배송예정일</label><input type="date" id="f-closed-lastdelivery"></div>
+            <div class="fg"><label>세탁물 찾기 마감일</label><input type="date" id="f-closed-pickup"></div>
+            <div class="fg full"><label>비고</label><textarea id="f-closed-note" rows="2" placeholder="참고할 내용을 작성해주세요."></textarea></div>
           </div>
         </div>
 

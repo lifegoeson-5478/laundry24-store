@@ -49,7 +49,8 @@ function renderList() {
   document.getElementById('store-tbody').innerHTML = filtered.map(({ s, i }) => {
     // 다음 방문 예정일 계산 (폐점 매장은 계산하지 않음)
     let visitHtml = '<span style="font-size:12px;color:var(--text3)">—</span>';
-    if (s.isClosed) {
+    const closedNow = isEffectivelyClosed(s);
+    if (closedNow) {
       visitHtml = '<span style="font-size:12px;color:var(--text3);font-weight:700;">폐점</span>';
     } else if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
       const dates = getNextTwoDates(s.frequency, s.line);
@@ -60,10 +61,10 @@ function renderList() {
         </div>`;
       }
     }
-    const rowCls = [isVisitingToday(s) ? 'visit-today' : '', s.isClosed ? 'store-closed' : ''].filter(Boolean).join(' ');
+    const rowCls = [isVisitingToday(s) ? 'visit-today' : '', closedNow ? 'store-closed' : ''].filter(Boolean).join(' ');
     return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
       <td class="td-no">${s.no}</td>
-      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${s.isClosed ? '<span class="closed-tag">폐점</span>' : ''}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
+      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s)}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
@@ -126,9 +127,29 @@ function openModal(i) {
     <span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne}</span>
     <span class="badge b-${s.storeType}">${s.storeType}</span>
     <span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span>
-    ${s.isClosed ? `<span class="closed-tag" style="font-size:11px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
+    ${isEffectivelyClosed(s) ? `<span class="closed-tag" style="font-size:11px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
     ${s.rondiTopupBlocked ? `<span class="rondi-topup-tag" style="font-size:11px;padding:3px 10px;">론디페이 고객센터 지급불가</span>` : ''}
   `;
+
+  // 폐업 공지 (폐점일이 예정되어 있거나 이미 지난 경우)
+  let noticeHtml = '';
+  if (s.isClosed) {
+    const parseDateStr = ds => { if (!ds) return null; const [y, m, d] = ds.split('-').map(Number); return new Date(y, m - 1, d); };
+    const noticeRows = [
+      ['세탁접수 마감', s.closedNoticeReceiptDate],
+      ['마지막 세탁물 배송 예정', s.closedNoticeLastDeliveryDate],
+      ['세탁물 찾기 마감', s.closedNoticePickupDate],
+      ['폐점일', s.closedDate],
+    ].filter(([, ds]) => ds).map(([label, ds]) => `<div class="visit-item"><label>${label}</label><span>${formatDate(parseDateStr(ds))}</span></div>`).join('');
+    if (noticeRows) {
+      noticeHtml = `
+        <div class="sec-lbl" style="color:#b91c1c">폐업 공지</div>
+        <div class="note-card warn">"${s.name}"의 폐업이 확정되어 공유드립니다.</div>
+        <div class="visit-card" style="margin-top:8px">${noticeRows}</div>
+        ${s.closedNoticeNote ? `<div class="note-card" style="margin-top:10px;white-space:pre-line">${s.closedNoticeNote}</div>` : ''}
+      `;
+    }
+  }
 
   // 방문 예정일 계산
   let visitCardHtml = '';
@@ -148,8 +169,9 @@ function openModal(i) {
   const costs = [['dryStation','드라이스테이션'],['interior','인테리어'],['washer','세탁기'],['dryer','건조기'],['vending','자판기'],['cardReader','카드리더기']];
   const costCalc = calcCosts(s);
   document.getElementById('m-body').innerHTML = `
+    ${noticeHtml}
     ${visitCardHtml}
-    <div class="sec-lbl" ${visitCardHtml ? 'style="margin-top:20px"' : ''}>기본 정보</div>
+    <div class="sec-lbl" ${(visitCardHtml || noticeHtml) ? 'style="margin-top:20px"' : ''}>기본 정보</div>
     <div class="info-grid">
       <div class="info-cell"><label>라인</label><span><span class="b-line ${getLineClass(s.line, s.frequency)}">${s.line || '—'}</span></span></div>
       <div class="info-cell"><label>방문 요일 패턴</label><span style="color:var(--accent);font-size:13px">${sd ? sd.days : '—'}</span></div>
