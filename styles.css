@@ -13,7 +13,7 @@ body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--b
 header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200; box-shadow: 0 1px 6px rgba(0,0,0,.05); }
 .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; }
 .logo { display: flex; align-items: center; margin-right: 36px; text-decoration: none; }
-.logo-text { font-size: 21px; font-weight: 900; color: #111; letter-spacing: -1px; line-height: 1; }
+.logo-img { height: 17px; width: auto; display: block; }
 .nav-tabs { display: flex; height: 60px; }
 .nav-tab { padding: 0 18px; height: 60px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 3px solid transparent; transition: all .15s; white-space: nowrap; }
 .nav-tab:hover { color: var(--text); }
@@ -21,6 +21,17 @@ header { background: var(--white); border-bottom: 1px solid var(--border); posit
 .nav-right { margin-left: auto; }
 .btn-admin { background: var(--text); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; display: flex; align-items: center; gap: 6px; }
 .btn-admin:hover { background: #333; }
+
+/* FOOTER */
+.site-footer { background: var(--white); border-top: 1px solid var(--border); margin-top: 40px; }
+.site-footer-inner { max-width: 1280px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.site-footer-logo-img { height: 16px; width: auto; display: block; }
+.site-footer-links { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.site-footer-links a { font-size: 12px; color: var(--text3); text-decoration: none; transition: color .15s; }
+.site-footer-links a:hover { color: var(--text2); text-decoration: underline; }
+.site-footer-slack { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--text2); text-decoration: none; transition: color .15s; }
+.site-footer-slack:hover { color: var(--text); }
+.site-footer-slack svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* PAGES */
 .page { display: none; }

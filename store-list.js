@@ -115,6 +115,12 @@ function clearFilters() {
   renderList();
 }
 
+function goHome() {
+  document.getElementById('search-input').value = '';
+  clearFilters();
+  switchPage('list');
+}
+
 // ============================================================
 // MODAL
 // ============================================================
