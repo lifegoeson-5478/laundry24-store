@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.4.2';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
