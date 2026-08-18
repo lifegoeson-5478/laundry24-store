@@ -146,12 +146,11 @@ function openModal(i) {
       ['마지막 세탁물 배송 예정', s.closedNoticeLastDeliveryDate],
       ['세탁물 찾기 마감', s.closedNoticePickupDate],
       ['폐점일', s.closedDate],
-    ].filter(([, ds]) => ds).map(([label, ds]) => `<div class="visit-item"><label>${label}</label><span>${formatDate(parseDateStr(ds))}</span></div>`).join('');
+    ].filter(([, ds]) => ds).map(([label, ds]) => `<div class="info-cell"><label>${label}</label><span>${formatDate(parseDateStr(ds))}</span></div>`).join('');
     if (noticeRows) {
       noticeHtml = `
         <div class="sec-lbl" style="color:#b91c1c">폐업 공지</div>
-        <div class="note-card warn">"${s.name}"의 폐업이 확정되어 공유드립니다.</div>
-        <div class="visit-card" style="margin-top:8px">${noticeRows}</div>
+        <div class="info-grid">${noticeRows}</div>
         ${s.closedNoticeNote ? `<div class="note-card" style="margin-top:10px;white-space:pre-line">${s.closedNoticeNote}</div>` : ''}
       `;
     }
@@ -159,7 +158,7 @@ function openModal(i) {
 
   // 방문 예정일 계산
   let visitCardHtml = '';
-  if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
+  if (!isEffectivelyClosed(s) && ['매일','격일','부산/대구','대전'].includes(s.frequency)) {
     const dates = getNextTwoDates(s.frequency, s.line);
     if (dates && dates.length >= 2) {
       visitCardHtml = `
@@ -174,7 +173,7 @@ function openModal(i) {
   const sd = getSchedByFreq(s.frequency);
   const costs = [['dryStation','드라이스테이션'],['interior','인테리어'],['washer','세탁기'],['dryer','건조기'],['vending','자판기'],['cardReader','카드리더기']];
   const costCalc = calcCosts(s);
-  document.getElementById('m-body').innerHTML = `
+  document.getElementById('m-body').innerHTML = isEffectivelyClosed(s) ? noticeHtml : `
     ${noticeHtml}
     ${visitCardHtml}
     <div class="sec-lbl" ${(visitCardHtml || noticeHtml) ? 'style="margin-top:20px"' : ''}>기본 정보</div>
