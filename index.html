@@ -1918,6 +1918,10 @@ function rfCalc() {
         <div class="rf-step-row"><div class="rf-snum" style="background:${c.s2};color:${c.s2t};">2</div><div>고객이 거절 시 → <strong>망치에서 카드 취소 가능</strong></div></div>`;
     } else if (rfPayment === '론디페이' && RF_CARD_DEVICES.has(rfDevice)) {
       steps = `<div class="rf-step-row"><div class="rf-snum" style="background:${c.s1};color:${c.s1t};">1</div><div>결제한 론디페이 금액 재지급</div></div>`;
+    } else if (!rondi && rfDevice !== '드라이스테이션') {
+      // 비론디원 매장은 셀프장비(세탁기/건조기/자판기/동전교환기)에서 론디페이 사용이 불가능하므로 제안 단계 없이 바로 본사 계좌입금
+      // (단, 드라이스테이션은 비론디원 매장도 론디페이 사용 가능하므로 이 예외에서 제외)
+      steps = `<div class="rf-step-row"><div class="rf-snum" style="background:${c.s1};color:${c.s1t};">1</div><div><strong>본사 계좌입금</strong>으로 처리 <span style="font-size:12px;opacity:.7;">(비론디원 매장은 셀프장비에서 론디페이 사용 불가)</span></div></div>`;
     } else {
       steps = `
         <div class="rf-step-row"><div class="rf-snum" style="background:${c.s1};color:${c.s1t};">1</div><div>론디페이로 환불 제안</div></div>
@@ -2145,7 +2149,7 @@ async function openRefundForm() {
     document.getElementById('rondi-alert-overlay').style.display = 'flex';
     return;
   }
-  // 론디원 + 카드 결제 시 경고 (예외 체크박스 있음)
+  // 론디원 + 카드 결제 시 경고 (체크박스는 절차 확인용, 본사/점주 분류에는 영향 없음)
   if (rfIsRondi(rfSelected) && rfPayment === '카드') {
     document.getElementById('rondi-card-exception-check').checked = false;
     document.getElementById('rondi-card-proceed-btn').disabled = true;
@@ -2201,8 +2205,7 @@ async function openPartialCancelForm() {
   document.getElementById('refund-form-overlay').style.alignItems = 'flex-start';
 }
 
-async function _openRefundFormCore(opts = {}) {
-  const forceOwnerCash = !!opts.forceOwnerCash;
+async function _openRefundFormCore() {
   isPartialCancel = false;
   document.getElementById('rform-title').textContent = '환불 접수';
 
@@ -2215,9 +2218,8 @@ async function _openRefundFormCore(opts = {}) {
   const devLabel = rfDevice === '잔여론디페이' ? '잔여 론디페이' : rfDevice;
   document.getElementById('rform-device').value = devLabel;
   document.getElementById('rform-payment').value = rfDevice === '잔여론디페이' ? '카드' : (rfPayment || '-');
-  document.getElementById('rform-subtitle').textContent = forceOwnerCash
-    ? `론디페이 지급 거부로 인한 예외 처리입니다. 매장(${rfSelected?.name})의 점주 부담 현금 환불로 접수됩니다.`
-    : `현재 입력된 매장(${rfSelected?.name}) 및 선택된 내용(${devLabel}${rfPayment ? ' · ' + rfPayment : ''})을 기준으로 환불됩니다.`;
+  document.getElementById('rform-subtitle').textContent =
+    `현재 입력된 매장(${rfSelected?.name}) 및 선택된 내용(${devLabel}${rfPayment ? ' · ' + rfPayment : ''})을 기준으로 환불됩니다.`;
 
   // 기기번호 필드
   const needDevNum = rfDevice === '세탁기' || rfDevice === '건조기';
@@ -2225,15 +2227,14 @@ async function _openRefundFormCore(opts = {}) {
   document.getElementById('rform-devnum').value = '';
 
   // 본사/점주 판단
+  // 론디원 매장은 현금/지역화폐 결제를 제외하면 항상 본사 부담 (예외 확인 체크박스는 분류에 영향 없음)
   const rondi = rfIsRondi(rfSelected);
-  const isBonsa = forceOwnerCash ? false : (
-    rfDevice === '잔여론디페이'
-      ? (rfIsDirect(rfSelected) || rondi)
-      : rfIsDirect(rfSelected) ? true
-      : rondi
-        ? !(rfPayment === '현금' || rfPayment === '지역화폐')
-        : rfDevice === '드라이스테이션'
-  );
+  const isBonsa = rfDevice === '잔여론디페이'
+    ? (rfIsDirect(rfSelected) || rondi)
+    : rfIsDirect(rfSelected) ? true
+    : rondi
+      ? !(rfPayment === '현금' || rfPayment === '지역화폐')
+      : rfDevice === '드라이스테이션';
 
   const methodReadonly = document.getElementById('rform-method-readonly');
   const methodSelect = document.getElementById('rform-method-select');
@@ -2253,16 +2254,9 @@ async function _openRefundFormCore(opts = {}) {
     // 점주: 카드 취소 / 현금 입금 선택
     methodReadonly.style.display = 'none';
     methodSelect.style.display = '';
-    if (forceOwnerCash) {
-      // 론디페이 거부로 인한 예외: 점주가 현금(계좌입금)으로 지급
-      methodSelect.value = '현금입금';
-      document.getElementById('rform-card-section').style.display = 'none';
-      document.getElementById('rform-account-section').style.display = '';
-    } else {
-      methodSelect.value = '카드취소';
-      document.getElementById('rform-card-section').style.display = '';
-      document.getElementById('rform-account-section').style.display = 'none';
-    }
+    methodSelect.value = '카드취소';
+    document.getElementById('rform-card-section').style.display = '';
+    document.getElementById('rform-account-section').style.display = 'none';
     document.getElementById('rform-shinsin-wrap').style.display = 'none';
   }
 
@@ -2814,8 +2808,8 @@ function onRondiCardExceptionChange() {
 
 async function proceedRondiCardException() {
   closeRondiCardAlert();
-  // 론디페이 거부로 인한 현금지급 예외: 점주 부담으로 강제 분류 (본사 상신 대상에서 제외됨)
-  await _openRefundFormCore({ forceOwnerCash: true });
+  // 절차 확인용 체크박스일 뿐, 본사/점주 분류에는 영향 없음 (론디원+카드는 항상 본사 계좌입금)
+  await _openRefundFormCore();
 }
 
 function showConfirmModal(title, desc, onConfirm) {
