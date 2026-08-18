@@ -63,7 +63,7 @@ function renderList() {
     const rowCls = [isVisitingToday(s) ? 'visit-today' : '', s.isClosed ? 'store-closed' : ''].filter(Boolean).join(' ');
     return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
       <td class="td-no">${s.no}</td>
-      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${s.isClosed ? '<span class="closed-tag">폐점</span>' : ''}</td>
+      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${s.isClosed ? '<span class="closed-tag">폐점</span>' : ''}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
@@ -127,6 +127,7 @@ function openModal(i) {
     <span class="badge b-${s.storeType}">${s.storeType}</span>
     <span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span>
     ${s.isClosed ? `<span class="closed-tag" style="font-size:11px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
+    ${s.rondiTopupBlocked ? `<span class="rondi-topup-tag" style="font-size:11px;padding:3px 10px;">론디페이 고객센터 지급불가</span>` : ''}
   `;
 
   // 방문 예정일 계산

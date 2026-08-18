@@ -107,6 +107,7 @@ tbody tr.visit-today:hover { background: #dbeafe; }
 tbody tr.visit-today .td-name { color: #1d4ed8; }
 .today-tag { display: inline-block; background: #1d4ed8; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
+.rondi-topup-tag { display: inline-block; background: #f59e0b; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .row-closed-stamp {
   position: absolute;
   left: 50%;

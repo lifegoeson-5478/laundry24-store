@@ -102,6 +102,7 @@ function rowToStore(r) {
     refundNote: r.refund_note || '',
     isClosed: r.is_closed === true,
     closedDate: r.closed_date || '',
+    rondiTopupBlocked: r.rondi_topup_blocked === true,
   };
 }
 
@@ -123,6 +124,7 @@ function storeToRow(s) {
     refund_note: s.refundNote || null,
     is_closed: s.isClosed === true,
     closed_date: s.closedDate || null,
+    rondi_topup_blocked: s.rondiTopupBlocked === true,
     updated_at: new Date().toISOString(),
   };
 }

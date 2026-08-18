@@ -43,7 +43,7 @@ function openNewStoreForm() {
   document.getElementById('btn-form-save').textContent = '매장 추가';
   document.getElementById('edit-card').className = 'edit-card is-new';
   // 빈 폼
-  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'', cardCancelPossible:true, localCurrencyAvailable:true, selfDeviceManaged:true, refundNote:'', isClosed:false, closedDate:'' });
+  fillForm({ name:'', type:'일반', rondiOne:'론디원', storeType:'복합형', line:'', frequency:'격일', openDate:'', selfWarranty:'', dryWarranty:'', selfAS:'', dryStation:'발생', kiosk:'', parking:'', parkingUrl:'', cctv:'', cctvUrl:'', storeNote:'', ownerNote:'', cardCancelPossible:true, localCurrencyAvailable:true, selfDeviceManaged:true, rondiTopupBlocked:false, refundNote:'', isClosed:false, closedDate:'' });
   switchEtab('store');
   showEditCard();
 }
@@ -72,6 +72,7 @@ function fillForm(s) {
   document.getElementById('f-card-cancel').value = s.cardCancelPossible === false ? 'false' : 'true';
   document.getElementById('f-local-currency').value = s.localCurrencyAvailable === false ? 'false' : 'true';
   document.getElementById('f-self-managed').value = s.selfDeviceManaged === false ? 'false' : 'true';
+  document.getElementById('f-rondi-topup').value = s.rondiTopupBlocked === true ? 'true' : 'false';
   document.getElementById('f-refund-note').value = s.refundNote || '';
   document.getElementById('save-msg').classList.remove('show');
 }
@@ -139,6 +140,7 @@ async function saveStore() {
     cardCancelPossible: document.getElementById('f-card-cancel').value !== 'false',
     localCurrencyAvailable: document.getElementById('f-local-currency').value !== 'false',
     selfDeviceManaged: document.getElementById('f-self-managed').value !== 'false',
+    rondiTopupBlocked: document.getElementById('f-rondi-topup').value === 'true',
     refundNote: document.getElementById('f-refund-note').value.trim(),
     isClosed: document.getElementById('f-closed').value === 'true',
     closedDate: document.getElementById('f-closed-date').value || null,
