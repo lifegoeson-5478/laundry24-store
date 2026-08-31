@@ -31,10 +31,11 @@ function previousWorkingDay(dateStr, blockedDates) {
 }
 
 // ============================================================
-// 휴무일 / 공휴일 관리 (달력 클릭으로 등록/해제)
+// 입금일 / 휴무일 / 공휴일 관리 (달력 클릭으로 등록/해제)
 // ============================================================
 let BLOCKED_DAYS_MAP = new Map(); // date -> 'off' | 'holiday'
-let blockedMode = 'off';
+let PAYMENT_DATE_SET = new Set();
+let blockedMode = 'payment'; // 'payment' | 'off' | 'holiday'
 let blockedCalYear, blockedCalMonth; // 0-based month
 
 async function getBlockedDays() {
@@ -43,15 +44,16 @@ async function getBlockedDays() {
   } catch(e) { return []; }
 }
 
+const BLOCKED_MODE_COLORS = { payment: 'var(--accent)', off: '#3b5bdb', holiday: '#b91c1c' };
+
 function setBlockedMode(mode) {
   blockedMode = mode;
-  const offBtn = document.getElementById('blocked-mode-off');
-  const holidayBtn = document.getElementById('blocked-mode-holiday');
-  if (!offBtn || !holidayBtn) return;
-  offBtn.style.background = mode === 'off' ? 'var(--accent)' : 'none';
-  offBtn.style.color = mode === 'off' ? 'white' : 'var(--text2)';
-  holidayBtn.style.background = mode === 'holiday' ? '#b91c1c' : 'none';
-  holidayBtn.style.color = mode === 'holiday' ? 'white' : 'var(--text2)';
+  ['payment', 'off', 'holiday'].forEach(m => {
+    const btn = document.getElementById('blocked-mode-' + m);
+    if (!btn) return;
+    btn.style.background = mode === m ? BLOCKED_MODE_COLORS[m] : 'none';
+    btn.style.color = mode === m ? 'white' : 'var(--text2)';
+  });
 }
 
 function shiftBlockedCalendar(delta) {
@@ -63,15 +65,22 @@ function shiftBlockedCalendar(delta) {
 
 async function toggleBlockedDate(dateStr) {
   try {
-    if (BLOCKED_DAYS_MAP.has(dateStr)) {
-      await sbFetch(`blocked_days?date=eq.${dateStr}`, { method: 'DELETE', prefer: 'return=minimal' });
+    if (blockedMode === 'payment') {
+      let dates = await getPaymentDates();
+      dates = dates.includes(dateStr) ? dates.filter(d => d !== dateStr) : [...dates, dateStr];
+      await savePaymentDates(dates);
+      await renderPaymentDateList();
     } else {
-      await sbFetch('blocked_days?on_conflict=date', {
-        method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
-        body: JSON.stringify({ date: dateStr, type: blockedMode }),
-      });
+      if (BLOCKED_DAYS_MAP.get(dateStr) === blockedMode) {
+        await sbFetch(`blocked_days?date=eq.${dateStr}`, { method: 'DELETE', prefer: 'return=minimal' });
+      } else {
+        await sbFetch('blocked_days?on_conflict=date', {
+          method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
+          body: JSON.stringify({ date: dateStr, type: blockedMode }),
+        });
+      }
+      await renderBlockedDaysList();
     }
-    await renderBlockedDaysList();
   } catch(e) { showToast('저장 실패: ' + e.message, 'error'); }
 }
 
@@ -100,9 +109,11 @@ function renderBlockedCalendarGrid() {
   for (let i = 0; i < startDow; i++) html += '<div></div>';
   for (let day = 1; day <= daysInMonth; day++) {
     const ds = `${blockedCalYear}-${String(blockedCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isPayment = PAYMENT_DATE_SET.has(ds);
     const type = BLOCKED_DAYS_MAP.get(ds);
-    const bg = type === 'holiday' ? '#b91c1c' : type === 'off' ? '#3b5bdb' : 'transparent';
-    html += `<div onclick="toggleBlockedDate('${ds}')" style="padding:6px 0;border-radius:6px;cursor:pointer;background:${bg};color:${type ? 'white' : 'var(--text)'};font-weight:${type ? 700 : 500};">${day}</div>`;
+    const marked = isPayment ? 'payment' : type;
+    const bg = marked ? BLOCKED_MODE_COLORS[marked] : 'transparent';
+    html += `<div onclick="toggleBlockedDate('${ds}')" style="padding:6px 0;border-radius:6px;cursor:pointer;background:${bg};color:${marked ? 'white' : 'var(--text)'};font-weight:${marked ? 700 : 500};">${day}</div>`;
   }
   grid.innerHTML = html;
 }
@@ -257,17 +268,6 @@ async function saveShinsinExampleFromCurrent() {
   }
 }
 
-async function addPaymentDate() {
-  const val = document.getElementById('admin-payment-date').value;
-  if (!val) return;
-  const dates = await getPaymentDates();
-  if (!dates.includes(val)) dates.push(val);
-  await savePaymentDates(dates);
-  document.getElementById('admin-payment-date').value = '';
-  showToast('입금일이 추가되었습니다');
-  renderPaymentDateList();
-}
-
 async function markPaymentDateSubmitted(date) {
   showConfirmModal(
     '상신 완료 처리',
@@ -288,27 +288,25 @@ async function removePaymentDate(date) {
 
 async function renderPaymentDateList() {
   const dates = await getPaymentDates();
+  PAYMENT_DATE_SET = new Set(dates);
   const todayStr = new Date().toISOString().split('T')[0];
-  const wrap = document.getElementById('admin-payment-date-list');
-  const shinsinEl = document.getElementById('next-shinsin-date');
   const future = dates.filter(d => d >= todayStr);
+
+  const shinsinEl = document.getElementById('next-shinsin-date');
   if (shinsinEl) shinsinEl.textContent = future.length ? calcShinsinDate(future[0]) : '-';
-  if (!dates.length) {
-    wrap.innerHTML = '<span style="font-size:13px;color:var(--text3);">등록된 입금일이 없습니다</span>';
-    return;
+
+  const summaryEl = document.getElementById('admin-payment-summary');
+  if (summaryEl) {
+    if (!future.length) {
+      summaryEl.innerHTML = '<span style="color:var(--text3);">등록된 입금일이 없습니다</span>';
+    } else {
+      const next = future[0];
+      const shinsin = calcShinsinDate(next);
+      summaryEl.innerHTML = `다음 입금일 <strong>${next}</strong> · 다음 상신예정일 <strong>${shinsin}</strong>
+        <button onclick="markPaymentDateSubmitted('${next}')" style="margin-left:8px;padding:4px 10px;background:var(--accent);color:white;border:none;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">상신 완료</button>`;
+    }
   }
-  wrap.innerHTML = dates.map(d => {
-    const isNext = d >= todayStr && d === dates.find(x => x >= todayStr);
-    const submitBtn = isNext
-      ? `<button onclick="markPaymentDateSubmitted('${d}')" style="background:rgba(255,255,255,.25);border:none;border-radius:999px;cursor:pointer;color:inherit;font-size:12px;font-weight:700;line-height:1;padding:4px 10px;margin-left:2px;">상신 완료</button>`
-      : '';
-    return `<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;
-      ${isNext ? 'background:var(--accent);color:white;' : 'background:var(--white);border:1.5px solid var(--border);color:var(--text2);'}">
-      ${isNext ? ' ' : ''}${d}${isNext ? ' (다음)' : ''}
-      ${submitBtn}
-      <button onclick="removePaymentDate('${d}')" style="background:none;border:none;cursor:pointer;color:inherit;opacity:.7;font-size:14px;line-height:1;padding:0;">✕</button>
-    </span>`;
-  }).join('');
+  renderBlockedCalendarGrid();
 }
 
 async function loadPaymentDate() {
