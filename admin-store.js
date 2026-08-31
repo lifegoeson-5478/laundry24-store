@@ -314,4 +314,5 @@ function switchAtab(t) {
   document.querySelectorAll('.apanel').forEach(el => el.classList.remove('active'));
   document.querySelector(`.atab[onclick="switchAtab('${t}')"]`).classList.add('active');
   document.getElementById('apanel-' + t).classList.add('active');
+  if (t === 'accounts') loadAccountsList();
 }

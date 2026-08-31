@@ -347,6 +347,7 @@
       <div class="atab active" onclick="switchAtab('store')">매장 관리</div>
       <div class="atab" onclick="switchAtab('sched')">운송 일정 수정 </div>
       <div class="atab" onclick="switchAtab('notify')">상신 알림 관리</div>
+      <div class="atab" onclick="switchAtab('accounts')">계정 관리</div>
     </div>
 
     <!-- STORE PANEL -->
@@ -473,6 +474,27 @@
         <div id="admin-payment-summary" style="margin-top:14px;font-size:13px;color:var(--text2);"></div>
       </div>
     </div>
+
+    <!-- ACCOUNTS PANEL -->
+    <div id="apanel-accounts" class="apanel">
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">새 계정 추가</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <input type="email" id="new-account-email" placeholder="이메일" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;min-width:200px;">
+          <input type="text" id="new-account-password" placeholder="초기 비밀번호 (6자 이상)" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;min-width:180px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;">
+            <input type="checkbox" id="new-account-admin" style="width:16px;height:16px;cursor:pointer;">관리자로 등록
+          </label>
+          <button onclick="createAccount()" id="new-account-btn" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ 추가</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:10px;">계정 생성 후 본인 비밀번호는 로그인 화면의 "비밀번호를 잊으셨나요?"로 바꿀 수 있습니다.</div>
+      </div>
+
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;">
+        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">계정 목록</div>
+        <div id="accounts-list"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -595,6 +617,7 @@
 <script src="admin-store.js"></script>
 <script src="refund.js"></script>
 <script src="refund-admin.js"></script>
+<script src="admin-accounts.js"></script>
 <script>
 initAuth();
 </script>
