@@ -31,54 +31,126 @@ function previousWorkingDay(dateStr, blockedDates) {
 }
 
 // ============================================================
-// 휴무일 / 공휴일 관리
+// 휴무일 / 공휴일 관리 (달력 클릭으로 등록/해제)
 // ============================================================
+let BLOCKED_DAYS_MAP = new Map(); // date -> 'off' | 'holiday'
+let blockedMode = 'off';
+let blockedCalYear, blockedCalMonth; // 0-based month
+
 async function getBlockedDays() {
   try {
-    return await sbFetch('blocked_days?select=date,type,note&order=date.asc') || [];
+    return await sbFetch('blocked_days?select=date,type&order=date.asc') || [];
   } catch(e) { return []; }
 }
 
-async function addBlockedDay() {
-  const dateEl = document.getElementById('admin-blocked-date');
-  const typeEl = document.getElementById('admin-blocked-type');
-  const noteEl = document.getElementById('admin-blocked-note');
-  const date = dateEl.value;
-  if (!date) return;
-  try {
-    await sbFetch('blocked_days?on_conflict=date', {
-      method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
-      body: JSON.stringify({ date, type: typeEl.value, note: noteEl.value.trim() || null }),
-    });
-    dateEl.value = ''; noteEl.value = '';
-    showToast('등록되었습니다');
-    await renderBlockedDaysList();
-  } catch(e) { showToast('등록 실패: ' + e.message, 'error'); }
+function setBlockedMode(mode) {
+  blockedMode = mode;
+  const offBtn = document.getElementById('blocked-mode-off');
+  const holidayBtn = document.getElementById('blocked-mode-holiday');
+  if (!offBtn || !holidayBtn) return;
+  offBtn.style.background = mode === 'off' ? 'var(--accent)' : 'none';
+  offBtn.style.color = mode === 'off' ? 'white' : 'var(--text2)';
+  holidayBtn.style.background = mode === 'holiday' ? '#b91c1c' : 'none';
+  holidayBtn.style.color = mode === 'holiday' ? 'white' : 'var(--text2)';
 }
 
-async function removeBlockedDay(date) {
+function shiftBlockedCalendar(delta) {
+  blockedCalMonth += delta;
+  if (blockedCalMonth < 0) { blockedCalMonth = 11; blockedCalYear--; }
+  if (blockedCalMonth > 11) { blockedCalMonth = 0; blockedCalYear++; }
+  renderBlockedCalendarGrid();
+}
+
+async function toggleBlockedDate(dateStr) {
   try {
-    await sbFetch(`blocked_days?date=eq.${date}`, { method: 'DELETE', prefer: 'return=minimal' });
+    if (BLOCKED_DAYS_MAP.has(dateStr)) {
+      await sbFetch(`blocked_days?date=eq.${dateStr}`, { method: 'DELETE', prefer: 'return=minimal' });
+    } else {
+      await sbFetch('blocked_days?on_conflict=date', {
+        method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
+        body: JSON.stringify({ date: dateStr, type: blockedMode }),
+      });
+    }
     await renderBlockedDaysList();
-  } catch(e) { showToast('삭제 실패: ' + e.message, 'error'); }
+  } catch(e) { showToast('저장 실패: ' + e.message, 'error'); }
 }
 
 async function renderBlockedDaysList() {
   const days = await getBlockedDays();
   BLOCKED_DATE_SET = new Set(days.map(d => d.date));
-  const wrap = document.getElementById('admin-blocked-list');
-  if (!wrap) return;
-  if (!days.length) {
-    wrap.innerHTML = '<span style="font-size:13px;color:var(--text3);">등록된 휴무일/공휴일이 없습니다</span>';
+  BLOCKED_DAYS_MAP = new Map(days.map(d => [d.date, d.type]));
+  if (blockedCalYear === undefined) {
+    const now = new Date();
+    blockedCalYear = now.getFullYear();
+    blockedCalMonth = now.getMonth();
+  }
+  renderBlockedCalendarGrid();
+}
+
+function renderBlockedCalendarGrid() {
+  const grid = document.getElementById('blocked-calendar');
+  const titleEl = document.getElementById('blocked-cal-title');
+  if (!grid || !titleEl) return;
+  titleEl.textContent = `${blockedCalYear}년 ${blockedCalMonth + 1}월`;
+  const first = new Date(blockedCalYear, blockedCalMonth, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(blockedCalYear, blockedCalMonth + 1, 0).getDate();
+  let html = ['일','월','화','수','목','금','토']
+    .map(l => `<div style="font-weight:700;color:var(--text3);padding:4px 0;">${l}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += '<div></div>';
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds = `${blockedCalYear}-${String(blockedCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const type = BLOCKED_DAYS_MAP.get(ds);
+    const bg = type === 'holiday' ? '#b91c1c' : type === 'off' ? '#3b5bdb' : 'transparent';
+    html += `<div onclick="toggleBlockedDate('${ds}')" style="padding:6px 0;border-radius:6px;cursor:pointer;background:${bg};color:${type ? 'white' : 'var(--text)'};font-weight:${type ? 700 : 500};">${day}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// 공공데이터포털 "특일 정보" API (한국천문연구원) — 공휴일 자동 등록에 사용
+const SPCDE_API_KEY = 'wfsY%2FxL5nwJ%2FcSJ6SrQJvVYT9vqFSrXc%2B2%2BMwlo65tL9VP1uvn8mW2Kxueju0LR7vq2FT4j%2BhRMd9%2FprhocD%2FA%3D%3D';
+
+async function fetchOfficialHolidays(year) {
+  const url = `https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?serviceKey=${SPCDE_API_KEY}&solYear=${year}&numOfRows=100&_type=json`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.response?.header?.resultCode !== '00') {
+    throw new Error(data.response?.header?.resultMsg || 'API 오류');
+  }
+  const items = data.response.body.items?.item;
+  if (!items) return [];
+  const arr = Array.isArray(items) ? items : [items];
+  return arr.filter(i => i.isHoliday === 'Y').map(i => ({
+    date: String(i.locdate).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3'),
+    name: i.dateName,
+  }));
+}
+
+async function autoRegisterHolidays() {
+  const year = blockedCalYear || new Date().getFullYear();
+  let holidays;
+  try {
+    holidays = await fetchOfficialHolidays(year);
+  } catch (e) {
+    showToast('공휴일 정보를 불러오지 못했습니다: ' + e.message, 'error', 4000);
     return;
   }
-  wrap.innerHTML = days.map(d => {
-    const isHoliday = d.type === 'holiday';
-    return `<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;background:${isHoliday ? '#fee2e2' : '#e6f0fb'};color:${isHoliday ? '#b91c1c' : '#3b5bdb'};">
-      ${isHoliday ? '공휴일' : '휴무'} · ${d.date}${d.note ? ' · ' + d.note : ''}
-      <button onclick="removeBlockedDay('${d.date}')" style="background:none;border:none;cursor:pointer;color:inherit;opacity:.7;font-size:14px;line-height:1;padding:0;">✕</button>
-    </span>`;
-  }).join('');
+  if (!holidays.length) { showToast(`${year}년 공휴일 정보가 없습니다`, 'warn'); return; }
+
+  showConfirmModal(
+    `${year}년 공휴일 자동 등록`,
+    `공공데이터포털에서 확인한 ${year}년 공휴일 ${holidays.length}일을 일괄 등록합니다.\n(${holidays.map(h => h.name).join(', ')})\n이미 등록된 날짜는 공휴일로 덮어씁니다. 계속할까요?`,
+    async () => {
+      try {
+        await sbFetch('blocked_days?on_conflict=date', {
+          method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
+          body: JSON.stringify(holidays.map(h => ({ date: h.date, type: 'holiday' }))),
+        });
+        showToast(`${year}년 공휴일이 등록되었습니다`, 'success');
+        await renderBlockedDaysList();
+      } catch(e) { showToast('등록 실패: ' + e.message, 'error'); }
+    }
+  );
 }
 
 // ============================================================
