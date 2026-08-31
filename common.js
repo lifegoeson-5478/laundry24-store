@@ -29,6 +29,65 @@ const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let realtimeReloadTimer = null;
 
+// ============================================================
+// 인증 (Supabase Auth) — 로그인해야 사이트 전체 이용 가능
+// ============================================================
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-submit-btn');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '로그인 중...';
+  try {
+    const { error } = await sbClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      errEl.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+      errEl.style.display = 'block';
+      return false;
+    }
+    await showApp();
+  } catch (err) {
+    errEl.textContent = '로그인 중 오류가 발생했습니다: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  }
+  return false;
+}
+
+async function handleLogout() {
+  await sbClient.auth.signOut();
+  window.location.reload();
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+  loadData();
+  setupRealtime();
+}
+
+async function initAuth() {
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (session) {
+    await showApp();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-root').style.display = 'none';
+  }
+  // 세션 만료/로그아웃 등 인증 상태 변화 감지
+  sbClient.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-root').style.display = 'none';
+    }
+  });
+}
+
 function scheduleRealtimeReload(msg) {
   // 짧은 시간에 여러 변경이 몰려도 한 번만 새로고침하도록 살짝 지연
   clearTimeout(realtimeReloadTimer);
@@ -68,10 +127,13 @@ let schedData = JSON.parse(JSON.stringify(DEFAULT_SCHED));
 // SUPABASE API HELPERS
 // ============================================================
 async function sbFetch(path, options = {}) {
+  // 로그인한 사용자의 access_token을 사용해야 RLS가 authenticated 사용자로 인식함
+  const { data: { session } } = await sbClient.auth.getSession();
+  const userToken = session?.access_token || SUPABASE_KEY;
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
     headers: {
       'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Authorization': 'Bearer ' + userToken,
       'Content-Type': 'application/json',
       'Prefer': options.prefer || '',
       ...options.headers,
