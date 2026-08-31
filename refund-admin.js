@@ -3,17 +3,117 @@
 // ============================================================
 
 // 입금일 목록 저장/로드 (Supabase settings 테이블, JSON 배열)
-// 3영업일 전 계산 (주말 제외)
-function calcShinsinDate(dateStr) {
+// 3영업일 전 계산 (주말 + 등록된 휴무일/공휴일 제외)
+function calcShinsinDate(dateStr, blockedDates) {
   if (!dateStr) return '';
+  const blocked = blockedDates || BLOCKED_DATE_SET || new Set();
   const d = new Date(dateStr);
   let count = 0;
   while (count < 3) {
     d.setDate(d.getDate() - 1);
     const day = d.getDay();
-    if (day !== 0 && day !== 6) count++;
+    const ds = d.toISOString().split('T')[0];
+    if (day !== 0 && day !== 6 && !blocked.has(ds)) count++;
   }
   return d.toISOString().split('T')[0];
+}
+
+// 주어진 날짜의 "직전 영업일" (주말/휴무일/공휴일 제외) — 상신 알림을 언제부터 띄울지 계산할 때 사용
+function previousWorkingDay(dateStr, blockedDates) {
+  const blocked = blockedDates || BLOCKED_DATE_SET || new Set();
+  const d = new Date(dateStr);
+  do {
+    d.setDate(d.getDate() - 1);
+    var day = d.getDay();
+    var ds = d.toISOString().split('T')[0];
+  } while (day === 0 || day === 6 || blocked.has(ds));
+  return ds;
+}
+
+// ============================================================
+// 휴무일 / 공휴일 관리
+// ============================================================
+async function getBlockedDays() {
+  try {
+    return await sbFetch('blocked_days?select=date,type,note&order=date.asc') || [];
+  } catch(e) { return []; }
+}
+
+async function addBlockedDay() {
+  const dateEl = document.getElementById('admin-blocked-date');
+  const typeEl = document.getElementById('admin-blocked-type');
+  const noteEl = document.getElementById('admin-blocked-note');
+  const date = dateEl.value;
+  if (!date) return;
+  try {
+    await sbFetch('blocked_days?on_conflict=date', {
+      method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
+      body: JSON.stringify({ date, type: typeEl.value, note: noteEl.value.trim() || null }),
+    });
+    dateEl.value = ''; noteEl.value = '';
+    showToast('등록되었습니다');
+    await renderBlockedDaysList();
+  } catch(e) { showToast('등록 실패: ' + e.message, 'error'); }
+}
+
+async function removeBlockedDay(date) {
+  try {
+    await sbFetch(`blocked_days?date=eq.${date}`, { method: 'DELETE', prefer: 'return=minimal' });
+    await renderBlockedDaysList();
+  } catch(e) { showToast('삭제 실패: ' + e.message, 'error'); }
+}
+
+async function renderBlockedDaysList() {
+  const days = await getBlockedDays();
+  BLOCKED_DATE_SET = new Set(days.map(d => d.date));
+  const wrap = document.getElementById('admin-blocked-list');
+  if (!wrap) return;
+  if (!days.length) {
+    wrap.innerHTML = '<span style="font-size:13px;color:var(--text3);">등록된 휴무일/공휴일이 없습니다</span>';
+    return;
+  }
+  wrap.innerHTML = days.map(d => {
+    const isHoliday = d.type === 'holiday';
+    return `<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;background:${isHoliday ? '#fee2e2' : '#e6f0fb'};color:${isHoliday ? '#b91c1c' : '#3b5bdb'};">
+      ${isHoliday ? '공휴일' : '휴무'} · ${d.date}${d.note ? ' · ' + d.note : ''}
+      <button onclick="removeBlockedDay('${d.date}')" style="background:none;border:none;cursor:pointer;color:inherit;opacity:.7;font-size:14px;line-height:1;padding:0;">✕</button>
+    </span>`;
+  }).join('');
+}
+
+// ============================================================
+// 상신 알림 배너
+// ============================================================
+async function checkShinsinReminder() {
+  try {
+    const dates = await getPaymentDates();
+    const todayStr = new Date().toISOString().split('T')[0];
+    const future = dates.filter(d => d >= todayStr);
+    if (!future.length) return;
+
+    const shinsinDate = calcShinsinDate(future[0]);
+    const reminderStart = previousWorkingDay(shinsinDate);
+    if (todayStr < reminderStart) return;
+
+    const rows = await sbFetch('refund_requests?select=id,처리완료,환불방법,상신예정일');
+    const target = (rows || []).filter(r => !r.처리완료 && (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일);
+    if (!target.length) return;
+
+    if (localStorage.getItem('shinsinBannerDismissed') === todayStr) return;
+
+    const isDue = todayStr >= shinsinDate;
+    const text = isDue
+      ? `⚠ 오늘은 상신 예정일입니다 (${shinsinDate}) — 처리 대기 ${target.length}건`
+      : `📅 상신 예정일이 ${shinsinDate}로 다가옵니다 — 처리 대기 ${target.length}건`;
+    document.getElementById('shinsin-banner-text').textContent = text;
+    document.getElementById('shinsin-banner').style.display = 'flex';
+    showToast(text, isDue ? 'error' : 'warn', 5000);
+  } catch (e) { /* 알림은 부가 기능이라 조용히 실패 */ }
+}
+
+function dismissShinsinBanner() {
+  localStorage.setItem('shinsinBannerDismissed', new Date().toISOString().split('T')[0]);
+  document.getElementById('shinsin-banner').style.display = 'none';
 }
 
 async function getPaymentDates() {

@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.6.0';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -68,7 +68,9 @@ async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-root').style.display = 'block';
   await checkAdminStatus();
-  loadData();
+  await loadData();
+  await renderBlockedDaysList();
+  checkShinsinReminder();
   setupRealtime();
 }
 
@@ -130,6 +132,7 @@ function setupRealtime() {
 // DATA
 // ============================================================
 let STORES = [];
+let BLOCKED_DATE_SET = new Set(); // 상신 담당자 휴무일 + 공휴일 (refund-admin.js에서 채워짐)
 const DEFAULT_SCHED = [
   { key: 'daily',   label: '매일',      color: '#10b981', lines: 'Z, Y, X, W',               days: '매일 (월~일)',                        note: '' },
   { key: 'alt',     label: '격일',      color: '#3b82f6', lines: 'A, B, C, D, E, F, G, H',   days: 'B·D·F·H: 홀수일 / A·C·E·G: 짝수일', note: '' },
@@ -484,7 +487,7 @@ function switchPage(p) {
   const idx = { list: 0, schedule: 1, refund: 2, refundlist: 3 };
   if (idx[p] !== undefined) document.querySelectorAll('.nav-tab')[idx[p]]?.classList.add('active');
   if (p === 'schedule') renderSchedDisplay();
-  if (p === 'admin') { renderAlist(); renderSchedEditTable(); loadGeminiKey(); }
+  if (p === 'admin') { renderAlist(); renderSchedEditTable(); loadGeminiKey(); renderPaymentDateList(); renderBlockedDaysList(); }
   if (p === 'refund' && rfStores.length === 0) loadRefundStores();
   if (p === 'refundlist') { loadPaymentDate(); loadRefundList(); renderPaymentDateList(); }
 }

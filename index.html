@@ -59,6 +59,13 @@
   </div>
 </header>
 
+<!-- 상신 알림 배너 -->
+<div id="shinsin-banner" style="display:none;align-items:center;gap:12px;background:#fffbeb;border-bottom:1px solid #fde68a;color:#78350f;padding:12px 24px;font-size:13px;font-weight:600;">
+  <span id="shinsin-banner-text" style="flex:1;"></span>
+  <button onclick="switchPage('refundlist')" style="padding:6px 14px;background:#78350f;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">환불 목록으로</button>
+  <button onclick="dismissShinsinBanner()" style="background:none;border:none;cursor:pointer;color:#78350f;font-size:16px;padding:0 4px;">✕</button>
+</div>
+
 <!-- PAGE: LIST -->
 <div id="page-list" class="page active">
   <div class="hero">
@@ -294,6 +301,7 @@
     <div class="admin-tabs">
       <div class="atab active" onclick="switchAtab('store')">매장 관리</div>
       <div class="atab" onclick="switchAtab('sched')">운송 일정 수정 </div>
+      <div class="atab" onclick="switchAtab('notify')">상신 알림 관리</div>
     </div>
 
     <!-- STORE PANEL -->
@@ -388,6 +396,34 @@
         <span class="saved-msg" id="sched-save-msg">✓ 저장 완료 — 매장 목록에 즉시 반영됩니다</span>
       </div>
     </div>
+
+    <!-- NOTIFY PANEL -->
+    <div id="apanel-notify" class="apanel">
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">입금일 설정 <span style="font-size:12px;font-weight:500;color:var(--text3);">(재무부 전달 시 추가/관리)</span></div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+          <input type="date" id="admin-payment-date" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;">
+          <button onclick="addPaymentDate()" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ 추가</button>
+        </div>
+        <div id="admin-payment-date-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:10px;">가장 가까운 미래 입금일이 환불 접수 폼에 "다음 입금일"로 표시됩니다.</div>
+      </div>
+
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;">
+        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">휴무일 / 공휴일 등록</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">상신 마감일 계산과 상신 알림에서 이 날짜들을 제외합니다.</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+          <input type="date" id="admin-blocked-date" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;">
+          <select id="admin-blocked-type" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;">
+            <option value="off">내 휴무일</option>
+            <option value="holiday">공휴일</option>
+          </select>
+          <input type="text" id="admin-blocked-note" placeholder="비고 (선택)" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;flex:1;min-width:120px;">
+          <button onclick="addBlockedDay()" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ 추가</button>
+        </div>
+        <div id="admin-blocked-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -399,22 +435,11 @@
       <p>접수된 환불 요청을 확인하고 처리 상태를 관리합니다. 변경사항은 <strong>별도 DB에 저장</strong>되어 모든 팀원과 실시간 공유됩니다.</p>
     </div>
 
-    <!-- 입금일 설정 -->
-    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:260px;">
-        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">입금일 설정 <span style="font-size:12px;font-weight:500;color:var(--text3);">(재무부 전달 시 추가/관리)</span></div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-          <input type="date" id="admin-payment-date" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;">
-          <button onclick="addPaymentDate()" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ 추가</button>
-        </div>
-        <div id="admin-payment-date-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-        <div style="font-size:12px;color:var(--text3);margin-top:10px;">가장 가까운 미래 입금일이 환불 접수 폼에 "다음 입금일"로 표시됩니다.</div>
-      </div>
-      <div style="flex-shrink:0;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 24px;text-align:center;">
-        <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">다음 상신예정일</div>
-        <div id="next-shinsin-date" style="font-size:22px;font-weight:800;color:var(--accent);">-</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">다음 입금일로부터 3영업일 전</div>
-      </div>
+    <!-- 다음 상신예정일 (등록/관리는 어드민 > 상신 알림 관리) -->
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 24px;text-align:center;max-width:280px;margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">다음 상신예정일</div>
+      <div id="next-shinsin-date" style="font-size:22px;font-weight:800;color:var(--accent);">-</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">휴무일·공휴일 반영, 입금일로부터 3영업일 전</div>
     </div>
 
     <!-- 필터 + 통계 -->
