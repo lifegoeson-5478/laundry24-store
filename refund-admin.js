@@ -163,7 +163,8 @@ async function autoRegisterHolidays() {
         showToast(`${year}년 공휴일이 등록되었습니다`, 'success');
         await renderBlockedDaysList();
       } catch(e) { showToast('등록 실패: ' + e.message, 'error'); }
-    }
+    },
+    { okLabel: '등록', okColor: 'var(--accent)', icon: '📅' }
   );
 }
 
@@ -278,7 +279,8 @@ async function markPaymentDateSubmitted(date) {
     async () => {
       await removePaymentDate(date);
       showToast('상신 완료 처리되었습니다');
-    }
+    },
+    { okLabel: '완료 처리', okColor: 'var(--accent)' }
   );
 }
 
@@ -1018,10 +1020,18 @@ async function proceedRondiCardException() {
   await _openRefundFormCore();
 }
 
-function showConfirmModal(title, desc, onConfirm) {
+function showConfirmModal(title, desc, onConfirm, opts) {
+  opts = opts || {};
   document.getElementById('custom-confirm-title').textContent = title;
   document.getElementById('custom-confirm-desc').textContent = desc;
   const okBtn = document.getElementById('custom-confirm-ok');
+  okBtn.textContent = opts.okLabel || '삭제';
+  okBtn.style.background = opts.okColor || '#e24b4a';
+  const icon = document.querySelector('#custom-confirm-overlay > div > div:first-child');
+  if (icon) {
+    icon.style.background = opts.okLabel ? (opts.iconBg || '#e6f7f5') : '#fee2e2';
+    icon.textContent = opts.icon || (opts.okLabel ? '✓' : '🗑');
+  }
   okBtn.onclick = () => {
     document.getElementById('custom-confirm-overlay').style.display = 'none';
     onConfirm();
