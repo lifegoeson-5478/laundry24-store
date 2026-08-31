@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.6.4';
+const APP_VERSION = '1.7.0';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -64,6 +64,75 @@ async function handleLogout() {
   window.location.reload();
 }
 
+// ============================================================
+// 비밀번호 찾기 / 재설정
+// ============================================================
+function showResetForm() {
+  document.getElementById('login-main-block').style.display = 'none';
+  document.getElementById('reset-request-form').style.display = 'block';
+}
+function hideResetForm() {
+  document.getElementById('reset-request-form').style.display = 'none';
+  document.getElementById('login-main-block').style.display = 'block';
+}
+
+async function handlePasswordResetRequest(e) {
+  e.preventDefault();
+  const email = document.getElementById('reset-email').value.trim();
+  const errEl = document.getElementById('reset-request-error');
+  const okEl = document.getElementById('reset-request-success');
+  const btn = document.getElementById('reset-request-btn');
+  errEl.style.display = 'none';
+  okEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '보내는 중...';
+  try {
+    const { error } = await sbClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname,
+    });
+    if (error) throw error;
+    okEl.style.display = 'block';
+    document.getElementById('reset-email').value = '';
+  } catch (err) {
+    errEl.textContent = '요청 중 오류가 발생했습니다: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '재설정 링크 보내기';
+  }
+  return false;
+}
+
+async function handleSetNewPassword(e) {
+  e.preventDefault();
+  const pw1 = document.getElementById('set-password-1').value;
+  const pw2 = document.getElementById('set-password-2').value;
+  const errEl = document.getElementById('set-password-error');
+  const btn = document.getElementById('set-password-btn');
+  errEl.style.display = 'none';
+  if (pw1 !== pw2) {
+    errEl.textContent = '비밀번호가 서로 일치하지 않습니다.';
+    errEl.style.display = 'block';
+    return false;
+  }
+  btn.disabled = true;
+  btn.textContent = '변경 중...';
+  try {
+    const { error } = await sbClient.auth.updateUser({ password: pw1 });
+    if (error) throw error;
+    showToast('비밀번호가 변경되었습니다', 'success');
+    document.getElementById('set-password-screen').style.display = 'none';
+    await showApp();
+  } catch (err) {
+    errEl.textContent = '변경 중 오류가 발생했습니다: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '비밀번호 변경';
+  }
+  return false;
+}
+
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-root').style.display = 'flex';
@@ -89,20 +158,29 @@ async function checkAdminStatus() {
 }
 
 async function initAuth() {
+  let handledRecovery = false;
+  // 세션 만료/로그아웃/비밀번호 재설정 링크 접속 등 인증 상태 변화 감지
+  sbClient.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      handledRecovery = true;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-root').style.display = 'none';
+      document.getElementById('set-password-screen').style.display = 'flex';
+    } else if (event === 'SIGNED_OUT') {
+      document.getElementById('set-password-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-root').style.display = 'none';
+    }
+  });
+
   const { data: { session } } = await sbClient.auth.getSession();
+  if (handledRecovery) return; // 비밀번호 재설정 화면이 이미 떠 있으므로 그대로 둠
   if (session) {
     await showApp();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-root').style.display = 'none';
   }
-  // 세션 만료/로그아웃 등 인증 상태 변화 감지
-  sbClient.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_OUT') {
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('app-root').style.display = 'none';
-    }
-  });
 }
 
 function scheduleRealtimeReload(msg) {

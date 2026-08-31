@@ -112,7 +112,9 @@ function renderBlockedCalendarGrid() {
     const type = BLOCKED_DAYS_MAP.get(ds);
     const marked = isPayment ? 'payment' : type;
     const bg = marked ? BLOCKED_MODE_COLORS[marked] : 'transparent';
-    html += `<div onclick="toggleBlockedDate('${ds}')" style="padding:6px 0;border-radius:6px;cursor:pointer;background:${bg};color:${marked ? 'white' : 'var(--text)'};font-weight:${marked ? 700 : 500};">${day}</div>`;
+    // 입금일과 휴무일/공휴일이 겹치는 날은 배경(입금일) + 밑줄(휴무·공휴일)로 둘 다 표시
+    const overlapBorder = (isPayment && type) ? `border-bottom:3px solid ${BLOCKED_MODE_COLORS[type]};` : '';
+    html += `<div onclick="toggleBlockedDate('${ds}')" title="${isPayment && type ? '입금일 + ' + (type === 'holiday' ? '공휴일' : '내 휴무일') : ''}" style="padding:6px 0 3px;border-radius:6px;cursor:pointer;background:${bg};color:${marked ? 'white' : 'var(--text)'};font-weight:${marked ? 700 : 500};${overlapBorder}">${day}</div>`;
   }
   grid.innerHTML = html;
 }

@@ -20,19 +20,64 @@
       <div style="font-size:22px;font-weight:900;letter-spacing:-1px;color:#111;margin-bottom:6px;">LAUNDRY24</div>
       <div style="font-size:13px;color:var(--text2);">로그인 후 이용해주세요</div>
     </div>
-    <form id="login-form" onsubmit="return handleLogin(event)">
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
-        <label style="font-size:12px;font-weight:700;color:var(--text2);">이메일</label>
-        <input type="email" id="login-email" required autocomplete="username" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+    <div id="login-main-block">
+      <form id="login-form" onsubmit="return handleLogin(event)">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text2);">이메일</label>
+          <input type="email" id="login-email" required autocomplete="username" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text2);">비밀번호</label>
+          <input type="password" id="login-password" required autocomplete="current-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+        </div>
+        <div id="login-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
+        <button type="submit" id="login-submit-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">로그인</button>
+      </form>
+      <div style="text-align:center;margin-top:14px;">
+        <a href="#" onclick="showResetForm(); return false;" style="font-size:12.5px;color:var(--text2);text-decoration:none;">비밀번호를 잊으셨나요?</a>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:10px;">계정이 없으신가요? 관리자에게 계정 생성을 요청해주세요.</div>
+    </div>
+
+    <!-- 비밀번호 재설정 요청 폼 -->
+    <form id="reset-request-form" style="display:none;" onsubmit="return handlePasswordResetRequest(event)">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">비밀번호 재설정</div>
+        <div style="font-size:12.5px;color:var(--text2);">가입하신 이메일로 재설정 링크를 보내드려요</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
-        <label style="font-size:12px;font-weight:700;color:var(--text2);">비밀번호</label>
-        <input type="password" id="login-password" required autocomplete="current-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+        <label style="font-size:12px;font-weight:700;color:var(--text2);">이메일</label>
+        <input type="email" id="reset-email" required autocomplete="username" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
       </div>
-      <div id="login-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
-      <button type="submit" id="login-submit-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">로그인</button>
+      <div id="reset-request-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
+      <div id="reset-request-success" style="display:none;font-size:12.5px;color:#065f46;background:var(--accent-light);border:1px solid #9FE1CB;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;">이메일로 재설정 링크를 보냈습니다. 메일함을 확인해주세요.</div>
+      <button type="submit" id="reset-request-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">재설정 링크 보내기</button>
+      <div style="text-align:center;margin-top:14px;">
+        <a href="#" onclick="hideResetForm(); return false;" style="font-size:12.5px;color:var(--text2);text-decoration:none;">← 로그인으로 돌아가기</a>
+      </div>
     </form>
-    <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:18px;">계정이 없으신가요? 관리자에게 계정 생성을 요청해주세요.</div>
+  </div>
+</div>
+
+<!-- 새 비밀번호 설정 (재설정 링크로 접속 시) -->
+<div id="set-password-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);padding:20px;">
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);padding:40px 36px;max-width:380px;width:100%;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:22px;font-weight:900;letter-spacing:-1px;color:#111;margin-bottom:6px;">LAUNDRY24</div>
+      <div style="font-size:13px;color:var(--text2);">새 비밀번호를 설정해주세요</div>
+    </div>
+    <form id="set-password-form" onsubmit="return handleSetNewPassword(event)">
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:var(--text2);">새 비밀번호</label>
+        <input type="password" id="set-password-1" required minlength="6" autocomplete="new-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+        <label style="font-size:12px;font-weight:700;color:var(--text2);">새 비밀번호 확인</label>
+        <input type="password" id="set-password-2" required minlength="6" autocomplete="new-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div id="set-password-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
+      <button type="submit" id="set-password-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">비밀번호 변경</button>
+    </form>
   </div>
 </div>
 
