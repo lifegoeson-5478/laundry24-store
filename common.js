@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.6.3';
+const APP_VERSION = '1.6.4';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -66,7 +66,7 @@ async function handleLogout() {
 
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-root').style.display = 'block';
+  document.getElementById('app-root').style.display = 'flex';
   await checkAdminStatus();
   await loadData();
   await renderBlockedDaysList();
