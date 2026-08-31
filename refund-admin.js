@@ -3,17 +3,16 @@
 // ============================================================
 
 // 입금일 목록 저장/로드 (Supabase settings 테이블, JSON 배열)
-// 3영업일 전 계산 (주말 + 등록된 휴무일/공휴일 제외)
-function calcShinsinDate(dateStr, blockedDates) {
+// 3평일 전 계산 (주말만 제외 — 등록된 휴무일/공휴일은 이 날짜 자체엔 반영하지 않음.
+// 대신 이 날짜가 마침 휴무일/공휴일이면 상신 알림을 그 전 영업일로 당겨서 띄운다 — previousWorkingDay 참고)
+function calcShinsinDate(dateStr) {
   if (!dateStr) return '';
-  const blocked = blockedDates || BLOCKED_DATE_SET || new Set();
   const d = new Date(dateStr);
   let count = 0;
   while (count < 3) {
     d.setDate(d.getDate() - 1);
     const day = d.getDay();
-    const ds = d.toISOString().split('T')[0];
-    if (day !== 0 && day !== 6 && !blocked.has(ds)) count++;
+    if (day !== 0 && day !== 6) count++;
   }
   return d.toISOString().split('T')[0];
 }
