@@ -300,54 +300,6 @@ async function saveSched() {
   }
 }
 
-let schedUnlocked = false;
-
-function openPwModal() {
-  document.getElementById('pw-input').value = '';
-  document.getElementById('pw-error').textContent = '';
-  document.getElementById('pw-overlay').classList.add('open');
-  setTimeout(() => document.getElementById('pw-input').focus(), 100);
-}
-function closePwModal() {
-  document.getElementById('pw-overlay').classList.remove('open');
-}
-function togglePwVisible() {
-  const input = document.getElementById('pw-input');
-  input.type = input.type === 'password' ? 'text' : 'password';
-}
-async function checkPassword() {
-  const val = document.getElementById('pw-input').value;
-  const btn = document.querySelector('.btn-pw-confirm');
-  btn.disabled = true;
-  let ok = false;
-  try {
-    ok = await sbFetch('rpc/verify_sched_password', {
-      method: 'POST',
-      body: JSON.stringify({ pwd: val }),
-    });
-  } catch (e) {
-    ok = false;
-  }
-  btn.disabled = false;
-
-  if (ok === true) {
-    schedUnlocked = true;
-    closePwModal();
-    // 실제 탭 전환
-    document.querySelectorAll('.atab').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.apanel').forEach(el => el.classList.remove('active'));
-    document.querySelector(`.atab[onclick="switchAtab('sched')"]`).classList.add('active');
-    document.getElementById('apanel-sched').classList.add('active');
-    renderSchedEditTable();
-  } else {
-    const err = document.getElementById('pw-error');
-    err.textContent = '비밀번호가 올바르지 않습니다.';
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-input').focus();
-    setTimeout(() => { err.textContent = ''; }, 2500);
-  }
-}
-
 function switchEtab(t) {
   ['store', 'refund', 'closed'].forEach(name => {
     document.getElementById('epanel-' + name).style.display = name === t ? 'block' : 'none';
@@ -358,10 +310,6 @@ function switchEtab(t) {
 }
 
 function switchAtab(t) {
-  if (t === 'sched' && !schedUnlocked) {
-    openPwModal();
-    return;
-  }
   document.querySelectorAll('.atab').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.apanel').forEach(el => el.classList.remove('active'));
   document.querySelector(`.atab[onclick="switchAtab('${t}')"]`).classList.add('active');

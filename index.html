@@ -50,7 +50,7 @@
       <div class="nav-tab" onclick="switchPage('refundlist')">환불 목록</div>
     </div>
     <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
-      <button class="btn-admin" onclick="switchPage('admin')">
+      <button class="btn-admin" id="admin-nav-btn" onclick="switchPage('admin')" style="display:none;">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
         어드민
       </button>
@@ -639,24 +639,6 @@ initAuth();
     <div style="display:flex;gap:8px;">
       <button onclick="document.getElementById('custom-confirm-overlay').style.display='none'" style="flex:1;padding:12px;background:var(--bg);color:var(--text2);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">취소</button>
       <button id="custom-confirm-ok" style="flex:1;padding:12px;background:#e24b4a;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">삭제</button>
-    </div>
-  </div>
-</div>
-
-<!-- 비밀번호 모달 -->
-<div class="pw-overlay" id="pw-overlay">
-  <div class="pw-box">
-    <div class="pw-icon"></div>
-    <div class="pw-title">운송 일정 수정</div>
-    <div class="pw-desc">접근하려면 비밀번호를 입력하세요</div>
-    <div class="pw-input-wrap">
-      <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkPassword()">
-      <button class="pw-toggle" onclick="togglePwVisible()" id="pw-toggle-btn"></button>
-    </div>
-    <div class="pw-error" id="pw-error"></div>
-    <div class="pw-btns">
-      <button class="btn-pw-cancel" onclick="closePwModal()">취소</button>
-      <button class="btn-pw-confirm" onclick="checkPassword()">확인</button>
     </div>
   </div>
 </div>

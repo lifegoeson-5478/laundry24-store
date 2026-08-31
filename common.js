@@ -67,8 +67,23 @@ async function handleLogout() {
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-root').style.display = 'block';
+  await checkAdminStatus();
   loadData();
   setupRealtime();
+}
+
+// ============================================================
+// 관리자 권한 확인 (실제 데이터 쓰기 제한은 Supabase RLS가 담당,
+// 여기서는 UI에서 어드민 버튼을 보여줄지만 결정)
+// ============================================================
+let isAdmin = false;
+async function checkAdminStatus() {
+  try {
+    isAdmin = await sbFetch('rpc/am_i_admin', { method: 'POST' }) === true;
+  } catch (e) {
+    isAdmin = false;
+  }
+  document.getElementById('admin-nav-btn').style.display = isAdmin ? '' : 'none';
 }
 
 async function initAuth() {
@@ -462,6 +477,7 @@ let deleteTargetIdx = -1;
 // PAGE SWITCHING
 // ============================================================
 function switchPage(p) {
+  if (p === 'admin' && !isAdmin) { showToast('어드민 권한이 없습니다', 'error'); return; }
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + p).classList.add('active');
@@ -481,7 +497,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('overlay').classList.remove('open');
     document.getElementById('confirm-overlay').classList.remove('open');
-    closePwModal();
   }
 });
 window.addEventListener('scroll', () => {
