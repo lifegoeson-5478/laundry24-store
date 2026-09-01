@@ -182,8 +182,8 @@ async function checkShinsinReminder() {
     const reminderStart = previousWorkingDay(shinsinDate);
     if (todayStr < reminderStart) return;
 
-    const rows = await sbFetch('refund_requests?select=id,처리완료,환불방법');
-    const target = (rows || []).filter(r => !r.처리완료 && (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금'));
+    const rows = await sbFetch('refund_requests?select=id,처리완료,환불방법,상신예정일');
+    const target = (rows || []).filter(r => !r.처리완료 && (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일);
     if (!target.length) return;
 
     if (localStorage.getItem('shinsinBannerDismissed') === todayStr) return;
@@ -1146,7 +1146,7 @@ async function generateShinsinContent() {
 
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일
   );
 
   if (!target.length) {
@@ -1244,7 +1244,7 @@ async function exportRefundExcel() {
   }
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일
   );
   if (!target.length) {
     showToast('상신 대상 접수건이 없습니다');
