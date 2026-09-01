@@ -182,8 +182,8 @@ async function checkShinsinReminder() {
     const reminderStart = previousWorkingDay(shinsinDate);
     if (todayStr < reminderStart) return;
 
-    const rows = await sbFetch('refund_requests?select=id,처리완료,환불방법,상신예정일');
-    const target = (rows || []).filter(r => !r.처리완료 && (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일);
+    const rows = await sbFetch('refund_requests?select=id,처리완료,환불방법');
+    const target = (rows || []).filter(r => !r.처리완료 && (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금'));
     if (!target.length) return;
 
     if (localStorage.getItem('shinsinBannerDismissed') === todayStr) return;
@@ -192,8 +192,15 @@ async function checkShinsinReminder() {
     const text = isDue
       ? `⚠ 오늘은 상신 예정일입니다 (${shinsinDate}) — 처리 대기 ${target.length}건`
       : `📅 상신 예정일이 ${shinsinDate}로 다가옵니다 — 처리 대기 ${target.length}건`;
+    const banner = document.getElementById('shinsin-banner');
+    const accentColor = isDue ? '#7f1d1d' : '#78350f';
+    banner.style.background = isDue ? '#fef2f2' : '#fffbeb';
+    banner.style.borderBottomColor = isDue ? '#fca5a5' : '#fde68a';
+    banner.style.color = accentColor;
+    document.getElementById('shinsin-banner-goto').style.background = accentColor;
+    document.getElementById('shinsin-banner-close').style.color = accentColor;
     document.getElementById('shinsin-banner-text').textContent = text;
-    document.getElementById('shinsin-banner').style.display = 'flex';
+    banner.style.display = 'flex';
     showToast(text, isDue ? 'error' : 'warn', 5000);
   } catch (e) { /* 알림은 부가 기능이라 조용히 실패 */ }
 }
@@ -1139,7 +1146,7 @@ async function generateShinsinContent() {
 
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
   );
 
   if (!target.length) {
@@ -1237,7 +1244,7 @@ async function exportRefundExcel() {
   }
   const target = refundList.filter(r =>
     !r.처리완료 &&
-    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금') && r.상신예정일
+    (r.환불방법 === '계좌입금' || r.환불방법 === '계좌 입금')
   );
   if (!target.length) {
     showToast('상신 대상 접수건이 없습니다');
