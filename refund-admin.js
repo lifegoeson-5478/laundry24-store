@@ -1236,6 +1236,22 @@ function copyShinsinContent() {
   });
 }
 
+// xlsx-js-style is ~700KB and only needed here, so load it on first use instead of on every page load.
+let _xlsxLoadPromise = null;
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve();
+  if (!_xlsxLoadPromise) {
+    _xlsxLoadPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  return _xlsxLoadPromise;
+}
+
 async function exportRefundExcel() {
   const payDate = await getNextPaymentDate();
   if (!payDate) {
@@ -1275,6 +1291,7 @@ async function exportRefundExcel() {
     ];
   });
 
+  await loadXLSX();
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
   const wb = XLSX.utils.book_new();
 
