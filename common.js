@@ -578,6 +578,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('overlay').classList.remove('open');
     document.getElementById('confirm-overlay').classList.remove('open');
+    document.getElementById('refund-detail-overlay').style.display = 'none';
   }
 });
 window.addEventListener('scroll', () => {
