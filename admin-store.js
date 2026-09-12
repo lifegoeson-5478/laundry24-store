@@ -272,6 +272,10 @@ function renderSchedEditTable() {
       </td>
       <td><input id="se-${idx}-lines" value="${sd.lines}" placeholder="해당 라인"></td>
       <td><input id="se-${idx}-days" value="${sd.days}" placeholder="예: 월, 목, 토"></td>
+      <td>
+        <input type="date" id="se-${idx}-effdate" value="${sd.effectiveDate || ''}" style="margin-bottom:4px;width:100%">
+        <input id="se-${idx}-pending" value="${sd.pendingDays || ''}" placeholder="이 날짜부터 적용할 패턴">
+      </td>
       <td><textarea id="se-${idx}-note" placeholder="예: 추석 연휴 휴무">${sd.note}</textarea></td>
     </tr>
   `).join('');
@@ -285,10 +289,16 @@ async function saveSched() {
       const sd = schedData[idx];
       sd.lines = document.getElementById(`se-${idx}-lines`).value;
       sd.days  = document.getElementById(`se-${idx}-days`).value;
+      sd.effectiveDate = document.getElementById(`se-${idx}-effdate`).value || '';
+      sd.pendingDays = document.getElementById(`se-${idx}-pending`).value || '';
       sd.note  = document.getElementById(`se-${idx}-note`).value;
       await sbFetch(`schedules?on_conflict=key`, {
         method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
-        body: JSON.stringify({ key: sd.key, label: sd.label, color: sd.color, lines: sd.lines, days: sd.days, note: sd.note, updated_at: new Date().toISOString() }),
+        body: JSON.stringify({
+          key: sd.key, label: sd.label, color: sd.color, lines: sd.lines, days: sd.days, note: sd.note,
+          pending_days: sd.pendingDays || null, effective_date: sd.effectiveDate || null,
+          updated_at: new Date().toISOString(),
+        }),
       });
     }
     renderList();

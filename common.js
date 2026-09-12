@@ -212,10 +212,10 @@ function setupRealtime() {
 let STORES = [];
 let BLOCKED_DATE_SET = new Set(); // 상신 담당자 휴무일 + 공휴일 (refund-admin.js에서 채워짐)
 const DEFAULT_SCHED = [
-  { key: 'daily',   label: '매일',      color: '#10b981', lines: 'Z, Y, X, W',               days: '매일 (월~일)',                        note: '' },
-  { key: 'alt',     label: '격일',      color: '#3b82f6', lines: 'A, B, C, D, E, F, G, H',   days: 'B·D·F·H: 홀수일 / A·C·E·G: 짝수일', note: '' },
-  { key: 'busan',   label: '부산/대구', color: '#f59e0b', lines: '부산·대구 지역 매장',       days: '월, 목, 토',                          note: '' },
-  { key: 'daejeon', label: '대전',      color: '#ef4444', lines: '대전 지역 매장',             days: '월, 목, 토',                          note: '' },
+  { key: 'daily',   label: '매일',      color: '#10b981', lines: 'Z, Y, X, W',               days: '매일 (월~일)',                        note: '', pendingDays: '', effectiveDate: '' },
+  { key: 'alt',     label: '격일',      color: '#3b82f6', lines: 'A, B, C, D, E, F, G, H',   days: 'B·D·F·H: 홀수일 / A·C·E·G: 짝수일', note: '', pendingDays: '', effectiveDate: '' },
+  { key: 'busan',   label: '부산/대구', color: '#f59e0b', lines: '부산·대구 지역 매장',       days: '월, 목, 토',                          note: '', pendingDays: '', effectiveDate: '' },
+  { key: 'daejeon', label: '대전',      color: '#ef4444', lines: '대전 지역 매장',             days: '월, 목, 토',                          note: '', pendingDays: '', effectiveDate: '' },
 ];
 let schedData = JSON.parse(JSON.stringify(DEFAULT_SCHED));
 
@@ -323,6 +323,7 @@ async function loadData() {
       schedData = scheds.map(r => ({
         key: r.key, label: r.label, color: r.color,
         lines: r.lines, days: r.days, note: r.note || '',
+        pendingDays: r.pending_days || '', effectiveDate: r.effective_date || '',
       }));
     }
     renderList();
@@ -389,36 +390,40 @@ function parseDaysFromPattern(pattern, line) {
   return null;
 }
 
+// 예약된 패턴 변경: effectiveDate 이후 날짜부터는 pendingDays를 적용
+function resolveDaysForDate(sd, date) {
+  if (sd.pendingDays && sd.effectiveDate) {
+    const eff = new Date(sd.effectiveDate + 'T00:00:00');
+    if (date >= eff) return sd.pendingDays;
+  }
+  return sd.days;
+}
+
 function getNextTwoDates(frequency, line) {
   const sd = schedData.find(s => s.label === frequency);
   if (!sd) return null;
-
-  const parsed = parseDaysFromPattern(sd.days, line);
-  if (!parsed) return null;
 
   const today = new Date();
   today.setHours(0,0,0,0);
   const results = [];
 
-  if (parsed.type === 'fixed') {
-    // 고정 요일: 다음 7일~14일에서 해당 요일 찾기
-    for (let offset = 0; offset <= 13 && results.length < 2; offset++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + offset);
+  // 예약된 패턴 변경이 14일 이내에 걸쳐 있을 수 있어서, 날짜마다 그날 기준 패턴을 다시 판단한다.
+  for (let offset = 0; offset <= 13 && results.length < 2; offset++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + offset);
+    const parsed = parseDaysFromPattern(resolveDaysForDate(sd, d), line);
+    if (!parsed) continue;
+
+    if (parsed.type === 'fixed') {
       if (parsed.days.includes(d.getDay())) results.push(new Date(d));
-    }
-  } else if (parsed.type === 'date_parity') {
-    // 홀수/짝수일: 앞으로 14일 중 해당 날짜 찾기
-    const isOdd = parsed.parity === 'odd';
-    for (let offset = 0; offset <= 13 && results.length < 2; offset++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + offset);
+    } else if (parsed.type === 'date_parity') {
+      const isOdd = parsed.parity === 'odd';
       const dateNum = d.getDate();
       if (isOdd ? dateNum % 2 === 1 : dateNum % 2 === 0) results.push(new Date(d));
     }
   }
 
-  return results.length >= 2 ? results : results.length === 1 ? results : null;
+  return results.length > 0 ? results : null;
 }
 
 function formatDate(d) {
@@ -521,7 +526,7 @@ function isVisitingToday(s) {
   if (s.frequency === '격일') {
     const sd = getSchedByFreq('격일');
     if (sd) {
-      const map = parseLineParityMap(sd.days);
+      const map = parseLineParityMap(resolveDaysForDate(sd, today));
       const parity = map[l];
       if (parity === 'odd')  return dateNum % 2 === 1;
       if (parity === 'even') return dateNum % 2 === 0;
