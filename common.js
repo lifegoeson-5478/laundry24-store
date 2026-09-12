@@ -212,10 +212,10 @@ function setupRealtime() {
 let STORES = [];
 let BLOCKED_DATE_SET = new Set(); // 상신 담당자 휴무일 + 공휴일 (refund-admin.js에서 채워짐)
 const DEFAULT_SCHED = [
-  { key: 'daily',   label: '매일',      color: '#10b981', lines: 'Z, Y, X, W',               days: '매일 (월~일)',                        note: '', pendingDays: '', effectiveDate: '' },
-  { key: 'alt',     label: '격일',      color: '#3b82f6', lines: 'A, B, C, D, E, F, G, H',   days: 'B·D·F·H: 홀수일 / A·C·E·G: 짝수일', note: '', pendingDays: '', effectiveDate: '' },
-  { key: 'busan',   label: '부산/대구', color: '#f59e0b', lines: '부산·대구 지역 매장',       days: '월, 목, 토',                          note: '', pendingDays: '', effectiveDate: '' },
-  { key: 'daejeon', label: '대전',      color: '#ef4444', lines: '대전 지역 매장',             days: '월, 목, 토',                          note: '', pendingDays: '', effectiveDate: '' },
+  { key: 'daily',   label: '매일',      color: '#10b981', lines: 'Z, Y, X, W',               days: '매일 (월~일)',                        note: '', pendingDays: '', effectiveDate: '', blockedDates: [] },
+  { key: 'alt',     label: '격일',      color: '#3b82f6', lines: 'A, B, C, D, E, F, G, H',   days: 'B·D·F·H: 홀수일 / A·C·E·G: 짝수일', note: '', pendingDays: '', effectiveDate: '', blockedDates: [] },
+  { key: 'busan',   label: '부산/대구', color: '#f59e0b', lines: '부산·대구 지역 매장',       days: '월, 목, 토',                          note: '', pendingDays: '', effectiveDate: '', blockedDates: [] },
+  { key: 'daejeon', label: '대전',      color: '#ef4444', lines: '대전 지역 매장',             days: '월, 목, 토',                          note: '', pendingDays: '', effectiveDate: '', blockedDates: [] },
 ];
 let schedData = JSON.parse(JSON.stringify(DEFAULT_SCHED));
 
@@ -324,6 +324,7 @@ async function loadData() {
         key: r.key, label: r.label, color: r.color,
         lines: r.lines, days: r.days, note: r.note || '',
         pendingDays: r.pending_days || '', effectiveDate: r.effective_date || '',
+        blockedDates: (r.blocked_dates || '').split(',').map(s => s.trim()).filter(Boolean),
       }));
     }
     renderList();
@@ -399,6 +400,16 @@ function resolveDaysForDate(sd, date) {
   return sd.days;
 }
 
+function toISODateLocal(d) {
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+// 명절 등 특정 날짜에 수거/방문이 아예 없는 경우 (스케줄 패턴과 무관하게 제외)
+function isBlockedDate(sd, date) {
+  return !!(sd.blockedDates && sd.blockedDates.includes(toISODateLocal(date)));
+}
+
 function getNextTwoDates(frequency, line) {
   const sd = schedData.find(s => s.label === frequency);
   if (!sd) return null;
@@ -411,6 +422,7 @@ function getNextTwoDates(frequency, line) {
   for (let offset = 0; offset <= 13 && results.length < 2; offset++) {
     const d = new Date(today);
     d.setDate(today.getDate() + offset);
+    if (isBlockedDate(sd, d)) continue;
     const parsed = parseDaysFromPattern(resolveDaysForDate(sd, d), line);
     if (!parsed) continue;
 
@@ -521,10 +533,11 @@ function isVisitingToday(s) {
   const dateNum = today.getDate();
   const dow = today.getDay(); // 0=일,1=월...6=토
   const l = (s.line || '').toUpperCase().trim();
+  const sd = getSchedByFreq(s.frequency);
+  if (sd && isBlockedDate(sd, today)) return false;
 
   if (s.frequency === '매일') return true;
   if (s.frequency === '격일') {
-    const sd = getSchedByFreq('격일');
     if (sd) {
       const map = parseLineParityMap(resolveDaysForDate(sd, today));
       const parity = map[l];

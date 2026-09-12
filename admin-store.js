@@ -276,6 +276,7 @@ function renderSchedEditTable() {
         <input type="date" id="se-${idx}-effdate" value="${sd.effectiveDate || ''}" style="margin-bottom:4px;width:100%">
         <input id="se-${idx}-pending" value="${sd.pendingDays || ''}" placeholder="이 날짜부터 적용할 패턴">
       </td>
+      <td><input id="se-${idx}-blocked" value="${(sd.blockedDates || []).join(',')}" placeholder="예: 2026-09-24,2026-09-25"></td>
       <td><textarea id="se-${idx}-note" placeholder="예: 추석 연휴 휴무">${sd.note}</textarea></td>
     </tr>
   `).join('');
@@ -291,12 +292,14 @@ async function saveSched() {
       sd.days  = document.getElementById(`se-${idx}-days`).value;
       sd.effectiveDate = document.getElementById(`se-${idx}-effdate`).value || '';
       sd.pendingDays = document.getElementById(`se-${idx}-pending`).value || '';
+      sd.blockedDates = document.getElementById(`se-${idx}-blocked`).value.split(',').map(s => s.trim()).filter(Boolean);
       sd.note  = document.getElementById(`se-${idx}-note`).value;
       await sbFetch(`schedules?on_conflict=key`, {
         method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal',
         body: JSON.stringify({
           key: sd.key, label: sd.label, color: sd.color, lines: sd.lines, days: sd.days, note: sd.note,
           pending_days: sd.pendingDays || null, effective_date: sd.effectiveDate || null,
+          blocked_dates: sd.blockedDates.join(',') || null,
           updated_at: new Date().toISOString(),
         }),
       });
