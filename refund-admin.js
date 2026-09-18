@@ -3,16 +3,17 @@
 // ============================================================
 
 // 입금일 목록 저장/로드 (Supabase settings 테이블, JSON 배열)
-// 3평일 전 계산 (주말만 제외 — 등록된 휴무일/공휴일은 이 날짜 자체엔 반영하지 않음.
-// 대신 이 날짜가 마침 휴무일/공휴일이면 상신 알림을 그 전 영업일로 당겨서 띄운다 — previousWorkingDay 참고)
-function calcShinsinDate(dateStr) {
+// 3영업일 전 계산 (주말 + 등록된 휴무일/공휴일 모두 제외)
+function calcShinsinDate(dateStr, blockedDates) {
   if (!dateStr) return '';
+  const blocked = blockedDates || BLOCKED_DATE_SET || new Set();
   const d = new Date(dateStr);
   let count = 0;
   while (count < 3) {
     d.setDate(d.getDate() - 1);
     const day = d.getDay();
-    if (day !== 0 && day !== 6) count++;
+    const ds = d.toISOString().split('T')[0];
+    if (day !== 0 && day !== 6 && !blocked.has(ds)) count++;
   }
   return d.toISOString().split('T')[0];
 }
@@ -304,8 +305,11 @@ async function renderPaymentDateList() {
   const todayStr = new Date().toISOString().split('T')[0];
   const future = dates.filter(d => d >= todayStr);
 
+  // BLOCKED_DATE_SET 전역이 아직 로딩 전일 수 있어서, 여기선 직접 새로 받아와 사용한다.
+  const blocked = new Set((await getBlockedDays()).map(d => d.date));
+
   const shinsinEl = document.getElementById('next-shinsin-date');
-  if (shinsinEl) shinsinEl.textContent = future.length ? calcShinsinDate(future[0]) : '-';
+  if (shinsinEl) shinsinEl.textContent = future.length ? calcShinsinDate(future[0], blocked) : '-';
 
   const summaryEl = document.getElementById('admin-payment-summary');
   if (summaryEl) {
@@ -313,7 +317,7 @@ async function renderPaymentDateList() {
       summaryEl.innerHTML = '<span style="color:var(--text3);">등록된 입금일이 없습니다</span>';
     } else {
       const next = future[0];
-      const shinsin = calcShinsinDate(next);
+      const shinsin = calcShinsinDate(next, blocked);
       summaryEl.innerHTML = `다음 입금일 <strong>${next}</strong> · 다음 상신예정일 <strong>${shinsin}</strong>
         <button onclick="markPaymentDateSubmitted('${next}')" style="margin-left:8px;padding:4px 10px;background:var(--accent);color:white;border:none;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">상신 완료</button>`;
     }
