@@ -560,7 +560,7 @@ header { background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur
 #page-list .table-toolbar > span:last-child { font-size: 12px; }
 #page-list thead th { background: none; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text3); padding: 10px 14px; border-bottom: 1px solid var(--border); }
 #page-list tbody td { padding: 14px 14px; }
-#page-list tbody tr { border-bottom-color: #EEF0F2; }
+#page-list tbody tr { border-bottom-color: #E1E4E8; }
 #page-list tbody tr:hover { background: #F7F9FA; }
 #store-tbody tr:hover td:first-child { box-shadow: none; }
 
@@ -620,7 +620,7 @@ header { border-bottom: 1px solid var(--border); }
 /* 운송 일정 */
 .sched-table-wrap { border: none; border-top: 1px solid var(--text); border-radius: 0; box-shadow: none; background: none; }
 .sched-table thead th { background: none; font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--text3); border-bottom: 1px solid var(--border); }
-.sched-table tbody tr { border-bottom-color: #EEF0F2; }
+.sched-table tbody tr { border-bottom-color: #E1E4E8; }
 .sched-table tbody tr:hover { background: #F7F9FA; }
 .sched-dot-circle { display: none; }
 .sched-note-badge { background: none; border: none; padding: 0; border-radius: 0; font-size: 12px; font-weight: 600; color: #B45309; }
@@ -706,7 +706,7 @@ header { border-bottom: 1px solid var(--border); }
 .rf-result-store-tag { background: none; border: none; padding: 0; font-size: 12px; font-weight: 500; color: var(--text3); }
 .rf-divider { display: none; }
 .rf-steps-lbl { font-size: 11px; color: var(--text3); letter-spacing: .04em; opacity: 1; margin-bottom: 0; text-transform: none; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-.rf-step-row { margin: 0; padding: 14px 0; border-bottom: 1px solid #EEF0F2; font-size: 14px; gap: 16px; align-items: baseline; }
+.rf-step-row { margin: 0; padding: 14px 0; border-bottom: 1px solid #E1E4E8; font-size: 14px; gap: 16px; align-items: baseline; }
 .rf-snum { width: auto; height: auto; border-radius: 0; background: none; color: var(--text3); font-size: 12px; font-weight: 500; margin: 0; flex-shrink: 0; }
 .rf-note-box { margin-top: 16px; background: none; color: var(--text2); border-left: 2px solid var(--accent); border-radius: 0; padding: 4px 0 4px 14px; font-size: 13px; }
 .rf-apply-notice { font-size: 13px; line-height: 1.6; color: var(--text2); padding: 16px 0 14px; }
@@ -752,7 +752,7 @@ header { border-bottom: 1px solid var(--border); }
 .dl-section { margin-bottom: 0; }
 .dl-title { font-family: 'JetBrains Mono', 'Pretendard', monospace; font-size: 11px; font-weight: 500; letter-spacing: .04em; color: var(--text3); margin: 22px 0 0; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 .dl-box { background: none; border: none; border-radius: 0; }
-.dl-row { padding: 11px 0; border-bottom-color: #EEF0F2; }
+.dl-row { padding: 11px 0; border-bottom-color: #E1E4E8; }
 .dl-row.hl { background: none; }
 .dl-row.hl .dl-val { color: var(--text); font-weight: 800; }
 .dl-row .input { flex: 1; }
@@ -775,7 +775,7 @@ header { border-bottom: 1px solid var(--border); }
 
 /* 매장 검색 드롭다운 + 선택된 매장 */
 .rf-dropdown { border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; box-shadow: 0 8px 24px rgba(16,24,40,.08); }
-.rf-dd-item { padding: 12px 16px; border-bottom-color: #EEF0F2; font-size: 14px; }
+.rf-dd-item { padding: 12px 16px; border-bottom-color: #E1E4E8; font-size: 14px; }
 .rf-dd-item:hover { background: var(--bg); }
 .rf-dd-badges { gap: 12px; }
 .rf-pill { background: none; padding: 0; border-radius: 0; font-size: 12px; font-weight: 600; color: var(--text3); }
@@ -800,7 +800,7 @@ header { border-bottom: 1px solid var(--border); }
 .btn-add:hover, .btn-save:hover, .btn-save-new:hover { background: #000; box-shadow: none; }
 .btn-cancel-edit { border: 1.5px solid var(--border2); background: var(--white); }
 .astore-list { border: 1px solid var(--border); border-radius: 10px; box-shadow: none; }
-.astore-list li { border-bottom-color: #EEF0F2; padding: 11px 16px; }
+.astore-list li { border-bottom-color: #E1E4E8; padding: 11px 16px; }
 .astore-list li:hover, .astore-list li.selected { background: var(--bg); }
 .astore-list li.selected { box-shadow: inset 2px 0 0 var(--text); }
 .ali-no { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
@@ -818,10 +818,10 @@ header { border-bottom: 1px solid var(--border); }
 .sched-admin-info { background: none; border: none; border-left: 2px solid var(--accent); border-radius: 0; padding: 2px 0 2px 14px; color: var(--text2); }
 .sched-admin-table { border: none; border-top: 1px solid var(--text); border-radius: 0; box-shadow: none; }
 .sched-admin-table thead th { background: none; font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--text3); }
-.sched-admin-table tbody tr { border-bottom-color: #EEF0F2; }
+.sched-admin-table tbody tr { border-bottom-color: #E1E4E8; }
 .sched-admin-table input, .sched-admin-table textarea { background: var(--white); border-color: var(--border2); border-radius: 8px; }
 .acct-list { display: flex; flex-direction: column; }
-.acct-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EEF0F2; flex-wrap: wrap; }
+.acct-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #E1E4E8; flex-wrap: wrap; }
 .acct-row:last-child { border-bottom: none; }
 .acct-email { flex: 1; min-width: 180px; font-size: 14px; font-weight: 600; }
 .acct-date { font-size: 11px; color: var(--text3); }
@@ -842,3 +842,15 @@ header { border-bottom: 1px solid var(--border); }
 .confirm-btns button { flex: 1; padding: 11px 20px; border-radius: 10px; }
 .btn-cf-cancel { background: var(--white); border: 1.5px solid var(--border2); color: var(--text2); }
 .btn-cf-cancel:hover { background: var(--bg); }.edit-no { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: .04em; margin-right: 10px; vertical-align: 4px; }
+
+/* ============================================================
+   종이 톤 배경 — 흰색이던 면을 차가운 연회색(#F4F5F7)으로 통일
+   입력칸·검색창·버튼·모달은 흰색 유지(누를 수 있는 곳/떠 있는 창 구분)
+   배경과 같아져 안 보이게 되는 옅은 회색(--bg)은 한 단계 진하게
+   ============================================================ */
+:root { --paper: #F4F5F7; --bg: #EAECEF; --border: #DADEE3; } /* 배경이 회색이라 구분선도 두 톤 진하게 */
+body, #page-list, .hero, .site-footer, .auth-screen { background: var(--paper); }
+header { background: rgba(244,245,247,.85); }
+.table-card, #page-list .table-card, .edit-card, .astore-list, .panel, .sched-table-wrap { background: transparent; }
+#page-list tbody tr:hover, .sched-table tbody tr:hover, #store-tbody tr.visit-today:hover { background: #ECEEF1; }
+.skel { background: linear-gradient(90deg, #E6E8EC 25%, #EFF1F3 50%, #E6E8EC 75%); background-size: 200% 100%; }
