@@ -597,6 +597,13 @@ document.addEventListener('keydown', e => {
     document.getElementById('overlay').classList.remove('open');
     document.getElementById('confirm-overlay').classList.remove('open');
     document.getElementById('refund-detail-overlay').style.display = 'none';
+    ['template-overlay', 'rondi-alert-overlay', 'custom-confirm-overlay'].forEach(id => document.getElementById(id).style.display = 'none');
+    if (document.getElementById('rondi-card-alert-overlay').style.display !== 'none') closeRondiCardAlert();
+  }
+  // "/" 키로 매장 검색창 바로 포커스 (입력 중일 땐 무시)
+  if (e.key === '/' && !document.activeElement.closest('input, textarea, select, [contenteditable]') && document.getElementById('page-list').classList.contains('active')) {
+    e.preventDefault();
+    document.getElementById('search-input').focus();
   }
 });
 window.addEventListener('scroll', () => {

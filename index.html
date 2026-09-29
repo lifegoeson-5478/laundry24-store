@@ -90,17 +90,17 @@
       <img src="logo.svg" alt="LAUNDRY24" class="logo-img">
     </a>
     <div class="nav-tabs">
-      <div class="nav-tab active" onclick="switchPage('list')">매장 목록</div>
-      <div class="nav-tab" onclick="switchPage('schedule')">운송 일정</div>
-      <div class="nav-tab" onclick="switchPage('refund')">환불 주체 확인</div>
-      <div class="nav-tab" onclick="switchPage('refundlist')">환불 목록</div>
+      <button type="button" class="nav-tab active" onclick="switchPage('list')">매장 목록</button>
+      <button type="button" class="nav-tab" onclick="switchPage('schedule')">운송 일정</button>
+      <button type="button" class="nav-tab" onclick="switchPage('refund')">환불 주체 확인</button>
+      <button type="button" class="nav-tab" onclick="switchPage('refundlist')">환불 목록</button>
     </div>
     <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
       <button class="btn-admin" id="admin-nav-btn" onclick="switchPage('admin')" style="display:none;">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
         어드민
       </button>
-      <button onclick="handleLogout()" title="로그아웃" style="background:var(--bg);color:var(--text2);border:1.5px solid var(--border);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">로그아웃</button>
+      <button class="btn" onclick="handleLogout()" title="로그아웃">로그아웃</button>
     </div>
   </div>
 </header>
@@ -118,8 +118,9 @@
     <div class="hero-eyebrow">Store Information</div>
     <div class="hero-sub">매장 정보 검색</div>
     <div class="search-box">
-      <input type="text" id="search-input" placeholder="매장명을 입력하세요..." oninput="renderList()" autocomplete="off">
+      <input type="search" id="search-input" placeholder="매장명을 입력하세요" oninput="renderList()" autocomplete="off">
       <span class="search-icon"></span>
+      <kbd class="search-kbd" title="/ 키를 누르면 바로 검색할 수 있어요">/</kbd>
     </div>
   </div>
   <div class="filter-bar">
@@ -140,6 +141,7 @@
     <div class="table-card">
       <div class="table-toolbar">
         <span class="result-count" id="result-count">전체 <strong>0</strong>개 매장</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--text3);">매장을 클릭하면 상세 정보가 열려요</span>
       </div>
       <div style="overflow-x:auto">
         <table>
@@ -154,8 +156,9 @@
         </table>
       </div>
       <div class="empty" id="empty-state" style="display:none">
-        <div style="font-size:32px;margin-bottom:8px"></div>
-        <div>검색 결과가 없습니다</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px">검색 결과가 없습니다</div>
+        <div style="font-size:13px;margin-bottom:14px">매장명 철자를 확인하거나 필터를 해제해 보세요</div>
+        <button class="btn" onclick="goHome()">검색·필터 초기화</button>
       </div>
     </div>
   </div>
@@ -523,10 +526,10 @@
       </select>
       <input type="text" id="refund-search" placeholder="매장명 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
       <input type="text" id="refund-search-customer" placeholder="고객번호 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
-      <button onclick="loadRefundList()" style="padding:7px 14px;background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">새로고침</button>
-      <button onclick="exportRefundExcel()" style="padding:7px 14px;background:#e6f7f5;color:#0f6e56;border:1.5px solid #9FE1CB;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">상신 엑셀 다운로드</button>
-      <button onclick="generateShinsinContent()" style="padding:7px 14px;background:#e6f0fb;color:#3b5bdb;border:1.5px solid #a5b4fc;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">상신 내용 생성</button>
-      <button onclick="deleteOldRefunds()" style="padding:7px 14px;background:#fee2e2;color:#b91c1c;border:1.5px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">6개월 이상 삭제</button>
+      <button class="btn" onclick="loadRefundList()" title="새로고침">↻ 새로고침</button>
+      <button class="btn" onclick="generateShinsinContent()">상신 내용 생성</button>
+      <button class="btn btn-primary" onclick="exportRefundExcel()">상신 엑셀 다운로드</button>
+      <button class="btn btn-danger-ghost" onclick="deleteOldRefunds()" title="접수일 기준 6개월 지난 환불 건을 삭제합니다">6개월 이상 삭제</button>
     </div>
 
     <div id="refund-list-loading" style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">불러오는 중...</div>
@@ -625,7 +628,7 @@ initAuth();
 <!-- 론디페이 경고 모달 -->
 <div id="rondi-alert-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
   <div style="background:var(--white);border-radius:16px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="width:52px;height:52px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;"></div>
+    <div style="width:52px;height:52px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;font-weight:900;color:#ea580c;">!</div>
     <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px;">론디페이 결제 건 안내</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:22px;">
       론디페이 결제 건은 <strong>결제 수단으로 환불이 원칙</strong>입니다.<br>
@@ -638,7 +641,7 @@ initAuth();
 <!-- 론디원+카드 경고 모달 -->
 <div id="rondi-card-alert-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
   <div style="background:var(--white);border-radius:16px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="width:52px;height:52px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;"></div>
+    <div style="width:52px;height:52px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;font-weight:900;color:#ea580c;">!</div>
     <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px;">카드 결제 건 안내</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:18px;">
       망치에서 <strong>카드 취소 가능한 건</strong>입니다.<br>

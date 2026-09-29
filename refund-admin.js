@@ -725,7 +725,7 @@ function copyTemplate() {
 let refundList = [];
 let refundSortKey = null;
 let refundSortDir = 1;
-let collapsedMonths = new Set();
+let openMonths = null; // 펼쳐진 월 (처음엔 이번 달만, 없으면 가장 최근 달)
 
 function toggleSort(key) {
   if (refundSortKey === key) { refundSortDir *= -1; }
@@ -780,12 +780,20 @@ function renderRefundList() {
     tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--text3);">접수 내역이 없습니다</td></tr>';
   } else {
     let html = '';
-    Object.keys(groups).sort((a,b) => b.localeCompare(a)).forEach(month => {
-      const isCollapsed = collapsedMonths.has(month);
+    const monthKeys = Object.keys(groups).sort((a,b) => b.localeCompare(a));
+    if (!openMonths) {
+      const now = new Date();
+      const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      openMonths = new Set([monthKeys.includes(cur) ? cur : monthKeys[0]]);
+    }
+    monthKeys.forEach(month => {
+      const isCollapsed = !(q || qc) && !openMonths.has(month); // 검색 중엔 전체 펼침
+      // 입금예정일 있는 건만 (없는 건은 점주 처리 건이라 완료 여부를 통보받지 못하는 경우가 많음)
+      const pending = groups[month].filter(r => r.상신예정일 && !r.처리완료).length;
       const label = month === '날짜없음' ? '날짜 없음' : month.replace('-', '년 ') + '월';
       html += `<tr style="background:var(--bg);">
         <td colspan="12" style="padding:8px 12px;font-size:12px;font-weight:800;color:var(--text2);cursor:pointer;user-select:none;" onclick="toggleMonth('${month}')">
-          ${isCollapsed ? '▶' : '▼'} ${label} (${groups[month].length}건)
+          ${isCollapsed ? '▶' : '▼'} ${label} (${groups[month].length}건${pending ? ` · <span style="color:#b91c1c;">미완료 ${pending}</span>` : ''})
         </td>
       </tr>`;
       if (!isCollapsed) {
@@ -817,8 +825,8 @@ function renderRefundList() {
 }
 
 function toggleMonth(month) {
-  if (collapsedMonths.has(month)) collapsedMonths.delete(month);
-  else collapsedMonths.add(month);
+  if (openMonths.has(month)) openMonths.delete(month);
+  else openMonths.add(month);
   renderRefundList();
 }
 
