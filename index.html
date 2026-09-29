@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://ebiepxqkqeyyxewnddov.supabase.co">
 <!-- 웹폰트는 렌더링을 막지 않도록 비동기로 적용 (로드 전까지는 styles.css의 시스템 폰트 폴백 사용) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -17,11 +18,10 @@
 <!-- 로그인 화면 (세션 확인 후 initAuth가 표시) -->
 <div id="login-screen" class="auth-screen" style="display:none;">
   <div class="auth-card">
-    <div class="auth-brand">
-      <img src="logo.svg" alt="LAUNDRY24">
-      <div class="auth-sub">매장 정보 시스템</div>
-    </div>
+    <div class="auth-brand"><img src="logo.svg" alt="LAUNDRY24"><span class="mono">STORE INFORMATION</span></div>
     <div id="login-main-block">
+      <h1 class="auth-heading">로그인<span class="hero-dot">.</span></h1>
+      <p class="auth-lead">사내 계정으로 로그인해 주세요.</p>
       <form id="login-form" onsubmit="return handleLogin(event)">
         <div class="field">
           <label for="login-email">이메일</label>
@@ -46,8 +46,8 @@
 
     <!-- 비밀번호 재설정 요청 폼 -->
     <form id="reset-request-form" style="display:none;" onsubmit="return handlePasswordResetRequest(event)">
-      <div class="auth-title">비밀번호 재설정</div>
-      <div class="auth-desc">가입하신 이메일로 재설정 링크를 보내드려요</div>
+      <h1 class="auth-heading">비밀번호 재설정<span class="hero-dot">.</span></h1>
+      <p class="auth-lead">가입하신 이메일로 재설정 링크를 보내드려요.</p>
       <div class="field" style="margin-bottom:18px;">
         <label for="reset-email">이메일</label>
         <input type="email" id="reset-email" required autocomplete="username" class="input input-lg">
@@ -65,10 +65,9 @@
 <!-- 새 비밀번호 설정 (재설정 링크로 접속 시) -->
 <div id="set-password-screen" class="auth-screen" style="display:none;">
   <div class="auth-card">
-    <div class="auth-brand">
-      <img src="logo.svg" alt="LAUNDRY24">
-      <div class="auth-sub">새 비밀번호를 설정해주세요</div>
-    </div>
+    <div class="auth-brand"><img src="logo.svg" alt="LAUNDRY24"><span class="mono">STORE INFORMATION</span></div>
+    <h1 class="auth-heading">새 비밀번호<span class="hero-dot">.</span></h1>
+    <p class="auth-lead">앞으로 사용할 비밀번호를 설정해 주세요.</p>
     <form id="set-password-form" onsubmit="return handleSetNewPassword(event)">
       <div class="field">
         <label for="set-password-1">새 비밀번호 <span class="hint">(6자 이상)</span></label>
@@ -123,28 +122,37 @@
 <!-- PAGE: LIST -->
 <div id="page-list" class="page active">
   <div class="hero">
-    <div class="hero-eyebrow">Store Information</div>
-    <div class="hero-sub">매장 정보 검색</div>
-    <div class="search-box">
-      <input type="search" id="search-input" placeholder="매장명을 입력하세요" oninput="renderList()" autocomplete="off">
-      <span class="search-icon"></span>
-      <kbd class="search-kbd" title="/ 키를 누르면 바로 검색할 수 있어요">/</kbd>
+    <div class="hero-inner">
+      <div class="hero-meta mono"><span>L24 / STORE INFORMATION</span><span id="hero-date"></span></div>
+      <div class="hero-row">
+        <h1 class="hero-title">매장 정보<br>검색<span class="hero-dot">.</span></h1>
+        <div class="hero-side">
+          <div class="hero-stats mono">
+            <span>전체 <b id="hero-total">–</b></span>
+            <button type="button" id="hero-today-btn" class="hero-today" onclick="toggleTodayOnly()" title="오늘 방문 매장만 보기">오늘 방문 <b id="hero-today">–</b></button>
+          </div>
+          <div class="search-box">
+            <input type="search" id="search-input" placeholder="매장명을 입력하세요" oninput="renderList()" autocomplete="off">
+            <span class="search-icon"></span>
+            <kbd class="search-kbd" title="/ 키를 누르면 바로 검색할 수 있어요">/</kbd>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="filter-bar">
     <span class="filter-label">방문주기</span>
-    <button class="chip c-매일" onclick="toggleFilter('매일',this)">매일</button>
-    <button class="chip c-격일" onclick="toggleFilter('격일',this)">격일</button>
-    <button class="chip c-부산대구" onclick="toggleFilter('부산/대구',this)">부산/대구</button>
-    <button class="chip c-대전" onclick="toggleFilter('대전',this)">대전</button>
-    <button class="chip c-셀프" onclick="toggleFilter('셀프only',this)">셀프only</button>
+    <button class="chip" data-key="매일" onclick="toggleFilter('매일',this)">매일<span class="chip-n"></span></button>
+    <button class="chip" data-key="격일" onclick="toggleFilter('격일',this)">격일<span class="chip-n"></span></button>
+    <button class="chip" data-key="부산/대구" onclick="toggleFilter('부산/대구',this)">부산/대구<span class="chip-n"></span></button>
+    <button class="chip" data-key="대전" onclick="toggleFilter('대전',this)">대전<span class="chip-n"></span></button>
+    <button class="chip" data-key="셀프only" onclick="toggleFilter('셀프only',this)">셀프only<span class="chip-n"></span></button>
     <div class="chip-divider"></div>
     <span class="filter-label">유형</span>
-    <button class="chip" onclick="toggleFilter('직영',this)">직영</button>
-    <button class="chip" onclick="toggleFilter('론디원',this)">론디원</button>
-    <button class="chip chip-reset" onclick="clearFilters()">✕ 초기화</button>
+    <button class="chip" data-key="직영" onclick="toggleFilter('직영',this)">직영<span class="chip-n"></span></button>
+    <button class="chip" data-key="론디원" onclick="toggleFilter('론디원',this)">론디원<span class="chip-n"></span></button>
+    <button class="chip chip-reset" onclick="clearFilters()">초기화</button>
   </div>
-  <div class="stats-row" id="stats-row"></div>
   <div class="table-outer">
     <div class="table-card">
       <div class="table-toolbar">
@@ -175,10 +183,10 @@
 <!-- PAGE: SCHEDULE -->
 <div id="page-schedule" class="page">
   <div class="pg-inner">
-    <div class="pg-title">운송 일정</div>
-    <div class="pg-desc">라인별 방문 주기 및 요일 현황입니다. 어드민에서 수정하면 즉시 반영됩니다.</div>
-    <div class="sched-notice">
-       일정 변경 시 어드민 &gt; 운송 일정 수정에서 업데이트하세요. 매장 목록의 방문 예정일도 자동 갱신됩니다.
+    <div class="page-head">
+      <div class="hero-meta mono"><span>L24 / TRANSPORT SCHEDULE</span><span class="js-today"></span></div>
+      <h1 class="page-title">운송 일정<span class="hero-dot">.</span></h1>
+      <p class="page-desc">라인별 방문 주기와 요일 현황입니다. 어드민 &gt; 운송 일정 수정에서 바꾸면 매장 목록의 방문 예정일도 바로 갱신됩니다.</p>
     </div>
     <div class="sched-table-wrap">
       <table class="sched-table">
@@ -192,17 +200,15 @@
 <!-- PAGE: REFUND -->
 <div id="page-refund" class="page">
   <div class="refund-wrap">
+    <div class="page-head">
+      <div class="hero-meta mono"><span>L24 / REFUND CHECK</span><span class="js-today"></span></div>
+      <h1 class="page-title">환불 주체 확인<span class="hero-dot">.</span></h1>
+      <p class="page-desc">매장 · 기기 · 결제수단을 차례로 선택하면 환불 절차를 안내합니다.</p>
+    </div>
     <div class="refund-card">
-      <div class="refund-card-hd">
-        <div class="refund-card-icon">↩</div>
-        <div>
-          <div class="refund-card-title">환불 주체 확인</div>
-          <div class="refund-card-sub">매장 · 기기 · 결제수단을 선택하면 환불 절차를 안내합니다</div>
-        </div>
-      </div>
 
       <div class="rf-section" id="rf-sec-store">
-        <div class="rf-label"><span class="rf-step-num" id="rf-b1">1</span>매장 검색</div>
+        <div class="rf-label"><span class="rf-step-num mono" id="rf-b1">01</span>매장 검색</div>
         <div id="rf-loading" class="rf-loading">⏳ 매장 데이터 불러오는 중...</div>
         <div class="rf-search-wrap" id="rf-search-wrap" style="display:none;">
           <div class="rf-search-row">
@@ -216,7 +222,7 @@
       </div>
 
       <div class="rf-section" id="rf-sec-device" style="display:none;">
-        <div class="rf-label"><span class="rf-step-num" id="rf-b2">2</span>사용 기기</div>
+        <div class="rf-label"><span class="rf-step-num mono" id="rf-b2">02</span>사용 기기</div>
         <div class="rf-chip-row">
           <button class="rf-chip" id="rfdev-드라이스테이션" onclick="rfSelectDevice('드라이스테이션')">드라이스테이션</button>
           <button class="rf-chip" id="rfdev-건조기" onclick="rfSelectDevice('건조기')">건조기</button>
@@ -228,7 +234,7 @@
       </div>
 
       <div class="rf-section" id="rf-sec-payment" style="display:none;">
-        <div class="rf-label"><span class="rf-step-num" id="rf-b3">3</span>결제 수단</div>
+        <div class="rf-label"><span class="rf-step-num mono" id="rf-b3">03</span>결제 수단</div>
         <div class="rf-chip-row">
           <button class="rf-chip" id="rfpay-카드" onclick="rfSelectPayment('카드')">카드</button>
           <button class="rf-chip" id="rfpay-현금" onclick="rfSelectPayment('현금')">현금</button>
@@ -518,20 +524,24 @@
 <!-- PAGE: REFUND LIST -->
 <div id="page-refundlist" class="page">
   <div class="admin-inner" style="max-width:1280px;">
-    <div class="admin-hd">
-      <h2>환불 목록</h2>
-      <p>접수된 환불 요청을 확인하고 처리 상태를 관리합니다. 변경사항은 <strong>별도 DB에 저장</strong>되어 모든 팀원과 실시간 공유됩니다.</p>
-    </div>
-
-    <!-- 다음 상신예정일 (등록/관리는 어드민 > 상신 알림 관리) -->
-    <div class="panel" style="padding:14px 24px;text-align:center;max-width:280px;margin-bottom:20px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">다음 상신예정일</div>
-      <div id="next-shinsin-date" style="font-size:22px;font-weight:800;color:var(--accent-text);">-</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:4px;">휴무일·공휴일 반영, 입금일로부터 3영업일 전</div>
+    <div class="page-head">
+      <div class="hero-meta mono"><span>L24 / REFUND LIST</span><span class="js-today"></span></div>
+      <div class="page-head-split">
+        <div>
+          <h1 class="page-title">환불 목록<span class="hero-dot">.</span></h1>
+          <p class="page-desc">접수된 환불 요청을 확인하고 처리 상태를 관리합니다. 변경사항은 모든 팀원과 실시간 공유됩니다.</p>
+        </div>
+        <!-- 다음 상신예정일 (등록/관리는 어드민 > 상신 알림 관리) -->
+        <div class="head-stat" title="휴무일·공휴일 반영, 입금일로부터 3영업일 전">
+          <span class="head-stat-lbl">다음 상신예정일</span>
+          <b id="next-shinsin-date">-</b>
+          <span class="head-stat-sub">휴무일·공휴일 반영 · 입금일 3영업일 전</span>
+        </div>
+      </div>
     </div>
 
     <!-- 필터 + 통계 -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+    <div class="list-toolbar">
       <select id="refund-filter-shinsin" onchange="renderRefundList()" class="input">
         <option value="all">전체</option>
         <option value="N">처리 미완료</option>
@@ -552,21 +562,21 @@
     <div id="refund-list-wrap" style="display:none;">
       <div style="font-size:13px;color:var(--text2);margin-bottom:10px;" id="refund-list-count"></div>
       <div style="overflow-x:visible;">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:auto;">
+        <table class="refund-table">
           <thead>
-            <tr style="border-bottom:2px solid var(--border);text-align:left;">
-              <th style="padding:8px 10px;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleSort('_idx')">No. <span id="sort-icon-_idx">↕</span></th>
-              <th style="padding:8px 10px;white-space:nowrap;">접수일</th>
-              <th style="padding:8px 10px;white-space:nowrap;">담당자</th>
-              <th style="padding:8px 10px;white-space:nowrap;">매장명</th>
-              <th style="padding:8px 10px;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleSort('사용기기')">기기 <span id="sort-icon-사용기기">↕</span></th>
-              <th style="padding:8px 10px;white-space:nowrap;">결제수단</th>
-              <th style="padding:8px 10px;white-space:nowrap;">환불방법</th>
-              <th style="padding:8px 10px;white-space:nowrap;">금액</th>
-              <th style="padding:8px 10px;white-space:nowrap;">고객번호</th>
-              <th style="padding:8px 10px;white-space:nowrap;">사유</th>
-              <th style="padding:8px 10px;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleSort('상신예정일')">입금예정일 <span id="sort-icon-상신예정일">↕</span></th>
-              <th style="padding:8px 10px;white-space:nowrap;">처리완료</th>
+            <tr>
+              <th class="sortable" onclick="toggleSort('_idx')">No. <span id="sort-icon-_idx">↕</span></th>
+              <th>접수일</th>
+              <th>담당자</th>
+              <th>매장명</th>
+              <th class="sortable" onclick="toggleSort('사용기기')">기기 <span id="sort-icon-사용기기">↕</span></th>
+              <th>결제수단</th>
+              <th>환불방법</th>
+              <th>금액</th>
+              <th>고객번호</th>
+              <th>사유</th>
+              <th class="sortable" onclick="toggleSort('상신예정일')">입금예정일 <span id="sort-icon-상신예정일">↕</span></th>
+              <th>처리완료</th>
             </tr>
           </thead>
           <tbody id="refund-list-tbody"></tbody>
@@ -578,7 +588,7 @@
 
 <footer class="site-footer">
   <div class="site-footer-inner">
-    <img src="logo.svg" alt="LAUNDRY24" class="site-footer-logo-img">
+    <span class="site-footer-brand mono">© LAUNDRY24 · STORE INFORMATION SYSTEM</span>
     <nav class="site-footer-links">
       <a href="http://laundry24.net/privacy-v2" target="_blank" rel="noopener noreferrer">개인정보처리방침</a>
       <a href="https://laundry24.net/service-v2/" target="_blank" rel="noopener noreferrer">이용약관</a>
@@ -698,7 +708,7 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 <!-- 환불 상세 모달 -->
 <div id="refund-detail-overlay" class="dlg-overlay" style="display:none;">
   <div class="dlg dlg-lg">
-    <div class="dlg-hd">
+    <div class="dlg-hd dlg-hd-accent">
       <div>
         <div class="dlg-title">환불 접수 상세</div>
         <div class="dlg-sub" id="refund-detail-subtitle"></div>

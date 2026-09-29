@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.11.4';
+const APP_VERSION = '1.12.0';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -614,6 +614,12 @@ function switchPage(p) {
 // INIT (global listeners)
 // ============================================================
 document.getElementById('app-version').textContent = 'v' + APP_VERSION;
+// 페이지 머리의 날짜 표기 (예: 2026.09.29 TUE)
+function todayLabel() {
+  const d = new Date();
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]}`;
+}
+document.querySelectorAll('.js-today').forEach(el => el.textContent = todayLabel());
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('overlay').classList.remove('open');

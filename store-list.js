@@ -1,60 +1,61 @@
 // ============================================================
-// STATS
+// 필터 칩 개수 (검색어·오늘방문 조건 안에서, 칩 필터와 무관하게 셈)
 // ============================================================
-function renderStats(stores) {
-  const c = { total: stores.length, 매일: 0, 격일: 0, '부산/대구': 0, 대전: 0, 직영: 0 };
-  stores.forEach(s => {
-    if (s.frequency === '매일') c['매일']++;
-    else if (s.frequency === '격일') c['격일']++;
-    else if (s.frequency === '부산/대구') c['부산/대구']++;
-    else if (s.frequency === '대전') c['대전']++;
-    if (s.type === '직영') c['직영']++;
+const CHIP_MATCH = {
+  '매일': s => s.frequency === '매일', '격일': s => s.frequency === '격일',
+  '부산/대구': s => s.frequency === '부산/대구', '대전': s => s.frequency === '대전',
+  '셀프only': s => s.frequency === '셀프only', '직영': s => s.type === '직영', '론디원': s => s.rondiOne === '론디원',
+};
+function renderChipCounts(base) {
+  document.querySelectorAll('.filter-bar .chip[data-key]').forEach(chip => {
+    chip.querySelector('.chip-n').textContent = base.filter(CHIP_MATCH[chip.dataset.key]).length;
   });
-  document.getElementById('stats-row').innerHTML = [
-    { num: c.total, lbl: '전체 매장', color: '#111', key: '' },
-    { num: c['매일'], lbl: '매일 방문', color: '#10b981', key: '매일' },
-    { num: c['격일'], lbl: '격일 방문', color: '#3b82f6', key: '격일' },
-    { num: c['부산/대구'], lbl: '부산/대구', color: '#f59e0b', key: '부산/대구' },
-    { num: c['대전'], lbl: '대전', color: '#ef4444', key: '대전' },
-    { num: c['직영'], lbl: '직영 매장', color: 'var(--accent2)', key: '직영' },
-  ].map(x => {
-    const on = x.key ? activeFilters.has(x.key) : activeFilters.size === 0;
-    return `<div class="stat-card${on ? ' on' : ''}" onclick="onStatClick('${x.key}')" title="${x.key ? x.lbl + ' 매장만 보기' : '필터 초기화'}"><div class="stat-dot" style="background:${x.color}"></div><div><div class="stat-num">${x.num}</div><div class="stat-lbl">${x.lbl}</div></div></div>`;
-  }).join('');
 }
-
-// 통계 카드 클릭 = 해당 필터 칩 토글 (전체 매장 = 초기화)
-function onStatClick(key) {
-  if (!key) return clearFilters();
-  const chip = [...document.querySelectorAll('.filter-bar .chip')].find(b => b.getAttribute('onclick')?.includes(`'${key}'`));
-  if (chip) toggleFilter(key, chip);
+// ============================================================
+// HERO (전체/오늘 방문 수, 날짜) — 오늘 방문 클릭 시 해당 매장만 보기
+// ============================================================
+let todayOnly = false;
+let heroCounted = false;
+function renderHero() {
+  const total = STORES.length;
+  const today = STORES.filter(isVisitingToday).length;
+  document.getElementById('hero-date').textContent = todayLabel();
+  // 첫 로드 때만 숫자가 올라가는 모션, 이후(실시간 갱신 등)엔 바로 표시
+  if (!heroCounted && total) { heroCounted = true; countUp('hero-total', total); countUp('hero-today', today); }
+  else if (heroCounted) { document.getElementById('hero-total').textContent = total; document.getElementById('hero-today').textContent = today; }
+}
+function countUp(id, to) {
+  const el = document.getElementById(id);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = to; return; }
+  const t0 = performance.now(), dur = 700;
+  const step = t => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function toggleTodayOnly() {
+  todayOnly = !todayOnly;
+  document.getElementById('hero-today-btn').classList.toggle('on', todayOnly);
+  renderList();
 }
 
 // ============================================================
 // RENDER LIST
 // ============================================================
 function renderList() {
+  renderHero();
   const q = document.getElementById('search-input').value.trim().toLowerCase();
   const filtered = [];
+  const base = [];
   STORES.forEach((s, i) => {
     if (q && !s.name.toLowerCase().includes(q)) return;
-    if (activeFilters.size > 0) {
-      let ok = false;
-      if (activeFilters.has('매일') && s.frequency === '매일') ok = true;
-      if (activeFilters.has('격일') && s.frequency === '격일') ok = true;
-      if (activeFilters.has('부산/대구') && s.frequency === '부산/대구') ok = true;
-      if (activeFilters.has('대전') && s.frequency === '대전') ok = true;
-      if (activeFilters.has('셀프only') && s.frequency === '셀프only') ok = true;
-      if (activeFilters.has('직영') && s.type === '직영') ok = true;
-      if (activeFilters.has('론디원') && s.rondiOne === '론디원') ok = true;
-      if (!ok) return;
-    }
+    if (todayOnly && !isVisitingToday(s)) return;
+    base.push(s);
+    if (activeFilters.size > 0 && ![...activeFilters].some(k => CHIP_MATCH[k](s))) return;
     filtered.push({ s, i });
   });
 
   document.getElementById('result-count').innerHTML = `전체 <strong>${filtered.length}</strong>개 매장`;
   document.getElementById('empty-state').style.display = filtered.length === 0 ? 'block' : 'none';
-  renderStats(filtered.map(x => x.s));
+  renderChipCounts(base);
 
   document.getElementById('store-tbody').innerHTML = filtered.map(({ s, i }) => {
     // 다음 방문 예정일 계산 (폐점 매장은 계산하지 않음)
@@ -65,16 +66,20 @@ function renderList() {
     } else if (['매일','격일','부산/대구','대전'].includes(s.frequency)) {
       const dates = getNextTwoDates(s.frequency, s.line);
       if (dates && dates.length >= 2) {
-        visitHtml = `<div class="visit-dates">
-          <span class="visit-next">▶ ${formatDate(dates[0])} <span style="font-size:10px;opacity:.7">${getDaysUntil(dates[0])}</span></span>
+        // 오늘 방문 매장은 날짜 대신 초록 알약, 아래에 그다음 방문일
+        const isToday = dates[0].toDateString() === new Date().toDateString();
+        visitHtml = isToday
+          ? `<div class="visit-dates"><span class="visit-today-pill">오늘 방문</span><span class="visit-next2">다음 ${formatDate(dates[1])}</span></div>`
+          : `<div class="visit-dates">
+          <span class="visit-next">${formatDate(dates[0])} <span style="font-size:10px;opacity:.7">${getDaysUntil(dates[0])}</span></span>
           <span class="visit-next2">${formatDate(dates[1])}</span>
         </div>`;
       }
     }
-    const rowCls = [isVisitingToday(s) ? 'visit-today' : '', closedNow ? 'store-closed' : ''].filter(Boolean).join(' ');
+    const rowCls = closedNow ? 'store-closed' : '';
     return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
       <td class="td-no">${s.no}</td>
-      <td class="td-name">${s.name}${isVisitingToday(s) ? '<span class="today-tag">오늘</span>' : ''}${closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s)}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
+      <td class="td-name">${s.name}${closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s)}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
@@ -121,6 +126,8 @@ function toggleFilter(val, btn) {
 }
 function clearFilters() {
   activeFilters.clear();
+  todayOnly = false;
+  document.getElementById('hero-today-btn').classList.remove('on');
   document.querySelectorAll('.chip').forEach(b => b.classList.remove('on'));
   renderList();
 }

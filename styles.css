@@ -60,9 +60,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .auth-card { background: var(--white); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow-md); padding: 40px 36px 32px; max-width: 400px; width: 100%; animation: modalIn .2s ease; }
 .auth-brand { text-align: center; margin-bottom: 30px; }
 .auth-brand img { height: 22px; width: auto; }
-.auth-sub { font-size: 13px; color: var(--text3); margin-top: 10px; font-weight: 500; }
-.auth-title { font-size: 17px; font-weight: 800; text-align: center; margin-bottom: 4px; }
-.auth-desc { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 22px; }
 .auth-links { text-align: center; margin-top: 16px; }
 .auth-links a { font-size: 13px; color: var(--text2); text-decoration: none; font-weight: 500; }
 .auth-links a:hover { color: var(--accent-text); text-decoration: underline; }
@@ -96,6 +93,14 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .dlg-center .dlg-title { margin-bottom: 10px; }
 .dlg-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
 .copy-box { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text); white-space: pre-wrap; font-family: inherit; }
+/* 초록 헤더 다이얼로그 (환불 접수 상세) */
+.dlg-hd-accent { background: var(--accent); border-bottom: none; padding: 20px 20px 20px 24px; }
+.dlg-hd-accent .dlg-title { color: white; }
+.dlg-hd-accent .dlg-sub { color: rgba(255,255,255,.85); }
+.dlg-hd-accent .btn, .dlg-hd-accent .dlg-x { background: rgba(255,255,255,.2); border-color: transparent; color: white; font-weight: 700; }
+.dlg-hd-accent .btn:hover, .dlg-hd-accent .dlg-x:hover { background: rgba(255,255,255,.32); border-color: transparent; color: white; }
+.dlg-hd-accent .dlg-x { border-radius: 50%; }
+.dlg-hd-accent .btn-primary, .dlg-hd-accent .btn-primary:hover { background: white; color: var(--accent-text); box-shadow: none; }
 /* 상세 보기 (라벨-값 목록) */
 .dl-section { margin-bottom: 16px; }
 .dl-title { font-size: 12px; font-weight: 800; color: var(--accent-text); letter-spacing: .3px; margin-bottom: 8px; }
@@ -127,7 +132,6 @@ header { background: var(--white); border-bottom: 1px solid var(--border); posit
 /* FOOTER */
 .site-footer { background: var(--white); border-top: 1px solid var(--border); margin-top: 40px; }
 .site-footer-inner { max-width: 1280px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.site-footer-logo-img { height: 16px; width: auto; display: block; }
 .site-footer-version { font-size: 12px; color: var(--text3); font-variant-numeric: tabular-nums; }
 .site-footer-links { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .site-footer-links a { font-size: 12px; color: var(--text3); text-decoration: none; transition: color .15s; }
@@ -142,10 +146,29 @@ header { background: var(--white); border-bottom: 1px solid var(--border); posit
 .page.active { display: block; }
 
 /* HERO */
-.hero { background: linear-gradient(180deg, var(--white) 0%, #EEFAF5 100%); border-bottom: 1px solid var(--border); padding: 32px 24px 28px; text-align: center; }
-.hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--accent-text); text-transform: uppercase; margin-bottom: 8px; }
-.hero-sub { font-size: var(--fs-h3); line-height: normal; font-weight: 800; color: var(--text); margin-bottom: 20px; letter-spacing: -.03em; }
-.search-box { position: relative; max-width: 560px; margin: 0 auto; }
+/* HERO — 에디토리얼: 큰 제목 + 모노 라벨 + 오른쪽 검색 (레퍼런스: Coworking/Comence/Pilo) */
+.mono { font-family: 'JetBrains Mono', 'Pretendard', ui-monospace, Consolas, monospace; /* 한글은 Pretendard로 */ letter-spacing: .02em; }
+.hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 26px 24px 30px; }
+.hero-inner { max-width: 1232px; margin: 0 auto; }
+.hero-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); padding-bottom: 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+.hero-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; margin-top: 22px; }
+.hero-title { font-size: 46px; font-weight: 800; line-height: 1.04; letter-spacing: -.05em; color: var(--text); }
+.hero-dot { color: var(--accent); display: inline-block; }
+.hero-side { flex: 1; max-width: 520px; }
+.hero-stats { display: flex; align-items: baseline; gap: 20px; font-size: 12px; color: var(--text2); margin-bottom: 12px; }
+.hero-stats b { font-family: 'Pretendard', sans-serif; font-size: 18px; font-weight: 800; color: var(--text); margin-left: 4px; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.hero-today { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; border-bottom: 1px dashed transparent; transition: color .15s, border-color .15s; }
+.hero-today b { color: var(--accent-text); }
+.hero-today:hover { border-bottom-color: var(--accent); color: var(--text); }
+.hero-today.on { color: var(--accent-text); border-bottom: 1px solid var(--accent); }
+.hero-today.on::after { content: ' ✕'; font-size: 10px; }
+.search-box { position: relative; }
+/* 등장 모션: 제목이 올라오고 마침표가 톡 */
+@keyframes heroUp { from { opacity: 0; transform: translateY(14px); } }
+@keyframes dotPop { 0% { transform: scale(0); } 70% { transform: scale(1.4); } 100% { transform: scale(1); } }
+.hero-title { animation: heroUp .6s var(--ease-out, ease) backwards; }
+.hero-dot { animation: dotPop .5s .45s cubic-bezier(.3,1.6,.5,1) backwards; transform-origin: 50% 80%; }
+.hero-side { animation: heroUp .6s .12s var(--ease-out, ease) backwards; }
 .search-box input { width: 100%; padding: 15px 52px 15px 50px; border: 1.5px solid var(--border2); border-radius: 14px; font-size: 15px; font-family: inherit; background: var(--white); color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: var(--shadow); }
 .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(11,195,144,.12); }
 .search-box input::placeholder { color: var(--text3); }
@@ -167,12 +190,6 @@ header { background: var(--white); border-bottom: 1px solid var(--border); posit
 .chip-reset { background: transparent; border-color: transparent; color: var(--text3); }
 .chip-reset:hover { color: var(--danger); border-color: var(--danger); background: transparent; }
 
-/* STATS */
-.stats-row { max-width: 1280px; margin: 0 auto; padding: 0 24px 16px; display: flex; gap: 12px; flex-wrap: wrap; }
-.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; }
-.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.stat-num { font-size: 20px; line-height: normal; font-weight: 800; }
-.stat-lbl { font-size: 11px; color: var(--text3); margin-top: 1px; font-weight: 500; }
 
 /* TABLE */
 .table-outer { max-width: 1280px; margin: 0 auto; padding: 0 24px 48px; }
@@ -214,11 +231,6 @@ tbody td { padding: 12px 14px; vertical-align: middle; }
 .f-셀프only { background: #f3e8ff; color: #6b21a8; }
 .f-기타 { background: var(--bg); color: var(--text3); }
 .note-preview { font-size: 12px; color: var(--warn); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-/* 오늘 방문 매장 행 하이라이트 */
-tbody tr.visit-today { background: #F2F9FF; }
-tbody tr.visit-today:hover { background: var(--accent2-light); }
-tbody tr.visit-today .td-name { color: var(--accent2-strong); }
-.today-tag { display: inline-block; background: var(--accent2); color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .closed-tag { display: inline-block; background: #6b7280; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .rondi-topup-tag { display: inline-block; background: var(--orange); color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
 .stage-tag { display: inline-block; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: .3px; }
@@ -295,9 +307,6 @@ tbody tr.store-closed::after {
 
 /* SCHEDULE PAGE */
 .pg-inner { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
-.pg-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
-.pg-desc { font-size: 14px; color: var(--text2); margin-bottom: 28px; font-weight: 500; }
-.sched-notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #78350f; margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-start; font-weight: 500; }
 .sched-table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
 .sched-table { width: 100%; border-collapse: collapse; }
 .sched-table thead th { background: var(--bg); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; border-bottom: 1px solid var(--border); }
@@ -387,10 +396,6 @@ tbody tr.store-closed::after {
 /* REFUND PAGE */
 .refund-wrap { max-width: 640px; margin: 0 auto; padding: 40px 24px 60px; }
 .refund-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); }
-.refund-card-hd { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-.refund-card-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; color: var(--accent-text); font-size: 20px; flex-shrink: 0; }
-.refund-card-title { font-size: 17px; font-weight: 800; color: var(--text); }
-.refund-card-sub { font-size: 13px; color: var(--text2); margin-top: 2px; font-weight: 500; }
 .rf-section { margin-bottom: 20px; }
 .rf-label { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; letter-spacing: .3px; }
 .rf-step-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent-text); font-size: 12px; font-weight: 800; }
@@ -437,7 +442,6 @@ tbody tr.store-closed::after {
 @media (max-width: 768px) {
   .info-grid { grid-template-columns: 1fr 1fr; }
   .fgrid { grid-template-columns: 1fr; }
-  .nav-inner, .pg-inner, .admin-inner, .table-outer, .filter-bar, .stats-row { padding-left: 12px; padding-right: 12px; }
   .hero { padding: 24px 16px 20px; }
 }
 /* 토스트 알림 */
@@ -514,11 +518,6 @@ header { background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur
 .btn:active:not(:disabled), .btn-save:active, .btn-add:active, .btn-admin:active, .chip:active, .rf-chip:active, .btn-cf-cancel:active, .btn-cf-del:active { transform: scale(.97); }
 .btn-primary:hover, .btn-save:hover, .btn-add:hover { box-shadow: 0 4px 12px rgba(11,195,144,.25); }
 
-/* 통계 카드: 클릭하면 해당 필터 적용 */
-.stat-card { cursor: pointer; transition: transform .18s var(--ease-out), box-shadow .18s, border-color .18s; user-select: none; }
-.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border2); }
-.stat-card.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(11,195,144,.14); }
-.stat-num { font-variant-numeric: tabular-nums; }
 
 /* 표 행: 호버 시 왼쪽 강조선 */
 #store-tbody tr, #refund-list-tbody tr { transition: background .12s; }
@@ -544,3 +543,155 @@ header { background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 #refund-list-loading .skel + .skel { margin-top: 14px; }
+
+/* ============================================================
+   매장 목록 — 검색 영역 톤에 맞춘 정리 (빼기 위주)
+   흰 바탕 하나, 선은 최소, 모노는 검색 영역에만, 색은 점으로만
+   ============================================================ */
+#page-list { background: var(--white); }
+.hero { border-bottom: none; padding-bottom: 8px; }
+.hero-meta { border-bottom: none; padding-bottom: 0; }
+
+/* 필터: 테두리 없는 텍스트 칩 + 개수 */
+#page-list .filter-bar { max-width: 1280px; padding: 22px 24px 18px; gap: 2px; }
+#page-list .filter-label { font-size: 12px; font-weight: 600; color: var(--text3); margin-right: 8px; }
+#page-list .chip { border: none; background: none; font-size: 13px; font-weight: 500; padding: 6px 12px; color: var(--text2); border-radius: 999px; }
+#page-list .chip:hover { background: var(--bg); color: var(--text); }
+#page-list .chip.on, #page-list .chip.on:hover { background: var(--text); color: #fff; }
+.chip-n { margin-left: 5px; font-size: 12px; font-weight: 600; color: var(--text3); font-variant-numeric: tabular-nums; }
+.chip.on .chip-n { color: rgba(255,255,255,.55); }
+#page-list .chip-divider { width: 1px; height: 14px; background: var(--border2); margin: 0 12px; }
+#page-list .chip-reset { color: var(--text3); font-size: 12px; margin-left: 4px; }
+#page-list .chip-reset:hover { color: var(--danger); background: none; }
+
+/* 표: 테두리·그림자 없이 선 두 개로 */
+#page-list .table-outer { padding-bottom: 60px; }
+#page-list .table-card { border: none; border-top: 1px solid var(--text); border-radius: 0; box-shadow: none; overflow: visible; }
+#page-list .table-toolbar { padding: 14px 4px; }
+#page-list .result-count { font-size: 13px; color: var(--text3); }
+#page-list .result-count strong { color: var(--text); font-weight: 800; }
+#page-list .table-toolbar > span:last-child { font-size: 12px; }
+#page-list thead th { background: none; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text3); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+#page-list tbody td { padding: 14px 14px; }
+#page-list tbody tr { border-bottom-color: #EEF0F2; }
+#page-list tbody tr:hover { background: #F7F9FA; }
+#store-tbody tr:hover td:first-child { box-shadow: none; }
+
+/* 표 안 배지 → 글자 + 작은 점 (색은 점에만) */
+#store-tbody .badge { background: none; padding: 0; border-radius: 0; font-size: 13px; font-weight: 500; color: var(--text2); }
+#store-tbody .b-직영 { color: var(--accent2-strong); font-weight: 600; }
+#store-tbody .b-비론디원 { color: var(--border2); }
+#store-tbody .b-론디원::before, #store-tbody .freq::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; opacity: 1; background: var(--accent); }
+#store-tbody .freq { background: none; padding: 0; font-size: 13px; font-weight: 500; color: var(--text2); gap: 0; }
+#store-tbody .f-매일::before { background: #0BC390; }
+#store-tbody .f-격일::before { background: #16A0FA; }
+#store-tbody .f-busan::before { background: #F59E0B; }
+#store-tbody .f-daejeon::before { background: #EF4444; }
+#store-tbody .f-셀프only::before { background: #8B5CF6; }
+#store-tbody .f-기타::before { background: var(--border2); }
+#store-tbody .b-line { border: none; min-width: 24px; text-align: center; padding: 3px 6px; border-radius: 6px; font-size: 12px; }
+#store-tbody .kiosk-badge { background: none; border: none; padding: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: var(--text3); }
+#store-tbody .kiosk-v2 { color: var(--text); font-weight: 600; }
+#store-tbody .visit-next { color: var(--text); font-weight: 600; font-size: 13px; }
+#store-tbody .visit-next span { color: var(--accent-text); font-weight: 600; opacity: 1 !important; margin-left: 2px; }
+#store-tbody .note-preview { color: #B45309; font-weight: 500; }
+/* 오늘 방문: 방문일 칸을 초록 알약으로 */
+#store-tbody .visit-today-pill { display: inline-block; align-self: flex-start; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+
+/* ============================================================
+   전체 화면 통일 — 매장 목록(에디토리얼) 규칙을 모든 페이지에
+   흰 바탕 · 1px 선 · 모노 날짜줄 + 큰 제목과 초록 마침표 · 표 위 검은 선 · 선택은 검정
+   ============================================================ */
+body { background: var(--white); }
+
+/* 헤더 */
+header { border-bottom: 1px solid var(--border); }
+.nav-tab { font-weight: 500; color: var(--text2); }
+.nav-tab.active { color: var(--text); font-weight: 700; }
+.nav-tab::after { height: 2px; left: 18px; right: 18px; }
+.btn-admin { border-radius: 999px; padding: 7px 14px; font-weight: 600; }
+.nav-right .btn { border-color: transparent; background: none; color: var(--text2); }
+.nav-right .btn:hover { background: var(--bg); color: var(--text); border-color: transparent; }
+
+/* 푸터 */
+.site-footer { background: var(--white); border-top: 1px solid var(--border); margin-top: 0; }
+.site-footer-inner { padding: 20px 24px; }
+.site-footer-version { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+/* 페이지 머리 (운송 일정 · 환불 주체 확인 · 환불 목록) */
+.pg-inner, #page-refundlist .admin-inner { padding: 26px 24px 64px; }
+.page-head { margin-bottom: 28px; }
+.page-title { font-size: 40px; font-weight: 800; line-height: 1.06; letter-spacing: -.05em; color: var(--text); margin-top: 22px; animation: heroUp .55s var(--ease-out, ease) backwards; }
+.page-title .hero-dot { animation: dotPop .5s .4s cubic-bezier(.3,1.6,.5,1) backwards; transform-origin: 50% 80%; }
+.page-desc { font-size: 14px; line-height: 1.6; color: var(--text2); margin-top: 12px; max-width: 640px; }
+.page-head-split { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }
+.head-stat { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.head-stat-lbl { font-size: 12px; font-weight: 600; color: var(--text3); }
+.head-stat b { font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; color: var(--accent-text); font-variant-numeric: tabular-nums; }
+.head-stat-sub { font-size: 11px; color: var(--text3); }
+
+/* 운송 일정 */
+.sched-table-wrap { border: none; border-top: 1px solid var(--text); border-radius: 0; box-shadow: none; background: none; }
+.sched-table thead th { background: none; font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--text3); border-bottom: 1px solid var(--border); }
+.sched-table tbody tr { border-bottom-color: #EEF0F2; }
+.sched-table tbody tr:hover { background: #F7F9FA; }
+.sched-dot-circle { display: none; }
+.sched-note-badge { background: none; border: none; padding: 0; border-radius: 0; font-size: 12px; font-weight: 600; color: #B45309; }
+
+/* 방문주기 점 표기 (매장 목록·운송 일정 공통) */
+#sched-tbody .freq { background: none; padding: 0; font-size: 14px; font-weight: 600; color: var(--text); gap: 0; }
+#sched-tbody .freq::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; opacity: 1; }
+#sched-tbody .f-매일::before { background: #0BC390; }
+#sched-tbody .f-격일::before { background: #16A0FA; }
+#sched-tbody .f-busan::before { background: #F59E0B; }
+#sched-tbody .f-daejeon::before { background: #EF4444; }
+#sched-tbody .f-셀프only::before { background: #8B5CF6; }
+
+/* 환불 주체 확인 */
+.refund-wrap { max-width: 720px; padding: 26px 24px 64px; }
+.refund-card { background: none; border: none; box-shadow: none; padding: 0; }
+.rf-section { padding: 20px 0 22px; margin-bottom: 0; border-top: 1px solid var(--border); }
+.rf-section:first-child { border-top-color: var(--text); }
+.rf-label { font-size: 14px; font-weight: 700; color: var(--text); gap: 10px; margin-bottom: 12px; letter-spacing: 0; }
+.rf-step-num { width: auto; height: auto; background: none; border-radius: 0; color: var(--text3); font-size: 12px; font-weight: 500; }
+.rf-step-num.done { background: none; color: var(--accent-text); }
+.rf-search-row { border: 1.5px solid var(--border2); border-radius: 10px; height: 46px; }
+.rf-chip { border: 1px solid var(--border2); border-radius: 999px; padding: 7px 16px; font-weight: 500; color: var(--text2); background: var(--white); }
+.rf-chip:hover { border-color: var(--text); color: var(--text); background: var(--white); }
+.rf-chip.on, .rf-chip.on:hover { background: var(--text); border-color: var(--text); color: #fff; font-weight: 600; }
+.rf-selected-store { background: var(--bg); border: none; }
+.rf-result { border-radius: 12px; }
+.rf-reset { border: none; padding: 8px 0; color: var(--text3); }
+.rf-reset:hover { background: none; color: var(--text); text-decoration: underline; }
+
+/* 환불 목록 */
+.list-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.refund-table { width: 100%; border-collapse: collapse; font-size: 13px; border-top: 1px solid var(--text); }
+.refund-table th { text-align: left; padding: 10px; white-space: nowrap; background: none; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text3); border-bottom: 1px solid var(--border); }
+.refund-table th.sortable { cursor: pointer; user-select: none; }
+.refund-table th.sortable:hover { color: var(--text); }
+
+/* 로그인 · 비밀번호 */
+.auth-screen { background: var(--white); }
+.auth-card { box-shadow: none; border: 1px solid var(--border); border-radius: 16px; padding: 34px 36px 30px; max-width: 420px; }
+.auth-brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; text-align: left; }
+.auth-brand img { height: 18px; }
+.auth-brand .mono { font-size: 10px; color: var(--text3); letter-spacing: .06em; }
+.auth-heading { font-size: 34px; font-weight: 800; line-height: 1.1; letter-spacing: -.05em; color: var(--text); animation: heroUp .55s var(--ease-out, ease) backwards; }
+.auth-heading .hero-dot { animation: dotPop .5s .4s cubic-bezier(.3,1.6,.5,1) backwards; transform-origin: 50% 80%; }
+.auth-lead { font-size: 13px; color: var(--text2); margin: 8px 0 26px; }
+.auth-links { text-align: left; }
+.auth-foot { text-align: left; }
+
+/* 헤더·푸터 — 흑백으로, 초록은 본문 포인트에만 */
+.logo-img { filter: brightness(0); opacity: .9; }   /* 로고를 검정 단색으로 (원본 SVG는 그대로) */
+.nav-tab::after, .nav-tab.active::after { background: var(--text); }
+.nav-tab:hover::after { background: var(--border2); }
+.btn-admin { background: none; color: var(--text2); padding: 7px 10px; border-radius: 8px; font-weight: 500; }
+.btn-admin:hover { background: var(--bg); color: var(--text); }
+.site-footer-inner { max-width: 1232px; padding: 18px 0 22px; margin: 0 auto; gap: 20px; }
+.site-footer { padding: 0 24px; }
+.site-footer-brand { font-size: 11px; color: var(--text3); letter-spacing: .04em; }
+.site-footer-links a { font-size: 12px; }
+.site-footer-slack { font-size: 12px; font-weight: 500; }
+.site-footer-slack svg { width: 13px; height: 13px; }
