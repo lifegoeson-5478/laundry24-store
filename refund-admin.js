@@ -1043,7 +1043,7 @@ function showConfirmModal(title, desc, onConfirm, opts) {
   const icon = document.getElementById('custom-confirm-icon');
   if (icon) {
     icon.style.background = opts.okLabel ? (opts.iconBg || '#e6f7f5') : '#fee2e2';
-    icon.style.color = opts.okLabel ? 'var(--accent)' : '';
+    icon.style.color = opts.okLabel ? (opts.iconColor || 'var(--accent)') : '';
     icon.textContent = opts.icon || (opts.okLabel ? '✓' : '🗑');
   }
   okBtn.onclick = () => {
@@ -1378,9 +1378,9 @@ async function backupRefundsToSheet() {
   let url = null;
   try { url = (await sbFetch('settings?key=eq.sheetBackupUrl&select=value'))?.[0]?.value; } catch (e) {}
   if (!url || !SHEET_BACKUP_URL_RE.test(url)) {
-    if (!isAdmin) { showToast('백업 스프레드시트가 연결되지 않았습니다. 관리자에게 요청해주세요', 'error'); return; }
+    if (!isAdmin) { showToast('백업 스프레드시트가 연결되지 않았습니다. 관리자에게 요청해주세요', 'error'); return false; }
     url = await askSheetBackupUrl(url ? '저장된 백업 주소 형식이 올바르지 않아 다시 입력받습니다.' : '');
-    if (!url) return;
+    if (!url) return false;
   }
 
   btn.disabled = true;
@@ -1393,6 +1393,11 @@ async function backupRefundsToSheet() {
     const out = await res.json();
     if (!out.ok) throw new Error(out.error === 'unauthorized' ? '토큰이 일치하지 않습니다' : out.error);
     showToast(`백업 완료 · 새로 ${out.added}건 추가${out.skipped ? `, 중복 ${out.skipped}건 제외` : ''}`, 'success', 4000);
+    // 삭제 전 백업 여부 확인용 (팀 공용 기록)
+    try {
+      await sbFetch('settings?key=eq.sheetBackupLastAt', { method: 'DELETE', prefer: 'return=minimal' });
+      await sbFetch('settings', { method: 'POST', prefer: 'return=minimal', body: JSON.stringify({ key: 'sheetBackupLastAt', value: new Date().toISOString(), updated_at: new Date().toISOString() }) });
+    } catch (e) { /* 기록 실패해도 백업 자체는 성공 */ }
   } catch (e) {
     failed = e.message === 'Failed to fetch' ? '웹앱에 연결하지 못했습니다 (주소 확인 필요)' : e.message;
     showToast('백업 실패: ' + failed, 'error', 5000);
@@ -1402,10 +1407,31 @@ async function backupRefundsToSheet() {
   }
   // 주소/토큰 문제일 수 있으니 관리자에게 재입력 기회 제공
   if (failed && isAdmin && confirm(`백업 실패: ${failed}\n\n백업 주소를 다시 입력할까요?`)) {
-    if (await askSheetBackupUrl()) backupRefundsToSheet();
+    if (await askSheetBackupUrl()) return backupRefundsToSheet();
   }
+  return !failed;
 }
+
+const BACKUP_FRESH_MINUTES = 30; // 삭제 직전 백업으로 인정하는 시간
+
 async function deleteOldRefunds() {
+  let lastAt = null;
+  try { lastAt = (await sbFetch('settings?key=eq.sheetBackupLastAt&select=value'))?.[0]?.value; } catch (e) {}
+  const minutesAgo = lastAt ? (Date.now() - new Date(lastAt).getTime()) / 60000 : Infinity;
+  if (!(minutesAgo <= BACKUP_FRESH_MINUTES)) {
+    const lastLabel = lastAt ? new Date(lastAt).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '없음';
+    showConfirmModal(
+      '삭제 전에 백업해주세요',
+      `최근 ${BACKUP_FRESH_MINUTES}분 안에 스프레드시트 백업 기록이 없습니다.\n마지막 백업: ${lastLabel}\n\n백업이 끝나면 삭제 확인으로 넘어갑니다.`,
+      async () => { if (await backupRefundsToSheet()) confirmDeleteOldRefunds(); },
+      { okLabel: '지금 백업하기', okColor: 'var(--accent)', icon: '!', iconBg: '#fff7ed', iconColor: '#ea580c' }
+    );
+    return;
+  }
+  confirmDeleteOldRefunds();
+}
+
+function confirmDeleteOldRefunds() {
   showConfirmModal(
     '6개월 이상 데이터 삭제',
     '6개월 이상 된 환불 접수 건을 삭제할까요?\n삭제 후 복구가 불가능합니다.',
