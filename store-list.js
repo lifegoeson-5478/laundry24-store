@@ -71,7 +71,7 @@ function renderList() {
         visitHtml = isToday
           ? `<div class="visit-dates"><span class="visit-today-pill">오늘 방문</span><span class="visit-next2">다음 ${formatDate(dates[1])}</span></div>`
           : `<div class="visit-dates">
-          <span class="visit-next">${formatDate(dates[0])} <span style="font-size:10px;opacity:.7">${getDaysUntil(dates[0])}</span></span>
+          <span class="visit-next">${formatDate(dates[0])} <span>${getDaysUntil(dates[0])}</span></span>
           <span class="visit-next2">${formatDate(dates[1])}</span>
         </div>`;
       }
@@ -154,8 +154,8 @@ function openModal(i) {
       visitCardHtml = `
         <div class="sec-lbl">방문 예정일</div>
         <div class="visit-card">
-          <div class="visit-item"><label>가장 가까운 방문</label><span>${formatDate(dates[0])} <span style="font-size:12px;opacity:.7">${getDaysUntil(dates[0])}</span></span></div>
-          <div class="visit-item"><label>그 다음 방문</label><span class="secondary">${formatDate(dates[1])} <span style="font-size:12px;opacity:.7">${getDaysUntil(dates[1])}</span></span></div>
+          <div class="visit-item"><label>가장 가까운 방문</label><span>${formatDate(dates[0])} <span>${getDaysUntil(dates[0])}</span></span></div>
+          <div class="visit-item"><label>그 다음 방문</label><span class="secondary">${formatDate(dates[1])} <span>${getDaysUntil(dates[1])}</span></span></div>
         </div>`;
     }
   }
@@ -166,7 +166,7 @@ function openModal(i) {
   document.getElementById('m-body').innerHTML = isEffectivelyClosed(s) ? noticeHtml : `
     ${noticeHtml}
     ${visitCardHtml}
-    <div class="sec-lbl" ${(visitCardHtml || noticeHtml) ? 'style="margin-top:20px"' : ''}>기본 정보</div>
+    <div class="sec-lbl">기본 정보</div>
     <div class="info-grid">
       <div class="info-cell"><label>라인</label><span><span class="b-line ${getLineClass(s.line, s.frequency)}">${s.line || '—'}</span></span></div>
       <div class="info-cell"><label>방문 요일 패턴</label><span style="color:var(--accent-text);font-size:13px">${sd ? sd.days : '—'}</span></div>
@@ -179,12 +179,12 @@ function openModal(i) {
       <div class="info-cell"><label>셀프장비 보증</label><span>${s.selfWarranty || '—'}</span></div>
       <div class="info-cell"><label>드라이 보증</label><span>${s.dryWarranty || '—'}</span></div>
     </div>
-    <div class="sec-lbl" style="margin-top:20px">출장비 발생 현황</div>
+    <div class="sec-lbl">출장비 발생 현황</div>
     <div class="cost-chips">${costs.map(([k,l]) => `<span class="cc cc-${costCalc[k]}">${l}: ${costCalc[k]}</span>`).join('')}</div>
-    ${s.storeNote ? `<div class="sec-lbl" style="margin-top:20px">매장 특이사항</div><div class="note-card warn">${s.storeNote}</div>` : ''}
-    ${s.ownerNote ? `<div class="sec-lbl" style="margin-top:20px">점주 특이사항</div><div class="note-card">${s.ownerNote}</div>` : ''}
+    ${s.storeNote ? `<div class="sec-lbl">매장 특이사항</div><div class="note-card warn">${s.storeNote}</div>` : ''}
+    ${s.ownerNote ? `<div class="sec-lbl">점주 특이사항</div><div class="note-card">${s.ownerNote}</div>` : ''}
     ${(s.parking || s.cctv) ? `
-      <div class="sec-lbl" style="margin-top:20px">기타 정보</div>
+      <div class="sec-lbl">기타 정보</div>
       <div class="info-grid">
         ${(s.parking || s.parkingUrl) ? `<div class="info-cell" style="grid-column:1/-1;display:flex;flex-direction:column;gap:8px">
           <label>주차 정보</label>
