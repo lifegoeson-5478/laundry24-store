@@ -16,7 +16,7 @@ function renderStats(stores) {
     { num: c['격일'], lbl: '격일 방문', color: '#3b82f6', key: '격일' },
     { num: c['부산/대구'], lbl: '부산/대구', color: '#f59e0b', key: '부산/대구' },
     { num: c['대전'], lbl: '대전', color: '#ef4444', key: '대전' },
-    { num: c['직영'], lbl: '직영 매장', color: '#0072ce', key: '직영' },
+    { num: c['직영'], lbl: '직영 매장', color: 'var(--accent2)', key: '직영' },
   ].map(x => {
     const on = x.key ? activeFilters.has(x.key) : activeFilters.size === 0;
     return `<div class="stat-card${on ? ' on' : ''}" onclick="onStatClick('${x.key}')" title="${x.key ? x.lbl + ' 매장만 보기' : '필터 초기화'}"><div class="stat-dot" style="background:${x.color}"></div><div><div class="stat-num">${x.num}</div><div class="stat-lbl">${x.lbl}</div></div></div>`;
@@ -143,8 +143,8 @@ function openModal(i) {
     <span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne}</span>
     <span class="badge b-${s.storeType}">${s.storeType}</span>
     <span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span>
-    ${isEffectivelyClosed(s) ? `<span class="closed-tag" style="font-size:11px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
-    ${s.rondiTopupBlocked ? `<span class="rondi-topup-tag" style="font-size:11px;padding:3px 10px;">론디페이 고객센터 지급불가</span>` : ''}
+    ${isEffectivelyClosed(s) ? `<span class="closed-tag" style="font-size:12px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
+    ${s.rondiTopupBlocked ? `<span class="rondi-topup-tag" style="font-size:12px;padding:3px 10px;">론디페이 고객센터 지급불가</span>` : ''}
   `;
 
   // 폐업 공지 (폐점일이 예정되어 있거나 이미 지난 경우)
@@ -189,7 +189,7 @@ function openModal(i) {
     <div class="sec-lbl" ${(visitCardHtml || noticeHtml) ? 'style="margin-top:20px"' : ''}>기본 정보</div>
     <div class="info-grid">
       <div class="info-cell"><label>라인</label><span><span class="b-line ${getLineClass(s.line, s.frequency)}">${s.line || '—'}</span></span></div>
-      <div class="info-cell"><label>방문 요일 패턴</label><span style="color:var(--accent);font-size:13px">${sd ? sd.days : '—'}</span></div>
+      <div class="info-cell"><label>방문 요일 패턴</label><span style="color:var(--accent-text);font-size:13px">${sd ? sd.days : '—'}</span></div>
       <div class="info-cell"><label>키오스크 버전</label><span>${s.kiosk === 'V2'
         ? `<a href="https://admin.sbox24.co.kr/react-page/operation-admin/equipment-control" target="_blank" class="kiosk-badge kiosk-v2" style="cursor:pointer;text-decoration:none">V2 ↗</a>`
         : s.kiosk === 'V1' ? `<span class="kiosk-badge kiosk-v1">V1</span>` : '—'

@@ -14,8 +14,8 @@ function renderAlist() {
     <li onclick="selectStore(${i})" id="ali-${i}" style="${closedNow ? 'opacity:.55' : ''}">
       <span class="ali-no">${s.no}</span>
       <span style="flex:1;font-weight:500">${s.name}${statusTag}</span>
-      <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:11px">${s.line || '—'}</span>
-      <span style="font-size:11px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
+      <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:12px">${s.line || '—'}</span>
+      <span style="font-size:12px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
       <button class="ali-del" onclick="event.stopPropagation();askToggleClosed(${i})" title="${s.isClosed ? '폐점 해제' : '폐점 처리'}" style="margin-left:auto;${s.isClosed ? 'color:var(--accent2)' : ''}">${s.isClosed ? '↺' : '🔒'}</button>
       <button class="ali-del" onclick="event.stopPropagation();askDelete(${i})" title="삭제"></button>
     </li>
@@ -30,7 +30,7 @@ function selectStore(i) {
   editingIdx = i;
   highlightListItem(i);
   const s = STORES[i];
-  document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent)">[${s.no}] ${s.name} 수정</span>`;
+  document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent-text)">[${s.no}] ${s.name} 수정</span>`;
   document.getElementById('btn-form-save').className = 'btn-save';
   document.getElementById('btn-form-save').textContent = '저장하기';
   document.getElementById('edit-card').className = 'edit-card';
@@ -170,7 +170,7 @@ async function saveStore() {
       data._id = result[0].id;
       STORES.push(data);
       editingIdx = STORES.length - 1;
-      document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent)">[${data.no}] ${data.name} 수정</span>`;
+      document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent-text)">[${data.no}] ${data.name} 수정</span>`;
       document.getElementById('btn-form-save').className = 'btn-save';
       document.getElementById('edit-card').className = 'edit-card';
     } else {

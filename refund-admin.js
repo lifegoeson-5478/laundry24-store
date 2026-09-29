@@ -809,7 +809,7 @@ function renderRefundList() {
             <td style="padding:8px 10px;"><span class="tt" data-tt="${(r.취소사유 || '').replace(/"/g, '&quot;')}"><span style="display:inline-block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">${r.취소사유 || '-'}</span></span></td>
             <td style="padding:8px 10px;white-space:nowrap;">${r.상신예정일 || '-'}</td>
             <td style="padding:8px 10px;text-align:center;white-space:nowrap;" onclick="event.stopPropagation()">
-              ${r.처리완료 ? '<span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:999px;font-weight:700;">완료</span>' : ''}
+              ${r.처리완료 ? '<span style="font-size:12px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:999px;font-weight:700;">완료</span>' : ''}
               <input type="checkbox" ${r.처리완료 ? 'checked' : ''} onchange="toggleShinsin('${r.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-left:4px;vertical-align:middle;">
             </td>
           </tr>`;
@@ -837,7 +837,7 @@ function openRefundDetail(id) {
 
   document.getElementById('refund-detail-subtitle').textContent = `${r.매장명 || ''} · ${r.접수일자 || ''} · ${r.담당자명 || ''}`;
 
-  const section = (title, rows) => `
+  const section = (title, rows) => !rows.some(Boolean) ? '' : `
     <div class="dl-section">
       <div class="dl-title">${title}</div>
       <div class="dl-box">
@@ -1039,10 +1039,10 @@ function showConfirmModal(title, desc, onConfirm, opts) {
   document.getElementById('custom-confirm-desc').textContent = desc;
   const okBtn = document.getElementById('custom-confirm-ok');
   okBtn.textContent = opts.okLabel || '삭제';
-  okBtn.style.background = opts.okColor || '#e24b4a';
+  okBtn.style.background = opts.okColor || 'var(--danger)';
   const icon = document.getElementById('custom-confirm-icon');
   if (icon) {
-    icon.style.background = opts.okLabel ? (opts.iconBg || '#e6f7f5') : '#fee2e2';
+    icon.style.background = opts.okLabel ? (opts.iconBg || 'var(--accent-light)') : '#fee2e2';
     icon.style.color = opts.okLabel ? (opts.iconColor || 'var(--accent)') : '';
     icon.textContent = opts.icon || (opts.okLabel ? '✓' : '🗑');
   }
@@ -1424,7 +1424,7 @@ async function deleteOldRefunds() {
       '삭제 전에 백업해주세요',
       `최근 ${BACKUP_FRESH_MINUTES}분 안에 스프레드시트 백업 기록이 없습니다.\n마지막 백업: ${lastLabel}\n\n백업이 끝나면 삭제 확인으로 넘어갑니다.`,
       async () => { if (await backupRefundsToSheet()) confirmDeleteOldRefunds(); },
-      { okLabel: '지금 백업하기', okColor: 'var(--accent)', icon: '!', iconBg: '#fff7ed', iconColor: '#ea580c' }
+      { okLabel: '지금 백업하기', okColor: 'var(--accent)', icon: '!', iconBg: 'var(--orange-light)', iconColor: 'var(--orange)' }
     );
     return;
   }

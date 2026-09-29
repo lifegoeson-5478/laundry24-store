@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LAUNDRY24 매장 정보 시스템</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2300a991'/><text x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='11' fill='white' letter-spacing='-0.5'>L24</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230BC390'/><text x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='11' fill='white' letter-spacing='-0.5'>L24</text></svg>">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://ebiepxqkqeyyxewnddov.supabase.co">
 <!-- 웹폰트는 렌더링을 막지 않도록 비동기로 적용 (로드 전까지는 styles.css의 시스템 폰트 폴백 사용) -->
@@ -358,7 +358,7 @@
     <div class="panel" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;">
       <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;">Gemini API 키</div>
       <input type="password" id="gemini-api-key-input" value="••••••••••••••••••••" readonly class="input" style="flex:1;min-width:200px;background:var(--bg);">
-      <span id="gemini-key-status" style="font-size:12px;color:var(--accent);font-weight:600;">✓ Supabase에 암호화 저장됨</span>
+      <span id="gemini-key-status" style="font-size:12px;color:var(--accent-text);font-weight:600;">✓ Supabase에 암호화 저장됨</span>
     </div>
     <div class="admin-tabs">
       <div class="atab active" onclick="switchAtab('store')">매장 관리</div>
@@ -385,7 +385,7 @@
 
         <!-- 탭 -->
         <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;gap:0;">
-          <div id="etab-store" onclick="switchEtab('store')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid var(--accent);margin-bottom:-2px;color:var(--accent);">매장 정보 수정</div>
+          <div id="etab-store" onclick="switchEtab('store')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid var(--accent);margin-bottom:-2px;color:var(--accent-text);">매장 정보 수정</div>
           <div id="etab-refund" onclick="switchEtab('refund')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text3);">↩ 환불 설정</div>
           <div id="etab-closed" onclick="switchEtab('closed')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text3);">폐점 정보</div>
         </div>
@@ -526,8 +526,8 @@
     <!-- 다음 상신예정일 (등록/관리는 어드민 > 상신 알림 관리) -->
     <div class="panel" style="padding:14px 24px;text-align:center;max-width:280px;margin-bottom:20px;">
       <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">다음 상신예정일</div>
-      <div id="next-shinsin-date" style="font-size:22px;font-weight:800;color:var(--accent);">-</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;">휴무일·공휴일 반영, 입금일로부터 3영업일 전</div>
+      <div id="next-shinsin-date" style="font-size:22px;font-weight:800;color:var(--accent-text);">-</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px;">휴무일·공휴일 반영, 입금일로부터 3영업일 전</div>
     </div>
 
     <!-- 필터 + 통계 -->

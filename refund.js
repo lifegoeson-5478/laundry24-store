@@ -30,7 +30,7 @@ function rfOnSearch() {
   }
   dd.innerHTML = hits.map(s => {
     const rondiTag = rfIsRondi(s)
-      ? `<span class="rf-pill" style="background:var(--accent-light);color:var(--accent);">론디원</span>`
+      ? `<span class="rf-pill" style="background:var(--accent-light);color:var(--accent-text);">론디원</span>`
       : `<span class="rf-pill" style="background:#fff7ed;color:#c2410c;">비론디원</span>`;
     const cashTag = s.card_cancel_possible === false
       ? `<span class="rf-pill" style="background:#fee2e2;color:#b91c1c;">현금전용</span>` : '';
@@ -46,7 +46,7 @@ function rfPickStore(id) {
   document.getElementById('rf-clear-btn').style.display = 'block';
   document.getElementById('rf-dropdown').classList.remove('open');
   const rondi = rfIsRondi(rfSelected);
-  const rc = rondi ? 'background:var(--accent-light);color:var(--accent);' : 'background:#fff7ed;color:#c2410c;';
+  const rc = rondi ? 'background:var(--accent-light);color:var(--accent-text);' : 'background:#fff7ed;color:#c2410c;';
   const tags = [
     `<span class="rf-pill" style="background:var(--bg);color:var(--text3);border:1px solid var(--border);">${rfSelected.type}</span>`,
     `<span class="rf-pill" style="${rc}">${rondi ? '론디원' : '비론디원'}</span>`,
@@ -112,7 +112,7 @@ function rfCalc() {
   if (!rfSelected || !rfDevice) return;
   const rondi = rfIsRondi(rfSelected);
   const isCashOnly = rfSelected.card_cancel_possible === false;
-  const CT = { bg:'#e6f7f5', border:'#00a991', text:'#065f46', s1:'#00a991', s1t:'#fff', s2:'#9FE1CB', s2t:'#065f46', ntBorder:'#00a991', ntBg:'#e6f7f5', ntText:'#065f46' };
+  const CT = { bg:'var(--accent-light)', border:'var(--accent)', text:'var(--accent-text)', s1:'var(--accent)', s1t:'#fff', s2:'rgba(11,195,144,.35)', s2t:'var(--accent-text)', ntBorder:'var(--accent)', ntBg:'var(--accent-light)', ntText:'var(--accent-text)' };
   const CA = { bg:'#fff7ed', border:'#f59e0b', text:'#92400e', s1:'#f59e0b', s1t:'#fff', s2:'#fde68a', s2t:'#78350f', ntBorder:'#f59e0b', ntBg:'#fffbeb', ntText:'#78350f' };
 
   if (rfDevice === '잔여론디페이') {
