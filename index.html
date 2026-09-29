@@ -546,12 +546,12 @@
       <button class="btn btn-danger-ghost" onclick="deleteOldRefunds()" title="접수일 기준 6개월 지난 환불 건을 삭제합니다">6개월 이상 삭제</button>
     </div>
 
-    <div id="refund-list-loading" class="table-card" style="padding:18px 20px;color:var(--text3);font-size:13px;" aria-label="불러오는 중">
+    <div id="refund-list-loading" style="padding:18px 0;color:var(--text3);font-size:13px;" aria-label="불러오는 중">
       <span class="skel" style="width:30%"></span><span class="skel" style="width:92%"></span><span class="skel" style="width:85%"></span><span class="skel" style="width:88%"></span><span class="skel" style="width:70%"></span>
     </div>
     <div id="refund-list-wrap" style="display:none;">
       <div style="font-size:13px;color:var(--text2);margin-bottom:10px;" id="refund-list-count"></div>
-      <div class="table-card refund-table-card">
+      <div style="overflow-x:visible;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:auto;">
           <thead>
             <tr style="border-bottom:2px solid var(--border);text-align:left;">

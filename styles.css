@@ -524,11 +524,6 @@ header { background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur
 #store-tbody tr, #refund-list-tbody tr { transition: background .12s; }
 #store-tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 
-/* 환불 목록 표를 카드로 */
-.refund-table-card { overflow: visible; }
-.refund-table-card thead th { background: var(--bg); color: var(--text3); font-size: 12px; font-weight: 700; letter-spacing: .3px; border-bottom: 1px solid var(--border); }
-.refund-table-card thead th:first-child { border-top-left-radius: var(--radius); }
-.refund-table-card thead th:last-child { border-top-right-radius: var(--radius); }
 
 /* 로딩 스켈레톤 */
 .skel { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 50%, #eef0f3 75%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
@@ -547,4 +542,5 @@ header { background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur
 /* 모션 줄이기 설정 존중 */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-}#refund-list-loading .skel + .skel { margin-top: 14px; }
+}
+#refund-list-loading .skel + .skel { margin-top: 14px; }
