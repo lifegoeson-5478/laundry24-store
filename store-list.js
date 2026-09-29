@@ -199,6 +199,7 @@ function openModal(i) {
       </div>` : ''
     }
   `;
+  document.getElementById('m-body').scrollTop = 0;
   document.getElementById('overlay').classList.add('open');
 }
 function closeOverlay(e) { if (e.target.id === 'overlay') document.getElementById('overlay').classList.remove('open'); }

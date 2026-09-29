@@ -617,18 +617,21 @@
 
 <!-- STORE DETAIL MODAL -->
 <div class="overlay" id="overlay" onclick="closeOverlay(event)">
-  <div class="modal">
-    <div class="modal-hd">
-      <div>
+  <div class="modal-wrap">
+    <div class="modal">
+      <div class="modal-hd">
         <div>
-          <span class="modal-no mono" id="m-no"></span>
-          <span class="modal-name" id="m-name"></span>
+          <div>
+            <span class="modal-no mono" id="m-no"></span>
+            <span class="modal-name" id="m-name"></span>
+          </div>
+          <div class="modal-tags" id="m-tags"></div>
         </div>
-        <div class="modal-tags" id="m-tags"></div>
+        <button class="modal-x" onclick="document.getElementById('overlay').classList.remove('open')">×</button>
       </div>
-      <button class="modal-x" onclick="document.getElementById('overlay').classList.remove('open')">×</button>
+      <div class="modal-bd" id="m-body"></div>
     </div>
-    <div class="modal-bd" id="m-body"></div>
+    <span class="modal-curl" aria-hidden="true"></span>
   </div>
 </div>
 
