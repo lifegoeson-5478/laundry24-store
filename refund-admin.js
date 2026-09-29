@@ -1352,27 +1352,40 @@ async function exportRefundExcel() {
 }
 
 // 환불 목록 전체를 구글 스프레드시트에 백업 (중복 검사·이어붙이기는 google-apps-script/refund-backup.gs 가 처리)
+// 고객 정보가 외부로 나가므로 이 형식의 구글 Apps Script 주소가 아니면 전송하지 않음
+const SHEET_BACKUP_URL_RE = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec\?token=[^&\s]+$/;
+
+// 관리자에게 웹앱 주소를 받아 settings에 저장. 성공 시 주소 반환
+async function askSheetBackupUrl(reason) {
+  const url = (prompt(`${reason ? reason + '\n\n' : ''}Apps Script 웹앱 주소를 붙여넣으세요\n형식: https://script.google.com/macros/s/.../exec?token=비밀값`) || '').trim();
+  if (!url) return null;
+  if (!SHEET_BACKUP_URL_RE.test(url)) {
+    showToast('주소 형식이 올바르지 않습니다. exec 뒤에 ?token=비밀값 을 붙여주세요', 'error', 5000);
+    return null;
+  }
+  try {
+    await sbFetch('settings?key=eq.sheetBackupUrl', { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch('settings', {
+      method: 'POST', prefer: 'return=minimal',
+      body: JSON.stringify({ key: 'sheetBackupUrl', value: url, updated_at: new Date().toISOString() }),
+    });
+  } catch (e) { showToast('주소 저장 실패: ' + e.message, 'error'); return null; }
+  return url;
+}
+
 async function backupRefundsToSheet() {
   const btn = document.getElementById('sheet-backup-btn');
   let url = null;
   try { url = (await sbFetch('settings?key=eq.sheetBackupUrl&select=value'))?.[0]?.value; } catch (e) {}
-  if (!url) {
+  if (!url || !SHEET_BACKUP_URL_RE.test(url)) {
     if (!isAdmin) { showToast('백업 스프레드시트가 연결되지 않았습니다. 관리자에게 요청해주세요', 'error'); return; }
-    url = (prompt('Apps Script 웹앱 주소를 붙여넣으세요\n(https://script.google.com/.../exec?token=비밀값)') || '').trim();
+    url = await askSheetBackupUrl(url ? '저장된 백업 주소 형식이 올바르지 않아 다시 입력받습니다.' : '');
     if (!url) return;
-    if (!url.startsWith('https://script.google.com/')) { showToast('script.google.com 주소만 사용할 수 있습니다', 'error'); return; }
-    try {
-      await sbFetch('settings', {
-        method: 'POST', prefer: 'return=minimal',
-        body: JSON.stringify({ key: 'sheetBackupUrl', value: url, updated_at: new Date().toISOString() }),
-      });
-    } catch (e) { showToast('주소 저장 실패: ' + e.message, 'error'); return; }
   }
-  // 고객 정보가 외부로 나가므로 구글 Apps Script 주소가 아니면 전송하지 않음
-  if (!url.startsWith('https://script.google.com/')) { showToast('백업 주소가 올바르지 않습니다. 관리자에게 문의해주세요', 'error'); return; }
 
   btn.disabled = true;
   btn.textContent = '백업 중...';
+  let failed = null;
   try {
     const rows = await sbFetch('refund_requests?select=*&order=created_at.asc');
     // text/plain 본문이라 CORS 사전요청 없이 Apps Script로 전송됨
@@ -1381,13 +1394,17 @@ async function backupRefundsToSheet() {
     if (!out.ok) throw new Error(out.error === 'unauthorized' ? '토큰이 일치하지 않습니다' : out.error);
     showToast(`백업 완료 · 새로 ${out.added}건 추가${out.skipped ? `, 중복 ${out.skipped}건 제외` : ''}`, 'success', 4000);
   } catch (e) {
-    showToast('백업 실패: ' + e.message, 'error', 5000);
+    failed = e.message === 'Failed to fetch' ? '웹앱에 연결하지 못했습니다 (주소 확인 필요)' : e.message;
+    showToast('백업 실패: ' + failed, 'error', 5000);
   } finally {
     btn.disabled = false;
     btn.textContent = '스프레드시트 백업';
   }
+  // 주소/토큰 문제일 수 있으니 관리자에게 재입력 기회 제공
+  if (failed && isAdmin && confirm(`백업 실패: ${failed}\n\n백업 주소를 다시 입력할까요?`)) {
+    if (await askSheetBackupUrl()) backupRefundsToSheet();
+  }
 }
-
 async function deleteOldRefunds() {
   showConfirmModal(
     '6개월 이상 데이터 삭제',
