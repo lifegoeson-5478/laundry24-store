@@ -6,7 +6,8 @@
   --accent2: #16A0FA; --accent2-strong: #0485D7; --accent2-light: #CFEAFE;           /* Blue / (L-10) / Blue01 */
   --orange: #FF5017; --orange-light: #FFE6DC;                                        /* Orange / Orange01 */
   --danger: #e03e3e; --warn: #f59e0b; --success: #0BC390;
-  /* Typography v2.0.0 — Pretendard, 12px 미만 지양 */
+  /* Typography v2.0.0 — Pretendard, 12px 미만 지양
+     가이드 수치는 모바일 기준이라 PC에선 위계(단계 순서)만 따르고, 밀도 높은 UI(버튼·표)는 한 단계 작게 씀 */
   --fs-h1: 32px; --lh-h1: 44px; --fs-h2: 28px; --lh-h2: 40px; --fs-h3: 24px; --lh-h3: 32px;
   --fs-h4: 20px; --lh-h4: 28px; --fs-h5: 18px; --lh-h5: 26px;
   --fs-body1: 16px; --lh-body1: 24px; --fs-body2: 14px; --lh-body2: 22px; --fs-body3: 15px;
@@ -31,7 +32,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .btn-danger-ghost { border-color: transparent; background: transparent; color: #b91c1c; }
 .btn-danger-ghost:hover { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
 .toolbar-spacer { flex: 1; }
-.btn-lg { padding: 12px 20px; font-size: var(--fs-body1); line-height: var(--lh-body1); border-radius: 10px; justify-content: center; }
+.btn-lg { padding: 11px 20px; font-size: var(--fs-body2); line-height: var(--lh-body2); border-radius: 10px; justify-content: center; }
 .btn-primary.btn-lg { font-weight: 700; }
 .btn-danger { background: var(--danger); border-color: var(--danger); color: white; font-weight: 700; }
 .btn-danger:hover { background: #c03030; border-color: #c03030; color: white; }
