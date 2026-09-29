@@ -93,14 +93,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .dlg-center .dlg-title { margin-bottom: 10px; }
 .dlg-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
 .copy-box { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text); white-space: pre-wrap; font-family: inherit; }
-/* 초록 헤더 다이얼로그 (환불 접수 상세) */
-.dlg-hd-accent { background: var(--accent); border-bottom: none; padding: 20px 20px 20px 24px; }
-.dlg-hd-accent .dlg-title { color: white; }
-.dlg-hd-accent .dlg-sub { color: rgba(255,255,255,.85); }
-.dlg-hd-accent .btn, .dlg-hd-accent .dlg-x { background: rgba(255,255,255,.2); border-color: transparent; color: white; font-weight: 700; }
-.dlg-hd-accent .btn:hover, .dlg-hd-accent .dlg-x:hover { background: rgba(255,255,255,.32); border-color: transparent; color: white; }
-.dlg-hd-accent .dlg-x { border-radius: 50%; }
-.dlg-hd-accent .btn-primary, .dlg-hd-accent .btn-primary:hover { background: white; color: var(--accent-text); box-shadow: none; }
 /* 상세 보기 (라벨-값 목록) */
 .dl-section { margin-bottom: 16px; }
 .dl-title { font-size: 12px; font-weight: 800; color: var(--accent-text); letter-spacing: .3px; margin-bottom: 8px; }
@@ -695,3 +687,87 @@ header { border-bottom: 1px solid var(--border); }
 .site-footer-links a { font-size: 12px; }
 .site-footer-slack { font-size: 12px; font-weight: 500; }
 .site-footer-slack svg { width: 13px; height: 13px; }
+/* 로그인·비밀번호 — 카드 없이 다른 페이지와 같은 머리 구조 */
+.auth-card { border: none; background: none; padding: 0; max-width: 400px; border-radius: 0; }
+.auth-brand { margin-bottom: 26px; }
+.auth-brand img { height: 20px; filter: brightness(0); opacity: .9; }
+.auth-card .hero-meta { margin-bottom: 26px; }
+.auth-links a { text-decoration: underline; text-decoration-color: var(--border2); text-underline-offset: 3px; }
+.auth-links a:hover { color: var(--text); text-decoration-color: var(--text); }
+
+/* ============================================================
+   주요 버튼 검정 · 환불 결과 · 매장 상세 / 환불 접수 상세 모달 통일
+   ============================================================ */
+.btn-primary { background: var(--text); border-color: var(--text); color: #fff; }
+.btn-primary:hover { background: #000; border-color: #000; color: #fff; box-shadow: none; }
+.btn-outline { border-color: var(--text); color: var(--text); }
+.btn-outline:hover { background: var(--bg); border-color: var(--text); color: var(--text); }
+
+/* 환불 결과: 박스 대신 위쪽 색 선 + 큰 제목 */
+.rf-result { border: none; border-top: 2px solid var(--accent); border-radius: 0; background: none; padding: 22px 0 4px; margin-top: 4px; }
+.rf-result-top { align-items: flex-end; margin-bottom: 22px; }
+.rf-result-label { font-size: 11px; color: var(--text3); letter-spacing: .04em; opacity: 1; margin-bottom: 8px; text-transform: none; }
+.rf-result-owner { font-size: 36px; font-weight: 800; letter-spacing: -.05em; line-height: 1.05; color: var(--text); }
+.rf-result-store-tag { background: none; border: none; padding: 0; font-size: 12px; font-weight: 500; color: var(--text3); }
+.rf-divider { display: none; }
+.rf-steps-lbl { font-size: 11px; color: var(--text3); letter-spacing: .04em; opacity: 1; margin-bottom: 0; text-transform: none; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.rf-step-row { margin: 0; padding: 14px 0; border-bottom: 1px solid #EEF0F2; font-size: 14px; gap: 16px; align-items: baseline; }
+.rf-snum { width: auto; height: auto; border-radius: 0; background: none; color: var(--text3); font-size: 12px; font-weight: 500; margin: 0; flex-shrink: 0; }
+.rf-note-box { margin-top: 16px; background: none; color: var(--text2); border-left: 2px solid var(--accent); border-radius: 0; padding: 4px 0 4px 14px; font-size: 13px; }
+.rf-apply-notice { font-size: 13px; line-height: 1.6; color: var(--text2); padding: 16px 0 14px; }
+
+/* 매장 상세 모달 */
+.overlay { background: rgba(15,20,30,.4); }
+.modal { border-radius: 16px; max-width: 680px; }
+.modal-hd { padding: 26px 28px 20px; border-bottom: 1px solid var(--border); }
+.modal-no { background: none; border: none; padding: 0; font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: .04em; display: block; margin-bottom: 6px; }
+.modal-hd > div > div:first-child { display: block !important; }
+.modal-name { font-size: 26px; font-weight: 800; letter-spacing: -.04em; line-height: 1.15; }
+.modal-tags { gap: 14px; margin-top: 10px; }
+.modal-tags .badge, .modal-tags .freq { background: none; padding: 0; border-radius: 0; font-size: 13px; font-weight: 500; color: var(--text2); gap: 0; }
+.modal-tags .b-직영 { color: var(--accent2-strong); font-weight: 600; }
+.modal-tags .b-론디원::before, .modal-tags .freq::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; opacity: 1; background: var(--accent); }
+.modal-tags .f-격일::before { background: #16A0FA; } .modal-tags .f-busan::before { background: #F59E0B; } .modal-tags .f-daejeon::before { background: #EF4444; } .modal-tags .f-셀프only::before { background: #8B5CF6; }
+.modal-bd { padding: 8px 28px 30px; }
+.sec-lbl { font-family: 'JetBrains Mono', 'Pretendard', monospace; font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: none; color: var(--text3); margin: 26px 0 12px !important; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.sec-lbl:first-child { margin-top: 18px !important; }
+.visit-card { background: none; border: none; border-radius: 0; padding: 0; gap: 40px; }
+.visit-item label { font-size: 12px; color: var(--text3); font-weight: 500; letter-spacing: 0; text-transform: none; margin-bottom: 4px; }
+.visit-item span { font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: var(--text); }
+.visit-item span.secondary { font-size: 22px; font-weight: 800; color: var(--text2); }
+.visit-item span span { color: var(--accent-text) !important; opacity: 1 !important; font-size: 12px !important; font-weight: 600; letter-spacing: 0; }
+.info-grid { gap: 18px 16px; }
+.info-cell label { font-size: 12px; font-weight: 500; }
+.info-cell span { font-size: 14px; font-weight: 600; }
+.cost-chips { gap: 10px 22px; }
+.cc { border: none; background: none; padding: 0; border-radius: 0; font-size: 13px; font-weight: 500; }
+.cc::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.cc-발생 { color: var(--text); } .cc-발생::before { background: var(--danger); }
+.cc-미발생 { color: var(--text3); } .cc-미발생::before { background: var(--border2); }
+.note-card { background: none; border: none; border-left: 2px solid var(--border2); border-radius: 0; padding: 2px 0 2px 14px; color: var(--text); font-size: 14px; }
+.note-card.warn { background: none; border-color: #F59E0B; color: var(--text); }
+.modal-link { align-self: flex-start; font-size: 13px; font-weight: 600; color: var(--text); text-decoration: underline; text-decoration-color: var(--border2); text-underline-offset: 3px; }
+.modal-link:hover { text-decoration-color: var(--text); }
+
+/* 환불 접수 상세 모달 */
+.dlg-kicker { font-size: 11px; color: var(--text3); letter-spacing: .04em; margin-bottom: 6px; }
+.dlg-title-lg { font-size: 24px; font-weight: 800; letter-spacing: -.04em; line-height: 1.2; }
+.dlg-hd { align-items: flex-start; padding: 24px 22px 18px 28px; }
+.dlg-bd { padding: 8px 28px 28px; }
+.dl-section { margin-bottom: 0; }
+.dl-title { font-family: 'JetBrains Mono', 'Pretendard', monospace; font-size: 11px; font-weight: 500; letter-spacing: .04em; color: var(--text3); margin: 22px 0 0; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.dl-box { background: none; border: none; border-radius: 0; }
+.dl-row { padding: 11px 0; border-bottom-color: #EEF0F2; }
+.dl-row.hl { background: none; }
+.dl-row.hl .dl-val { color: var(--text); font-weight: 800; }
+.dl-row .input { flex: 1; }
+.copy-box { background: var(--bg); border: none; }.modal .kiosk-badge { background: none; border: none; padding: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text); }
+
+/* 검색창: 입력 중엔 / 힌트가 숨으니 오른쪽 여백을 줄여 X를 끝으로, X 모양도 정돈 */
+.search-box input:not(:placeholder-shown) { padding-right: 14px; }
+.search-box input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin-left: 8px; cursor: pointer; border-radius: 50%; background: var(--border2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 7l10 10M17 7 7 17'/%3E%3C/svg%3E") center / 10px no-repeat; }
+.search-box input::-webkit-search-cancel-button:hover { background-color: var(--text3); }
+
+/* 오늘 방문 매장: 매장명 옆 "오늘" 태그 */
+.today-tag { display: inline-block; margin-left: 7px; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 1.4; vertical-align: 1px; } /* 색은 라인 클래스(line-*)가 정함 *//* 오늘 태그는 라인 색을 따름 (빨강·파랑·초록·보라·노랑) — 테두리만 제거 */
+.today-tag[class*="line-"] { border: none; }

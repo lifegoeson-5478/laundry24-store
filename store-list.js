@@ -79,7 +79,7 @@ function renderList() {
     const rowCls = closedNow ? 'store-closed' : '';
     return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
       <td class="td-no">${s.no}</td>
-      <td class="td-name">${s.name}${closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s)}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
+      <td class="td-name">${s.name}${isVisitingToday(s) ? `<span class="today-tag ${getLineClass(s.line, s.frequency)}">오늘</span>` : ''}${closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s)}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
       <td><span class="badge b-${s.storeType}">${s.storeType}</span></td>
@@ -143,7 +143,7 @@ function goHome() {
 // ============================================================
 function openModal(i) {
   const s = STORES[i];
-  document.getElementById('m-no').textContent = 'No.' + s.no;
+  document.getElementById('m-no').textContent = 'NO. ' + String(s.no).padStart(3, '0');
   document.getElementById('m-name').textContent = s.name;
   document.getElementById('m-tags').innerHTML = `
     <span class="badge b-${s.type}">${s.type}</span>
@@ -214,13 +214,13 @@ function openModal(i) {
       <div class="sec-lbl" style="margin-top:20px">기타 정보</div>
       <div class="info-grid">
         ${(s.parking || s.parkingUrl) ? `<div class="info-cell" style="grid-column:1/-1;display:flex;flex-direction:column;gap:8px">
-          <label>🅿 주차 정보</label>
-          ${s.parkingUrl ? `<a href="${s.parkingUrl}" target="_blank" style="color:var(--accent2);font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:var(--accent2-light);padding:5px 12px;border-radius:6px;align-self:flex-start">🅿 주차 등록하기 ↗</a>` : ''}
+          <label>주차 정보</label>
+          ${s.parkingUrl ? `<a href="${s.parkingUrl}" target="_blank" rel="noopener" class="modal-link">주차 등록하기 ↗</a>` : ''}
           ${s.parking ? `<span style="font-size:13px;white-space:pre-line">${s.parking}</span>` : ''}
         </div>` : ''}
         ${(s.cctv || s.cctvUrl) ? `<div class="info-cell" style="grid-column:1/-1;display:flex;flex-direction:column;gap:8px">
           <label>CCTV 정보</label>
-          ${s.cctvUrl ? `<a href="${s.cctvUrl}" target="_blank" style="color:var(--text);font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1.5px solid var(--border);padding:5px 12px;border-radius:6px;align-self:flex-start">CCTV 접속하기 ↗</a>` : ''}
+          ${s.cctvUrl ? `<a href="${s.cctvUrl}" target="_blank" rel="noopener" class="modal-link">CCTV 접속하기 ↗</a>` : ''}
           ${s.cctv ? `<span style="font-size:13px;white-space:pre-line">${s.cctv}</span>` : ''}
         </div>` : ''}
       </div>` : ''

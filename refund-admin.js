@@ -835,7 +835,8 @@ function openRefundDetail(id) {
   const r = refundList.find(x => x.id === id);
   if (!r) return;
 
-  document.getElementById('refund-detail-subtitle').textContent = `${r.매장명 || ''} · ${r.접수일자 || ''} · ${r.담당자명 || ''}`;
+  document.getElementById('refund-detail-title').textContent = r.매장명 || '환불 접수 상세';
+  document.getElementById('refund-detail-subtitle').textContent = [r.접수일자, r.담당자명].filter(Boolean).join(' · ');
 
   const section = (title, rows) => !rows.some(Boolean) ? '' : `
     <div class="dl-section">

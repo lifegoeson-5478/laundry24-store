@@ -18,7 +18,8 @@
 <!-- 로그인 화면 (세션 확인 후 initAuth가 표시) -->
 <div id="login-screen" class="auth-screen" style="display:none;">
   <div class="auth-card">
-    <div class="auth-brand"><img src="logo.svg" alt="LAUNDRY24"><span class="mono">STORE INFORMATION</span></div>
+    <div class="auth-brand"><img src="logo.svg" alt="LAUNDRY24"></div>
+    <div class="hero-meta mono"><span>L24 / STORE INFORMATION</span><span class="js-today"></span></div>
     <div id="login-main-block">
       <h1 class="auth-heading">로그인<span class="hero-dot">.</span></h1>
       <p class="auth-lead">사내 계정으로 로그인해 주세요.</p>
@@ -65,7 +66,8 @@
 <!-- 새 비밀번호 설정 (재설정 링크로 접속 시) -->
 <div id="set-password-screen" class="auth-screen" style="display:none;">
   <div class="auth-card">
-    <div class="auth-brand"><img src="logo.svg" alt="LAUNDRY24"><span class="mono">STORE INFORMATION</span></div>
+    <div class="auth-brand"><img src="logo.svg" alt="LAUNDRY24"></div>
+    <div class="hero-meta mono"><span>L24 / STORE INFORMATION</span><span class="js-today"></span></div>
     <h1 class="auth-heading">새 비밀번호<span class="hero-dot">.</span></h1>
     <p class="auth-lead">앞으로 사용할 비밀번호를 설정해 주세요.</p>
     <form id="set-password-form" onsubmit="return handleSetNewPassword(event)">
@@ -209,7 +211,7 @@
 
       <div class="rf-section" id="rf-sec-store">
         <div class="rf-label"><span class="rf-step-num mono" id="rf-b1">01</span>매장 검색</div>
-        <div id="rf-loading" class="rf-loading">⏳ 매장 데이터 불러오는 중...</div>
+        <div id="rf-loading" class="rf-loading">매장 데이터를 불러오는 중…</div>
         <div class="rf-search-wrap" id="rf-search-wrap" style="display:none;">
           <div class="rf-search-row">
             <span class="si"></span>
@@ -245,7 +247,7 @@
 
       <div id="rf-result" class="rf-result"></div>
       <div id="rf-apply-wrap" style="display:none;margin-top:12px;display:none;">
-        <div style="font-size:13px;color:var(--text2);background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:10px;line-height:1.6;" id="rf-apply-notice"></div>
+        <div class="rf-apply-notice" id="rf-apply-notice"></div>
         <button onclick="openRefundForm()" class="btn btn-lg btn-primary btn-block">환불 접수하기</button>
         <button id="rf-partial-btn" onclick="openPartialCancelForm()" class="btn btn-lg btn-outline btn-block" style="display:none;margin-top:8px;">부분 취소 요청</button>
       </div>
@@ -617,7 +619,7 @@
     <div class="modal-hd">
       <div>
         <div style="display:flex;align-items:center;gap:10px">
-          <span class="modal-no" id="m-no"></span>
+          <span class="modal-no mono" id="m-no"></span>
           <span class="modal-name" id="m-name"></span>
         </div>
         <div class="modal-tags" id="m-tags"></div>
@@ -708,9 +710,10 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 <!-- 환불 상세 모달 -->
 <div id="refund-detail-overlay" class="dlg-overlay" style="display:none;">
   <div class="dlg dlg-lg">
-    <div class="dlg-hd dlg-hd-accent">
+    <div class="dlg-hd">
       <div>
-        <div class="dlg-title">환불 접수 상세</div>
+        <div class="dlg-kicker mono">REFUND DETAIL</div>
+        <div class="dlg-title dlg-title-lg" id="refund-detail-title">환불 접수 상세</div>
         <div class="dlg-sub" id="refund-detail-subtitle"></div>
       </div>
       <div class="dlg-hd-actions" id="refund-detail-actions-view">
