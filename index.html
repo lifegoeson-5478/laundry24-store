@@ -14,70 +14,78 @@
 </head>
 <body>
 
-<!-- 로그인 화면 -->
-<div id="login-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);padding:20px;">
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);padding:40px 36px;max-width:380px;width:100%;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:22px;font-weight:900;letter-spacing:-1px;color:#111;margin-bottom:6px;">LAUNDRY24</div>
-      <div style="font-size:13px;color:var(--text2);">로그인 후 이용해주세요</div>
+<!-- 로그인 화면 (세션 확인 후 initAuth가 표시) -->
+<div id="login-screen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="logo.svg" alt="LAUNDRY24">
+      <div class="auth-sub">매장 정보 시스템</div>
     </div>
     <div id="login-main-block">
       <form id="login-form" onsubmit="return handleLogin(event)">
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text2);">이메일</label>
-          <input type="email" id="login-email" required autocomplete="username" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+        <div class="field">
+          <label for="login-email">이메일</label>
+          <input type="email" id="login-email" required autocomplete="username" class="input input-lg">
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text2);">비밀번호</label>
-          <input type="password" id="login-password" required autocomplete="current-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+        <div class="field" style="margin-bottom:18px;">
+          <label for="login-password">비밀번호</label>
+          <div class="pw-wrap">
+            <input type="password" id="login-password" required autocomplete="current-password" class="input input-lg">
+            <button type="button" class="pw-toggle" onclick="togglePw(this)" tabindex="-1">보기</button>
+          </div>
+          <div class="caps-hint">Caps Lock이 켜져 있어요</div>
         </div>
-        <div id="login-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
-        <button type="submit" id="login-submit-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">로그인</button>
+        <div id="login-error" class="alert alert-error" style="display:none;"></div>
+        <button type="submit" id="login-submit-btn" class="btn btn-lg btn-primary btn-block">로그인</button>
       </form>
-      <div style="text-align:center;margin-top:14px;">
-        <a href="#" onclick="showResetForm(); return false;" style="font-size:12.5px;color:var(--text2);text-decoration:none;">비밀번호를 잊으셨나요?</a>
+      <div class="auth-links">
+        <a href="#" onclick="showResetForm(); return false;">비밀번호를 잊으셨나요?</a>
       </div>
-      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:10px;">계정이 없으신가요? 관리자에게 계정 생성을 요청해주세요.</div>
+      <div class="auth-foot">계정이 없으면 관리자에게 생성을 요청해주세요.</div>
     </div>
 
     <!-- 비밀번호 재설정 요청 폼 -->
     <form id="reset-request-form" style="display:none;" onsubmit="return handlePasswordResetRequest(event)">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">비밀번호 재설정</div>
-        <div style="font-size:12.5px;color:var(--text2);">가입하신 이메일로 재설정 링크를 보내드려요</div>
+      <div class="auth-title">비밀번호 재설정</div>
+      <div class="auth-desc">가입하신 이메일로 재설정 링크를 보내드려요</div>
+      <div class="field" style="margin-bottom:18px;">
+        <label for="reset-email">이메일</label>
+        <input type="email" id="reset-email" required autocomplete="username" class="input input-lg">
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
-        <label style="font-size:12px;font-weight:700;color:var(--text2);">이메일</label>
-        <input type="email" id="reset-email" required autocomplete="username" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
-      </div>
-      <div id="reset-request-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
-      <div id="reset-request-success" style="display:none;font-size:12.5px;color:#065f46;background:var(--accent-light);border:1px solid #9FE1CB;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;">이메일로 재설정 링크를 보냈습니다. 메일함을 확인해주세요.</div>
-      <button type="submit" id="reset-request-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">재설정 링크 보내기</button>
-      <div style="text-align:center;margin-top:14px;">
-        <a href="#" onclick="hideResetForm(); return false;" style="font-size:12.5px;color:var(--text2);text-decoration:none;">← 로그인으로 돌아가기</a>
+      <div id="reset-request-error" class="alert alert-error" style="display:none;"></div>
+      <div id="reset-request-success" class="alert alert-success" style="display:none;">이메일로 재설정 링크를 보냈습니다. 메일함을 확인해주세요.</div>
+      <button type="submit" id="reset-request-btn" class="btn btn-lg btn-primary btn-block">재설정 링크 보내기</button>
+      <div class="auth-links">
+        <a href="#" onclick="hideResetForm(); return false;">← 로그인으로 돌아가기</a>
       </div>
     </form>
   </div>
 </div>
 
 <!-- 새 비밀번호 설정 (재설정 링크로 접속 시) -->
-<div id="set-password-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);padding:20px;">
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);padding:40px 36px;max-width:380px;width:100%;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:22px;font-weight:900;letter-spacing:-1px;color:#111;margin-bottom:6px;">LAUNDRY24</div>
-      <div style="font-size:13px;color:var(--text2);">새 비밀번호를 설정해주세요</div>
+<div id="set-password-screen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="logo.svg" alt="LAUNDRY24">
+      <div class="auth-sub">새 비밀번호를 설정해주세요</div>
     </div>
     <form id="set-password-form" onsubmit="return handleSetNewPassword(event)">
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
-        <label style="font-size:12px;font-weight:700;color:var(--text2);">새 비밀번호</label>
-        <input type="password" id="set-password-1" required minlength="6" autocomplete="new-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+      <div class="field">
+        <label for="set-password-1">새 비밀번호 <span class="hint">(6자 이상)</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="set-password-1" required minlength="6" autocomplete="new-password" class="input input-lg">
+          <button type="button" class="pw-toggle" onclick="togglePw(this)" tabindex="-1">보기</button>
+        </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
-        <label style="font-size:12px;font-weight:700;color:var(--text2);">새 비밀번호 확인</label>
-        <input type="password" id="set-password-2" required minlength="6" autocomplete="new-password" style="padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+      <div class="field" style="margin-bottom:18px;">
+        <label for="set-password-2">새 비밀번호 확인</label>
+        <div class="pw-wrap">
+          <input type="password" id="set-password-2" required minlength="6" autocomplete="new-password" class="input input-lg">
+          <button type="button" class="pw-toggle" onclick="togglePw(this)" tabindex="-1">보기</button>
+        </div>
       </div>
-      <div id="set-password-error" style="display:none;font-size:12.5px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5;"></div>
-      <button type="submit" id="set-password-btn" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">비밀번호 변경</button>
+      <div id="set-password-error" class="alert alert-error" style="display:none;"></div>
+      <button type="submit" id="set-password-btn" class="btn btn-lg btn-primary btn-block">비밀번호 변경</button>
     </form>
   </div>
 </div>
@@ -232,8 +240,8 @@
       <div id="rf-result" class="rf-result"></div>
       <div id="rf-apply-wrap" style="display:none;margin-top:12px;display:none;">
         <div style="font-size:13px;color:var(--text2);background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:10px;line-height:1.6;" id="rf-apply-notice"></div>
-        <button onclick="openRefundForm()" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">환불 접수하기</button>
-        <button id="rf-partial-btn" onclick="openPartialCancelForm()" style="display:none;width:100%;padding:12px;margin-top:8px;background:var(--white);color:var(--accent);border:1.5px solid var(--accent);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">부분 취소 요청</button>
+        <button onclick="openRefundForm()" class="btn btn-lg btn-primary btn-block">환불 접수하기</button>
+        <button id="rf-partial-btn" onclick="openPartialCancelForm()" class="btn btn-lg btn-outline btn-block" style="display:none;margin-top:8px;">부분 취소 요청</button>
       </div>
       <button class="rf-reset" id="rf-reset-btn" onclick="rfFullReset()">처음부터 다시</button>
     </div>
@@ -241,22 +249,26 @@
 </div>
 
 <!-- 환불 접수 모달 -->
-<div id="refund-form-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;overflow-y:auto;">
-  <div style="max-width:600px;margin:40px auto;background:var(--white);border-radius:16px;padding:28px;position:relative;">
-    <button onclick="closeRefundForm()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">✕</button>
-    <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:4px;" id="rform-title">환불 접수</div>
-    <div style="font-size:13px;color:#e24b4a;font-weight:700;margin-bottom:20px;line-height:1.6;" id="rform-subtitle"></div>
-
+<div id="refund-form-overlay" class="dlg-overlay" style="display:none;">
+  <div class="dlg">
+    <div class="dlg-hd">
+      <div>
+        <div class="dlg-title" id="rform-title">환불 접수</div>
+        <div class="dlg-sub" id="rform-subtitle"></div>
+      </div>
+      <button class="dlg-x" onclick="closeRefundForm()" title="닫기">✕</button>
+    </div>
+    <div class="dlg-bd">
     <div class="fgrid">
-      <div class="fg"><label>접수일자</label><input type="text" id="rform-date" readonly style="background:var(--bg);"></div>
+      <div class="fg"><label>접수일자</label><input type="text" id="rform-date" readonly></div>
       <div class="fg"><label>담당자명 *</label><input type="text" id="rform-manager" placeholder="담당자 이름"></div>
-      <div class="fg"><label>매장명</label><input type="text" id="rform-store" readonly style="background:var(--bg);color:#e24b4a;font-weight:700;"></div>
-      <div class="fg"><label>사용 기기</label><input type="text" id="rform-device" readonly style="background:var(--bg);color:#e24b4a;font-weight:700;"></div>
+      <div class="fg"><label>매장명</label><input type="text" id="rform-store" class="hl" readonly></div>
+      <div class="fg"><label>사용 기기</label><input type="text" id="rform-device" class="hl" readonly></div>
       <div class="fg" id="rform-devnum-wrap" style="display:none;"><label>기기 번호 *</label><input type="number" id="rform-devnum" placeholder="예: 1" min="1"></div>
-      <div class="fg"><label>결제 수단</label><input type="text" id="rform-payment" readonly style="background:var(--bg);color:#e24b4a;font-weight:700;"></div>
+      <div class="fg"><label>결제 수단</label><input type="text" id="rform-payment" class="hl" readonly></div>
       <div class="fg" id="rform-method-wrap">
         <label>환불 방법 *</label>
-        <input type="text" id="rform-method-readonly" readonly style="background:var(--bg);display:none;">
+        <input type="text" id="rform-method-readonly" readonly style="display:none;">
         <select id="rform-method-select" onchange="onRefundMethodChange()" style="display:none;">
           <option value="카드취소">카드 취소</option>
           <option value="현금입금">현금 입금</option>
@@ -302,7 +314,7 @@
 
     <!-- 카드 취소 필드 -->
     <div id="rform-card-section" style="display:none;">
-      <div style="font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.5px;margin:16px 0 12px;">카드 취소 정보</div>
+      <div class="form-section-title">카드 취소 정보</div>
       <div class="fgrid">
         <div class="fg"><label>카드사명 *</label><input type="text" id="rform-cardco" placeholder="예: 신한, KB국민"></div>
         <div class="fg"><label>카드번호 *</label><input type="text" id="rform-cardno" placeholder="끝 4자리 또는 전체"></div>
@@ -314,7 +326,7 @@
 
     <!-- 계좌 환불 필드 -->
     <div id="rform-account-section" style="display:none;">
-      <div style="font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.5px;margin:16px 0 12px;">계좌 환불 정보</div>
+      <div class="form-section-title">계좌 환불 정보</div>
       <div class="fgrid">
         <div class="fg"><label>은행명 *</label><input type="text" id="rform-bank" placeholder="예: 국민, 신한, 카카오"></div>
         <div class="fg"><label>계좌번호 *</label><input type="text" id="rform-accno" placeholder="계좌번호"></div>
@@ -322,15 +334,16 @@
         <div class="fg"><label>최종 환불금액 *</label><input type="number" id="rform-accamt" placeholder="예: 3000" min="0"></div>
         <div class="fg" id="rform-shinsin-wrap" style="display:none;">
           <label>다음 입금일</label>
-          <input type="text" id="rform-shinsin" readonly style="background:var(--bg);">
+          <input type="text" id="rform-shinsin" readonly>
         </div>
       </div>
     </div>
 
-    <div id="rform-error" style="display:none;color:#e24b4a;font-size:13px;margin-top:12px;padding:10px 14px;background:#fee2e2;border-radius:8px;"></div>
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button onclick="submitRefundForm()" style="flex:1;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" id="rform-submit-btn">접수 완료</button>
-      <button onclick="closeRefundForm()" style="padding:13px 20px;background:var(--bg);color:var(--text2);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">취소</button>
+    <div id="rform-error" class="alert alert-error" style="display:none;margin:16px 0 0;"></div>
+    <div class="dlg-actions">
+      <button class="btn btn-lg" onclick="closeRefundForm()" style="flex:0 0 auto;">취소</button>
+      <button class="btn btn-lg btn-primary" onclick="submitRefundForm()" id="rform-submit-btn">접수 완료</button>
+    </div>
     </div>
   </div>
 </div>
@@ -342,9 +355,9 @@
     </div>
 
     <!-- Gemini API 키 설정 -->
-    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div class="panel" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;">
       <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;">Gemini API 키</div>
-      <input type="password" id="gemini-api-key-input" value="••••••••••••••••••••" readonly style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg);">
+      <input type="password" id="gemini-api-key-input" value="••••••••••••••••••••" readonly class="input" style="flex:1;min-width:200px;background:var(--bg);">
       <span id="gemini-key-status" style="font-size:12px;color:var(--accent);font-weight:600;">✓ Supabase에 암호화 저장됨</span>
     </div>
     <div class="admin-tabs">
@@ -449,9 +462,9 @@
 
     <!-- NOTIFY PANEL -->
     <div id="apanel-notify" class="apanel">
-      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">입금일 · 휴무일 · 공휴일 관리</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">아래 모드를 고른 뒤 달력에서 날짜를 클릭해 등록/해제하세요. 상신 마감일 계산과 상신 알림에 반영됩니다.</div>
+      <div class="panel">
+        <div class="panel-title" style="margin-bottom:4px;">입금일 · 휴무일 · 공휴일 관리</div>
+        <div class="hint" style="margin-bottom:14px;">아래 모드를 고른 뒤 달력에서 날짜를 클릭해 등록/해제하세요. 상신 마감일 계산과 상신 알림에 반영됩니다.</div>
 
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
           <div style="display:flex;background:var(--white);border:1.5px solid var(--border2);border-radius:8px;overflow:hidden;">
@@ -459,7 +472,7 @@
             <button id="blocked-mode-off" onclick="setBlockedMode('off')" style="padding:7px 14px;border:none;background:none;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">내 휴무일</button>
             <button id="blocked-mode-holiday" onclick="setBlockedMode('holiday')" style="padding:7px 14px;border:none;background:none;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">공휴일</button>
           </div>
-          <button onclick="autoRegisterHolidays()" style="padding:7px 14px;background:#e6f0fb;color:#3b5bdb;border:1.5px solid #a5b4fc;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">달력에 보이는 연도 공휴일 자동 등록</button>
+          <button onclick="autoRegisterHolidays()" class="btn">달력에 보이는 연도 공휴일 자동 등록</button>
         </div>
 
         <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;max-width:360px;">
@@ -481,21 +494,21 @@
 
     <!-- ACCOUNTS PANEL -->
     <div id="apanel-accounts" class="apanel">
-      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;">
-        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">새 계정 추가</div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-title">새 계정 추가</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <input type="email" id="new-account-email" placeholder="이메일" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;min-width:200px;">
-          <input type="text" id="new-account-password" placeholder="초기 비밀번호 (6자 이상)" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;font-family:inherit;min-width:180px;">
+          <input type="email" id="new-account-email" placeholder="이메일" class="input" style="min-width:200px;">
+          <input type="text" id="new-account-password" placeholder="초기 비밀번호 (6자 이상)" class="input" style="min-width:180px;">
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;">
             <input type="checkbox" id="new-account-admin" style="width:16px;height:16px;cursor:pointer;">관리자로 등록
           </label>
-          <button onclick="createAccount()" id="new-account-btn" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ 추가</button>
+          <button onclick="createAccount()" id="new-account-btn" class="btn btn-primary">+ 추가</button>
         </div>
-        <div style="font-size:12px;color:var(--text3);margin-top:10px;">계정 생성 후 본인 비밀번호는 로그인 화면의 "비밀번호를 잊으셨나요?"로 바꿀 수 있습니다.</div>
+        <div class="hint" style="margin-top:10px;">계정 생성 후 본인 비밀번호는 로그인 화면의 "비밀번호를 잊으셨나요?"로 바꿀 수 있습니다.</div>
       </div>
 
-      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">계정 목록</div>
+      <div class="panel">
+        <div class="panel-title">계정 목록</div>
         <div id="accounts-list"></div>
       </div>
     </div>
@@ -511,7 +524,7 @@
     </div>
 
     <!-- 다음 상신예정일 (등록/관리는 어드민 > 상신 알림 관리) -->
-    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 24px;text-align:center;max-width:280px;margin-bottom:20px;">
+    <div class="panel" style="padding:14px 24px;text-align:center;max-width:280px;margin-bottom:20px;">
       <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">다음 상신예정일</div>
       <div id="next-shinsin-date" style="font-size:22px;font-weight:800;color:var(--accent);">-</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px;">휴무일·공휴일 반영, 입금일로부터 3영업일 전</div>
@@ -519,13 +532,13 @@
 
     <!-- 필터 + 통계 -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-      <select id="refund-filter-shinsin" onchange="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">
+      <select id="refund-filter-shinsin" onchange="renderRefundList()" class="input">
         <option value="all">전체</option>
         <option value="N">처리 미완료</option>
         <option value="Y">처리 완료</option>
       </select>
-      <input type="text" id="refund-search" placeholder="매장명 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
-      <input type="text" id="refund-search-customer" placeholder="고객번호 검색..." oninput="renderRefundList()" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;flex:1;min-width:120px;">
+      <input type="text" id="refund-search" placeholder="매장명 검색..." oninput="renderRefundList()" class="input" style="flex:1;min-width:120px;">
+      <input type="text" id="refund-search-customer" placeholder="고객번호 검색..." oninput="renderRefundList()" class="input" style="flex:1;min-width:120px;">
       <button class="btn" onclick="loadRefundList()" title="새로고침">↻ 새로고침</button>
       <button class="btn" onclick="generateShinsinContent()">상신 내용 생성</button>
       <button class="btn btn-primary" onclick="exportRefundExcel()">상신 엑셀 다운로드</button>
@@ -623,123 +636,128 @@
 <script src="refund-admin.js"></script>
 <script src="admin-accounts.js"></script>
 <script>
-initAuth();
+// 스크립트 로드 실패 등으로 세션 확인이 안 되면 최소한 로그인 화면은 보여준다
+try { initAuth().catch(() => document.getElementById('login-screen').style.display = 'flex'); }
+catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 </script>
 <!-- 론디페이 경고 모달 -->
-<div id="rondi-alert-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:16px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="width:52px;height:52px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;font-weight:900;color:#ea580c;">!</div>
-    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px;">론디페이 결제 건 안내</div>
-    <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:22px;">
+<div id="rondi-alert-overlay" class="dlg-overlay" style="display:none;">
+  <div class="dlg dlg-sm dlg-center">
+    <div class="dlg-icon warn">!</div>
+    <div class="dlg-title">론디페이 결제 건 안내</div>
+    <div class="dlg-desc">
       론디페이 결제 건은 <strong>결제 수단으로 환불이 원칙</strong>입니다.<br>
       고객님께 <strong>사용한 포인트 재지급</strong>으로 안내해 주세요.
     </div>
-    <button onclick="document.getElementById('rondi-alert-overlay').style.display='none'" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button>
+    <div class="dlg-actions">
+      <button class="btn btn-lg btn-primary" onclick="document.getElementById('rondi-alert-overlay').style.display='none'">확인</button>
+    </div>
   </div>
 </div>
 
 <!-- 론디원+카드 경고 모달 -->
-<div id="rondi-card-alert-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:16px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="width:52px;height:52px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;font-weight:900;color:#ea580c;">!</div>
-    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px;">카드 결제 건 안내</div>
-    <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:18px;">
+<div id="rondi-card-alert-overlay" class="dlg-overlay" style="display:none;">
+  <div class="dlg dlg-sm dlg-center">
+    <div class="dlg-icon warn">!</div>
+    <div class="dlg-title">카드 결제 건 안내</div>
+    <div class="dlg-desc">
       망치에서 <strong>카드 취소 가능한 건</strong>입니다.<br>
       론디페이 환불 미수긍 시 <strong>카드 취소</strong>해 주세요.
     </div>
-    <label style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;margin-bottom:16px;text-align:left;">
+    <label style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;margin-top:18px;text-align:left;">
       <input type="checkbox" id="rondi-card-exception-check" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;" onchange="onRondiCardExceptionChange()">
       <span style="font-size:13px;font-weight:600;color:var(--text);line-height:1.5;">론디페이 지급 거부로<br>현금 지급이 필요합니다</span>
     </label>
-    <div style="display:flex;gap:8px;">
-      <button onclick="closeRondiCardAlert()" style="flex:1;padding:12px;background:var(--bg);color:var(--text2);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">닫기</button>
-      <button id="rondi-card-proceed-btn" onclick="proceedRondiCardException()" disabled style="flex:1;padding:12px;background:var(--border2);color:var(--white);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:not-allowed;font-family:inherit;transition:all .15s;">접수하기</button>
+    <div class="dlg-actions">
+      <button class="btn btn-lg" onclick="closeRondiCardAlert()">닫기</button>
+      <button class="btn btn-lg btn-primary" id="rondi-card-proceed-btn" onclick="proceedRondiCardException()" disabled>접수하기</button>
     </div>
   </div>
 </div>
 
 <!-- 템플릿 복사 모달 -->
-<div id="template-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:16px;padding:28px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-size:16px;font-weight:800;color:var(--text);">점주 발송 템플릿</div>
-      <button onclick="document.getElementById('template-overlay').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">✕</button>
+<div id="template-overlay" class="dlg-overlay" style="display:none;">
+  <div class="dlg">
+    <div class="dlg-hd">
+      <div class="dlg-title">점주 발송 템플릿</div>
+      <button class="dlg-x" onclick="document.getElementById('template-overlay').style.display='none'" title="닫기">✕</button>
     </div>
-    <div id="template-content" style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:inherit;"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;">
-      <button onclick="copyTemplate()" id="template-copy-btn" style="flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">복사하기</button>
-      <button onclick="document.getElementById('template-overlay').style.display='none'" style="padding:12px 20px;background:var(--bg);color:var(--text2);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">닫기</button>
+    <div class="dlg-bd">
+      <div id="template-content" class="copy-box"></div>
+      <div class="dlg-actions">
+        <button class="btn btn-lg" onclick="document.getElementById('template-overlay').style.display='none'" style="flex:0 0 auto;">닫기</button>
+        <button class="btn btn-lg btn-primary" onclick="copyTemplate()" id="template-copy-btn">복사하기</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- 환불 상세 모달 -->
-<div id="refund-detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:flex-start;justify-content:center;overflow-y:auto;">
-  <div style="background:var(--white);border-radius:20px;padding:0;max-width:620px;width:90%;margin:40px auto;box-shadow:0 24px 80px rgba(0,0,0,0.18);overflow:hidden;">
-    <!-- 모달 헤더 -->
-    <div style="background:var(--accent);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
-      <div style="color:white;">
-        <div style="font-size:15px;font-weight:800;">환불 접수 상세</div>
-        <div style="font-size:12px;opacity:.8;margin-top:2px;" id="refund-detail-subtitle"></div>
+<div id="refund-detail-overlay" class="dlg-overlay" style="display:none;">
+  <div class="dlg dlg-lg">
+    <div class="dlg-hd">
+      <div>
+        <div class="dlg-title">환불 접수 상세</div>
+        <div class="dlg-sub" id="refund-detail-subtitle"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;" id="refund-detail-actions-view">
-        <button onclick="enterRefundEditMode()" style="background:rgba(255,255,255,.2);border:none;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;font-family:inherit;">수정</button>
-        <button onclick="deleteRefundDetail()" style="background:rgba(255,255,255,.2);border:none;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;font-family:inherit;">삭제</button>
-        <button onclick="document.getElementById('refund-detail-overlay').style.display='none'" style="background:rgba(255,255,255,.2);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;">✕</button>
+      <div class="dlg-hd-actions" id="refund-detail-actions-view">
+        <button class="btn" onclick="enterRefundEditMode()">수정</button>
+        <button class="btn btn-danger-ghost" onclick="deleteRefundDetail()">삭제</button>
+        <button class="dlg-x" onclick="document.getElementById('refund-detail-overlay').style.display='none'" title="닫기">✕</button>
       </div>
-      <div style="display:none;align-items:center;gap:8px;" id="refund-detail-actions-edit">
-        <button onclick="saveRefundEdit()" style="background:white;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--accent);font-family:inherit;">저장</button>
-        <button onclick="cancelRefundEdit()" style="background:rgba(255,255,255,.2);border:none;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;font-family:inherit;">취소</button>
+      <div class="dlg-hd-actions" style="display:none;" id="refund-detail-actions-edit">
+        <button class="btn" onclick="cancelRefundEdit()">취소</button>
+        <button class="btn btn-primary" onclick="saveRefundEdit()">저장</button>
       </div>
     </div>
-    <div style="padding:24px;">
+    <div class="dlg-bd">
       <div id="refund-detail-content"></div>
-      <div id="refund-detail-template-wrap" style="display:none;margin-top:20px;">
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">점주 발송 템플릿</div>
-        <div id="refund-detail-template" style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;font-size:13px;line-height:1.85;color:var(--text);white-space:pre-wrap;font-family:inherit;"></div>
-        <button onclick="copyDetailTemplate()" id="detail-copy-btn" style="margin-top:12px;width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;">복사하기</button>
+      <div id="refund-detail-template-wrap" class="dl-section" style="display:none;margin-top:20px;">
+        <div class="dl-title">점주 발송 템플릿</div>
+        <div id="refund-detail-template" class="copy-box"></div>
+        <button class="btn btn-lg btn-primary btn-block" onclick="copyDetailTemplate()" id="detail-copy-btn" style="margin-top:12px;">복사하기</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- 상신 내용 생성 모달 -->
-<div id="shinsin-content-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:16px;padding:0;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);overflow:hidden;">
-    <div style="background:#3b5bdb;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
-      <div style="color:white;">
-        <div style="font-size:15px;font-weight:800;">상신 내용 생성</div>
-        <div style="font-size:12px;opacity:.8;margin-top:2px;" id="shinsin-content-subtitle"></div>
+<div id="shinsin-content-overlay" class="dlg-overlay" style="display:none;">
+  <div class="dlg">
+    <div class="dlg-hd">
+      <div>
+        <div class="dlg-title">상신 내용 생성</div>
+        <div class="dlg-sub" id="shinsin-content-subtitle"></div>
       </div>
-      <button onclick="document.getElementById('shinsin-content-overlay').style.display='none'" style="background:rgba(255,255,255,.2);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:white;">✕</button>
+      <button class="dlg-x" onclick="document.getElementById('shinsin-content-overlay').style.display='none'" title="닫기">✕</button>
     </div>
-    <div style="padding:24px;">
+    <div class="dlg-bd">
       <div id="shinsin-content-loading" style="text-align:center;padding:30px;color:var(--text3);font-size:14px;">
-        <div style="font-size:24px;margin-bottom:12px;">AI 분석 중...</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px;">AI 분석 중...</div>
         <div>취소사유를 분석하고 상신 내용을 작성하고 있어요</div>
       </div>
       <div id="shinsin-content-result" style="display:none;">
-        <textarea id="shinsin-content-text" style="width:100%;min-height:280px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
-        <div style="font-size:12px;color:var(--text3);margin-top:6px;line-height:1.6;">✏️ 내용을 직접 수정할 수 있습니다. 수정한 내용을 "학습 저장"하면 다음 생성 시 AI가 참고합니다.</div>
-        <div style="display:flex;gap:8px;margin-top:10px;">
-          <button onclick="copyShinsinContent()" id="shinsin-copy-btn" style="flex:1;padding:12px;background:#3b5bdb;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">복사하기</button>
-          <button onclick="saveShinsinExampleFromCurrent()" id="shinsin-learn-btn" style="flex:1;padding:12px;background:var(--white);color:#3b5bdb;border:1.5px solid #3b5bdb;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ 이 내용으로 학습 저장</button>
+        <textarea id="shinsin-content-text" class="input copy-box" style="width:100%;min-height:280px;resize:vertical;"></textarea>
+        <div class="hint" style="margin-top:6px;line-height:1.6;">내용을 직접 수정할 수 있습니다. 수정한 내용을 "학습 저장"하면 다음 생성 시 AI가 참고합니다.</div>
+        <div class="dlg-actions" style="margin-top:12px;">
+          <button class="btn btn-lg btn-outline" onclick="saveShinsinExampleFromCurrent()" id="shinsin-learn-btn">✓ 이 내용으로 학습 저장</button>
+          <button class="btn btn-lg btn-primary" onclick="copyShinsinContent()" id="shinsin-copy-btn">복사하기</button>
         </div>
       </div>
-      <div id="shinsin-content-error" style="display:none;color:#e24b4a;font-size:13px;text-align:center;padding:20px;"></div>
+      <div id="shinsin-content-error" class="alert alert-error" style="display:none;text-align:center;margin:0;"></div>
     </div>
   </div>
 </div>
 
 <!-- 커스텀 Confirm 모달 -->
-<div id="custom-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:3000;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:16px;padding:28px 28px 22px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="width:52px;height:52px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;"></div>
-    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px;" id="custom-confirm-title"></div>
-    <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:22px;white-space:pre-line;" id="custom-confirm-desc"></div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="document.getElementById('custom-confirm-overlay').style.display='none'" style="flex:1;padding:12px;background:var(--bg);color:var(--text2);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">취소</button>
-      <button id="custom-confirm-ok" style="flex:1;padding:12px;background:#e24b4a;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">삭제</button>
+<div id="custom-confirm-overlay" class="dlg-overlay" style="display:none;z-index:3000;">
+  <div class="dlg dlg-sm dlg-center">
+    <div class="dlg-icon danger" id="custom-confirm-icon"></div>
+    <div class="dlg-title" id="custom-confirm-title"></div>
+    <div class="dlg-desc" style="white-space:pre-line;" id="custom-confirm-desc"></div>
+    <div class="dlg-actions">
+      <button class="btn btn-lg" onclick="document.getElementById('custom-confirm-overlay').style.display='none'">취소</button>
+      <button class="btn btn-lg btn-danger" id="custom-confirm-ok">삭제</button>
     </div>
   </div>
 </div>

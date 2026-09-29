@@ -372,8 +372,6 @@ async function openRefundForm() {
   if (rfIsRondi(rfSelected) && rfPayment === '카드') {
     document.getElementById('rondi-card-exception-check').checked = false;
     document.getElementById('rondi-card-proceed-btn').disabled = true;
-    document.getElementById('rondi-card-proceed-btn').style.background = 'var(--border2)';
-    document.getElementById('rondi-card-proceed-btn').style.cursor = 'not-allowed';
     document.getElementById('rondi-card-alert-overlay').style.display = 'flex';
     return;
   }
@@ -840,22 +838,22 @@ function openRefundDetail(id) {
   document.getElementById('refund-detail-subtitle').textContent = `${r.매장명 || ''} · ${r.접수일자 || ''} · ${r.담당자명 || ''}`;
 
   const section = (title, rows) => `
-    <div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">${title}</div>
-      <div style="background:var(--bg);border-radius:10px;overflow:hidden;">
+    <div class="dl-section">
+      <div class="dl-title">${title}</div>
+      <div class="dl-box">
         ${rows.filter(Boolean).join('')}
       </div>
     </div>`;
 
   const row = (label, val, highlight) => (!val || val === '-') ? '' :
-    `<div style="display:flex;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;${highlight ? 'background:#e6f7f5;' : ''}">
-      <span style="color:var(--text3);min-width:90px;flex-shrink:0;font-weight:500;">${label}</span>
-      <span style="color:var(--text);font-weight:600;">${val}</span>
+    `<div class="dl-row${highlight ? ' hl' : ''}">
+      <span class="dl-label">${label}</span>
+      <span class="dl-val">${val}</span>
     </div>`;
 
   const shinsinBadge = r.처리완료
-    ? `<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;">✅ 완료</span>`
-    : `<span style="background:#fef9c3;color:#854d0e;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;">⏳ 미완료</span>`;
+    ? `<span class="pill pill-done">완료</span>`
+    : `<span class="pill pill-wait">미완료</span>`;
 
   const content = `
     ${section('기본 정보', [
@@ -889,8 +887,8 @@ function openRefundDetail(id) {
     ]) : ''}
     ${section('상신 정보', [
       row('입금예정일', r.상신예정일),
-      `<div style="display:flex;gap:12px;padding:9px 14px;font-size:13px;align-items:center;">
-        <span style="color:var(--text3);min-width:90px;flex-shrink:0;font-weight:500;">처리완료</span>
+      `<div class="dl-row">
+        <span class="dl-label">처리완료</span>
         ${shinsinBadge}
       </div>`,
     ])}
@@ -914,18 +912,18 @@ function efield(label, id, value, opts) {
   const val = (value ?? '').toString().replace(/"/g, '&quot;');
   let input;
   if (opts.select) {
-    input = `<select id="${id}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">
+    input = `<select id="${id}" class="input">
       ${opts.select.map(o => `<option value="${o}" ${o === value ? 'selected' : ''}>${o || '선택 안 함'}</option>`).join('')}
     </select>`;
   } else if (opts.textarea) {
-    input = `<textarea id="${id}" rows="2" style="flex:1;padding:7px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;">${val}</textarea>`;
+    input = `<textarea id="${id}" rows="2" class="input" style="resize:vertical;">${val}</textarea>`;
   } else if (opts.date) {
-    input = `<input type="date" id="${id}" value="${val}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">`;
+    input = `<input type="date" id="${id}" value="${val}" class="input">`;
   } else {
-    input = `<input type="text" id="${id}" value="${val}" style="flex:1;padding:7px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;">`;
+    input = `<input type="text" id="${id}" value="${val}" class="input">`;
   }
-  return `<div style="display:flex;gap:12px;padding:8px 14px;border-bottom:1px solid var(--border);font-size:13px;align-items:center;">
-    <span style="color:var(--text3);min-width:90px;flex-shrink:0;font-weight:500;">${label}</span>
+  return `<div class="dl-row">
+    <span class="dl-label">${label}</span>
     ${input}
   </div>`;
 }
@@ -935,9 +933,9 @@ function enterRefundEditMode() {
   if (!r) return;
 
   const esection = (title, rows) => `
-    <div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">${title}</div>
-      <div style="background:var(--bg);border-radius:10px;overflow:hidden;">
+    <div class="dl-section">
+      <div class="dl-title">${title}</div>
+      <div class="dl-box">
         ${rows.join('')}
       </div>
     </div>`;
@@ -1021,16 +1019,12 @@ function closeRondiCardAlert() {
   document.getElementById('rondi-card-alert-overlay').style.display = 'none';
   document.getElementById('rondi-card-exception-check').checked = false;
   document.getElementById('rondi-card-proceed-btn').disabled = true;
-  document.getElementById('rondi-card-proceed-btn').style.background = 'var(--border2)';
-  document.getElementById('rondi-card-proceed-btn').style.cursor = 'not-allowed';
 }
 
 function onRondiCardExceptionChange() {
   const checked = document.getElementById('rondi-card-exception-check').checked;
   const btn = document.getElementById('rondi-card-proceed-btn');
   btn.disabled = !checked;
-  btn.style.background = checked ? 'var(--accent)' : 'var(--border2)';
-  btn.style.cursor = checked ? 'pointer' : 'not-allowed';
 }
 
 async function proceedRondiCardException() {
@@ -1046,9 +1040,10 @@ function showConfirmModal(title, desc, onConfirm, opts) {
   const okBtn = document.getElementById('custom-confirm-ok');
   okBtn.textContent = opts.okLabel || '삭제';
   okBtn.style.background = opts.okColor || '#e24b4a';
-  const icon = document.querySelector('#custom-confirm-overlay > div > div:first-child');
+  const icon = document.getElementById('custom-confirm-icon');
   if (icon) {
     icon.style.background = opts.okLabel ? (opts.iconBg || '#e6f7f5') : '#fee2e2';
+    icon.style.color = opts.okLabel ? 'var(--accent)' : '';
     icon.textContent = opts.icon || (opts.okLabel ? '✓' : '🗑');
   }
   okBtn.onclick = () => {

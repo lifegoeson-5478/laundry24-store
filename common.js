@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.7.4';
+const APP_VERSION = '1.8.0';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -70,11 +70,31 @@ async function handleLogout() {
 function showResetForm() {
   document.getElementById('login-main-block').style.display = 'none';
   document.getElementById('reset-request-form').style.display = 'block';
+  document.getElementById('reset-email').value = document.getElementById('login-email').value;
+  document.getElementById('reset-email').focus();
 }
 function hideResetForm() {
   document.getElementById('reset-request-form').style.display = 'none';
   document.getElementById('login-main-block').style.display = 'block';
+  document.getElementById('login-email').focus();
 }
+function showLoginScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-email').focus();
+}
+
+// 비밀번호 보기/숨기기
+function togglePw(btn) {
+  const input = btn.previousElementSibling;
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? '숨기기' : '보기';
+  input.focus();
+}
+// Caps Lock 경고 (로그인 비밀번호)
+['keydown', 'keyup'].forEach(ev => document.getElementById('login-password').addEventListener(ev, e => {
+  document.querySelector('#login-form .caps-hint').classList.toggle('show', e.getModifierState && e.getModifierState('CapsLock'));
+}));
 
 async function handlePasswordResetRequest(e) {
   e.preventDefault();
@@ -168,7 +188,7 @@ async function initAuth() {
       document.getElementById('set-password-screen').style.display = 'flex';
     } else if (event === 'SIGNED_OUT') {
       document.getElementById('set-password-screen').style.display = 'none';
-      document.getElementById('login-screen').style.display = 'flex';
+      showLoginScreen();
       document.getElementById('app-root').style.display = 'none';
     }
   });
@@ -178,7 +198,7 @@ async function initAuth() {
   if (session) {
     await showApp();
   } else {
-    document.getElementById('login-screen').style.display = 'flex';
+    showLoginScreen();
     document.getElementById('app-root').style.display = 'none';
   }
 }
