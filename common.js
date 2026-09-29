@@ -16,7 +16,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.9.2';
+const APP_VERSION = '1.10.0';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -322,8 +322,10 @@ function storeToRow(s) {
 // 초기 데이터 로드
 // ============================================================
 function showLoading(msg) {
-  document.getElementById('store-tbody').innerHTML =
-    `<tr><td colspan="12" style="text-align:center;padding:60px;color:var(--text3);font-size:14px">⏳ ${msg}</td></tr>`;
+  // 스켈레톤 행 (msg는 스크린리더용)
+  const widths = [24, 140, 44, 44, 60, 30, 50, 90, 36, 60, 120];
+  document.getElementById('store-tbody').innerHTML = Array.from({ length: 8 }, (_, i) =>
+    `<tr class="skel-row" aria-busy="true"${i ? '' : ` aria-label="${msg}"`}>${widths.map(w => `<td><span class="skel" style="width:${w}px"></span></td>`).join('')}</tr>`).join('');
 }
 function showError(msg) {
   document.getElementById('store-tbody').innerHTML =

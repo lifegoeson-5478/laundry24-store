@@ -473,3 +473,71 @@ tbody tr.store-closed::after {
   border-bottom-color: var(--text);
   z-index: 51;
 }
+
+/* ============================================================
+   MOTION & POLISH (v1.10)
+   ============================================================ */
+:root { --ease-out: cubic-bezier(.2,.7,.2,1); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* 헤더: 반투명 + 블러 */
+header { background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px); box-shadow: none; }
+
+/* 네비 탭: 밑줄이 가운데서 펼쳐지는 인디케이터 */
+.nav-tab { position: relative; border-bottom: none; }
+.nav-tab::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); transform: scaleX(0); transition: transform .3s var(--ease-out); }
+.nav-tab:hover::after { transform: scaleX(.35); background: var(--border2); }
+.nav-tab.active::after { transform: scaleX(1); background: var(--accent); }
+
+/* 페이지·패널 전환 */
+.page.active { animation: fadeUp .32s var(--ease-out); }
+.apanel.active { animation: fadeUp .25s var(--ease-out); }
+
+/* 모달 배경 페이드 */
+.dlg-overlay, .overlay.open, .confirm-overlay.open { animation: fadeIn .18s ease; }
+.dlg, .modal, .confirm-box { animation: modalIn .24s var(--ease-out); }
+
+/* 환불 주체 확인: 단계가 나타날 때 */
+.rf-section, .rf-result.show, #rf-apply-wrap, .rf-dropdown.open, .edit-card { animation: fadeUp .26s var(--ease-out) both; }
+
+/* 버튼 눌림 피드백 */
+.btn, .btn-save, .btn-add, .btn-admin, .btn-cancel-edit, .chip, .rf-chip, .btn-cf-cancel, .btn-cf-del { transition: background .15s, border-color .15s, color .15s, box-shadow .15s, transform .12s var(--ease-out); }
+.btn:active:not(:disabled), .btn-save:active, .btn-add:active, .btn-admin:active, .chip:active, .rf-chip:active, .btn-cf-cancel:active, .btn-cf-del:active { transform: scale(.97); }
+.btn-primary:hover, .btn-save:hover, .btn-add:hover { box-shadow: 0 4px 12px rgba(0,169,145,.25); }
+
+/* 통계 카드: 클릭하면 해당 필터 적용 */
+.stat-card { cursor: pointer; transition: transform .18s var(--ease-out), box-shadow .18s, border-color .18s; user-select: none; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border2); }
+.stat-card.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,169,145,.14); }
+.stat-num { font-variant-numeric: tabular-nums; }
+
+/* 표 행: 호버 시 왼쪽 강조선 */
+#store-tbody tr, #refund-list-tbody tr { transition: background .12s; }
+#store-tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* 환불 목록 표를 카드로 */
+.refund-table-card { overflow: visible; }
+.refund-table-card thead th { background: var(--bg); color: var(--text3); font-size: 11px; font-weight: 700; letter-spacing: .3px; border-bottom: 1px solid var(--border); }
+.refund-table-card thead th:first-child { border-top-left-radius: var(--radius); }
+.refund-table-card thead th:last-child { border-top-right-radius: var(--radius); }
+
+/* 로딩 스켈레톤 */
+.skel { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 50%, #eef0f3 75%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+.skel-row td { padding: 16px 14px !important; }
+
+/* 토스트: 살짝 튀어오르듯 */
+.toast { transition: opacity .25s, transform .35s var(--ease-out); transform: translateY(12px) scale(.96); }
+.toast.show { transform: translateY(0) scale(1); }
+
+/* 스크롤바 정돈 (PC) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #d6dae1; border-radius: 10px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #b9bfc9; }
+::selection { background: rgba(0,169,145,.18); }
+
+/* 모션 줄이기 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}#refund-list-loading .skel + .skel { margin-top: 14px; }

@@ -11,13 +11,23 @@ function renderStats(stores) {
     if (s.type === '직영') c['직영']++;
   });
   document.getElementById('stats-row').innerHTML = [
-    { num: c.total, lbl: '전체 매장', color: '#111' },
-    { num: c['매일'], lbl: '매일 방문', color: '#10b981' },
-    { num: c['격일'], lbl: '격일 방문', color: '#3b82f6' },
-    { num: c['부산/대구'], lbl: '부산/대구', color: '#f59e0b' },
-    { num: c['대전'], lbl: '대전', color: '#ef4444' },
-    { num: c['직영'], lbl: '직영 매장', color: '#0072ce' },
-  ].map(x => `<div class="stat-card"><div class="stat-dot" style="background:${x.color}"></div><div><div class="stat-num">${x.num}</div><div class="stat-lbl">${x.lbl}</div></div></div>`).join('');
+    { num: c.total, lbl: '전체 매장', color: '#111', key: '' },
+    { num: c['매일'], lbl: '매일 방문', color: '#10b981', key: '매일' },
+    { num: c['격일'], lbl: '격일 방문', color: '#3b82f6', key: '격일' },
+    { num: c['부산/대구'], lbl: '부산/대구', color: '#f59e0b', key: '부산/대구' },
+    { num: c['대전'], lbl: '대전', color: '#ef4444', key: '대전' },
+    { num: c['직영'], lbl: '직영 매장', color: '#0072ce', key: '직영' },
+  ].map(x => {
+    const on = x.key ? activeFilters.has(x.key) : activeFilters.size === 0;
+    return `<div class="stat-card${on ? ' on' : ''}" onclick="onStatClick('${x.key}')" title="${x.key ? x.lbl + ' 매장만 보기' : '필터 초기화'}"><div class="stat-dot" style="background:${x.color}"></div><div><div class="stat-num">${x.num}</div><div class="stat-lbl">${x.lbl}</div></div></div>`;
+  }).join('');
+}
+
+// 통계 카드 클릭 = 해당 필터 칩 토글 (전체 매장 = 초기화)
+function onStatClick(key) {
+  if (!key) return clearFilters();
+  const chip = [...document.querySelectorAll('.filter-bar .chip')].find(b => b.getAttribute('onclick')?.includes(`'${key}'`));
+  if (chip) toggleFilter(key, chip);
 }
 
 // ============================================================
