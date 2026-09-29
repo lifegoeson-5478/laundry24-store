@@ -410,13 +410,14 @@ tbody tr.store-closed .td-name { color: var(--text2); }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,30,.4); z-index: 500; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
 .overlay.open { display: flex; animation: fadeIn .18s ease; }
 /* 종이처럼: 질감 + 오른쪽 아래 모서리가 접힌 채 떴다가 내려앉으며 완전히 펴짐
-   --curl = 접힌 모서리 크기. 창(.modal)은 그만큼 모서리를 잘라내고(mask), 그 자리에 접힌 조각(.modal-curl)을 얹음.
+   --curl = 접힌 모서리 크기. 창(.modal)은 그만큼 모서리를 잘라내고(mask), 안쪽에 접힌 조각(.modal-curl)을 얹음.
+   조각을 창 안에 두어야 둥근 모서리에 맞춰 잘림 (바깥에 두면 거의 펴질 때 모서리 밖으로 삐져나옴)
    mask가 그림자까지 잘라서 그림자는 바깥(.modal-wrap)에 drop-shadow로 */
 @property --curl { syntax: '<length>'; inherits: true; initial-value: 0px; }
 @keyframes curlSettle { from { --curl: 90px; } to { --curl: 0px; } }
 .modal-wrap { position: relative; width: 100%; max-width: 680px; filter: drop-shadow(0 12px 32px rgba(16,24,40,.14)); }
 .overlay.open .modal-wrap { animation: modalIn .24s var(--ease-out), curlSettle .9s .12s cubic-bezier(.2,.8,.2,1) both; }
-.modal { display: flex; flex-direction: column; width: 100%; max-height: 90vh; overflow: hidden; border-radius: 16px; background: var(--white) var(--paper-texture);
+.modal { position: relative; display: flex; flex-direction: column; width: 100%; max-height: 90vh; overflow: hidden; border-radius: 16px; background: var(--white) var(--paper-texture);
   -webkit-mask: linear-gradient(315deg, transparent calc(var(--curl) * .7071), #000 calc(var(--curl) * .7071));
           mask: linear-gradient(315deg, transparent calc(var(--curl) * .7071), #000 calc(var(--curl) * .7071)); }
 .modal-curl { position: absolute; right: 0; bottom: 0; width: var(--curl); height: var(--curl); pointer-events: none;
