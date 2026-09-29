@@ -261,7 +261,8 @@
   <div class="dlg">
     <div class="dlg-hd">
       <div>
-        <div class="dlg-title" id="rform-title">환불 접수</div>
+        <div class="dlg-kicker mono">REFUND FORM</div>
+        <div class="dlg-title dlg-title-lg" id="rform-title">환불 접수</div>
         <div class="dlg-sub" id="rform-subtitle"></div>
       </div>
       <button class="dlg-x" onclick="closeRefundForm()" title="닫기">✕</button>
@@ -357,9 +358,10 @@
 </div>
 <div id="page-admin" class="page">
   <div class="admin-inner">
-    <div class="admin-hd">
-      <h2>어드민 관리</h2>
-      <p>매장 추가·수정·삭제 및 운송 일정을 관리합니다. 변경사항은 <strong>별도 DB에 저장</strong>되어 모든 팀원과 실시간 공유됩니다.</p>
+    <div class="page-head">
+      <div class="hero-meta mono"><span>L24 / ADMIN</span><span class="js-today"></span></div>
+      <h1 class="page-title">어드민<span class="hero-dot">.</span></h1>
+      <p class="page-desc">매장 추가·수정·삭제와 운송 일정, 상신 알림, 계정을 관리합니다. 변경사항은 모든 팀원과 실시간 공유됩니다.</p>
     </div>
 
     <!-- Gemini API 키 설정 -->
@@ -370,7 +372,7 @@
     </div>
     <div class="admin-tabs">
       <div class="atab active" onclick="switchAtab('store')">매장 관리</div>
-      <div class="atab" onclick="switchAtab('sched')">운송 일정 수정 </div>
+      <div class="atab" onclick="switchAtab('sched')">운송 일정 수정</div>
       <div class="atab" onclick="switchAtab('notify')">상신 알림 관리</div>
       <div class="atab" onclick="switchAtab('accounts')">계정 관리</div>
     </div>
@@ -392,10 +394,10 @@
         <div class="edit-card-title" id="edit-card-title">매장 정보 수정</div>
 
         <!-- 탭 -->
-        <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;gap:0;">
-          <div id="etab-store" onclick="switchEtab('store')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid var(--accent);margin-bottom:-2px;color:var(--accent-text);">매장 정보 수정</div>
-          <div id="etab-refund" onclick="switchEtab('refund')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text3);">↩ 환불 설정</div>
-          <div id="etab-closed" onclick="switchEtab('closed')" style="padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text3);">폐점 정보</div>
+        <div class="etabs">
+          <div id="etab-store" class="etab active" onclick="switchEtab('store')">매장 정보 수정</div>
+          <div id="etab-refund" class="etab" onclick="switchEtab('refund')">환불 설정</div>
+          <div id="etab-closed" class="etab" onclick="switchEtab('closed')">폐점 정보</div>
         </div>
 
         <!-- 매장 정보 패널 -->
@@ -413,8 +415,8 @@
             <div class="fg"><label>셀프장비 A/S</label><input type="text" id="f-as" placeholder="예: 유니룩스"></div>
             <div class="fg"><label>드라이스테이션 출장비</label><select id="f-dry"><option>발생</option><option>미발생</option></select></div>
             <div class="fg"><label>키오스크 버전</label><select id="f-kiosk"><option value="">없음</option><option value="V1">V1</option><option value="V2">V2</option></select></div>
-            <div class="fg full"><label>🅿 주차 정보</label><textarea id="f-parking" rows="3" placeholder="예: 지하 1층 무료 2시간&#10;아이디: laundry / 비밀번호: 1234&#10;엔터로 줄바꿈 가능"></textarea></div>
-            <div class="fg full"><label>🅿 주차 등록 링크 (있는 경우만)</label><input type="url" id="f-parking-url" placeholder="https://..."></div>
+            <div class="fg full"><label>주차 정보</label><textarea id="f-parking" rows="3" placeholder="예: 지하 1층 무료 2시간&#10;아이디: laundry / 비밀번호: 1234&#10;엔터로 줄바꿈 가능"></textarea></div>
+            <div class="fg full"><label>주차 등록 링크 (있는 경우만)</label><input type="url" id="f-parking-url" placeholder="https://..."></div>
             <div class="fg full"><label>CCTV 정보</label><textarea id="f-cctv" rows="2" placeholder="예: 4채널 / 업체명&#10;엔터로 줄바꿈 가능"></textarea></div>
             <div class="fg full"><label>CCTV 링크 (있는 경우만)</label><input type="url" id="f-cctv-url" placeholder="https://..."></div>
             <div class="fg full"><label>매장 특이사항</label><textarea id="f-sn" rows="3" placeholder="고객 응대 시 참고 사항을 입력하세요"></textarea></div>
@@ -694,7 +696,7 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 <div id="template-overlay" class="dlg-overlay" style="display:none;">
   <div class="dlg">
     <div class="dlg-hd">
-      <div class="dlg-title">점주 발송 템플릿</div>
+      <div><div class="dlg-kicker mono">TEMPLATE</div><div class="dlg-title dlg-title-lg">점주 발송 템플릿</div></div>
       <button class="dlg-x" onclick="document.getElementById('template-overlay').style.display='none'" title="닫기">✕</button>
     </div>
     <div class="dlg-bd">
@@ -742,7 +744,8 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
   <div class="dlg">
     <div class="dlg-hd">
       <div>
-        <div class="dlg-title">상신 내용 생성</div>
+        <div class="dlg-kicker mono">SHINSIN · AI</div>
+        <div class="dlg-title dlg-title-lg">상신 내용 생성</div>
         <div class="dlg-sub" id="shinsin-content-subtitle"></div>
       </div>
       <button class="dlg-x" onclick="document.getElementById('shinsin-content-overlay').style.display='none'" title="닫기">✕</button>

@@ -23,16 +23,16 @@ function renderAccountsList(users) {
   const wrap = document.getElementById('accounts-list');
   if (!users.length) { wrap.innerHTML = '<span style="font-size:13px;color:var(--text3);">등록된 계정이 없습니다</span>'; return; }
   wrap.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="acct-list">
       ${users.map(u => `
-        <div style="display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex-wrap:wrap;">
-          <span style="flex:1;min-width:180px;font-size:13px;font-weight:600;color:var(--text);">${u.email}</span>
-          <span style="font-size:12px;color:var(--text3);">${(u.createdAt || '').slice(0, 10)}</span>
+        <div class="acct-row">
+          <span class="acct-email">${u.email}</span>
+          <span class="acct-date mono">${(u.createdAt || '').slice(0, 10)}</span>
           ${u.isAdmin
-            ? `<span class="closed-tag" style="background:var(--accent);">관리자</span>`
+            ? `<span class="acct-admin">관리자</span>`
             : ''}
-          <button onclick="toggleAccountAdmin('${u.id}', ${!u.isAdmin})" style="padding:5px 12px;background:${u.isAdmin ? 'var(--bg)' : '#e6f0fb'};color:${u.isAdmin ? 'var(--text2)' : '#3b5bdb'};border:1.5px solid ${u.isAdmin ? 'var(--border2)' : '#a5b4fc'};border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">${u.isAdmin ? '관리자 해제' : '관리자로 지정'}</button>
-          <button onclick="deleteAccount('${u.id}', '${u.email.replace(/'/g, "\\'")}')" style="padding:5px 12px;background:#fee2e2;color:#b91c1c;border:1.5px solid #fca5a5;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">삭제</button>
+          <button onclick="toggleAccountAdmin('${u.id}', ${!u.isAdmin})" class="btn btn-sm">${u.isAdmin ? '관리자 해제' : '관리자로 지정'}</button>
+          <button onclick="deleteAccount('${u.id}', '${u.email.replace(/'/g, "\\'")}')" class="btn btn-sm btn-danger-ghost">삭제</button>
         </div>
       `).join('')}
     </div>`;

@@ -78,7 +78,7 @@ function renderList() {
     }
     const rowCls = closedNow ? 'store-closed' : '';
     return `<tr onclick="openModal(${i})" ${rowCls ? `class="${rowCls}"` : ''}>
-      <td class="td-no">${s.no}</td>
+      <td class="td-no">${s.no}${closedNow ? '<span class="closed-strike"></span><span class="closed-stamp">매장 폐점</span>' : ''}</td>
       <td class="td-name">${s.name}${isVisitingToday(s) ? `<span class="today-tag ${getLineClass(s.line, s.frequency)}">오늘</span>` : ''}${closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s)}${s.rondiTopupBlocked ? '<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>' : ''}</td>
       <td><span class="badge b-${s.type}">${s.type}</span></td>
       <td><span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne === '론디원' ? '론디원' : '—'}</span></td>
@@ -91,34 +91,7 @@ function renderList() {
       <td>${s.storeNote ? `<span class="note-preview"> ${s.storeNote.split('\n')[0]}</span>` : ''}</td>
     </tr>`;
   }).join('');
-  positionClosedStamps();
 }
-
-// ============================================================
-// 폐점 도장 오버레이 위치 계산
-// 각 셀 내용과 무관하게, 테이블 카드 전체의 가로 중앙에 고정하고
-// 세로 위치만 각 폐점 행의 실제 위치에 맞춰 배치한다.
-// ============================================================
-function positionClosedStamps() {
-  const card = document.querySelector('#page-list .table-card');
-  if (!card) return;
-  card.querySelectorAll('.row-closed-stamp').forEach(el => el.remove());
-  const cardRect = card.getBoundingClientRect();
-  card.querySelectorAll('tbody tr.store-closed').forEach(tr => {
-    const r = tr.getBoundingClientRect();
-    const stamp = document.createElement('div');
-    stamp.className = 'row-closed-stamp';
-    stamp.textContent = '매장 폐점';
-    stamp.style.top = (r.top - cardRect.top + r.height / 2) + 'px';
-    card.appendChild(stamp);
-  });
-}
-
-let _stampResizeTimer = null;
-window.addEventListener('resize', () => {
-  clearTimeout(_stampResizeTimer);
-  _stampResizeTimer = setTimeout(positionClosedStamps, 150);
-});
 
 function toggleFilter(val, btn) {
   activeFilters.has(val) ? (activeFilters.delete(val), btn.classList.remove('on')) : (activeFilters.add(val), btn.classList.add('on'));

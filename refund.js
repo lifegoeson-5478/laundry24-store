@@ -30,10 +30,10 @@ function rfOnSearch() {
   }
   dd.innerHTML = hits.map(s => {
     const rondiTag = rfIsRondi(s)
-      ? `<span class="rf-pill" style="background:var(--accent-light);color:var(--accent-text);">론디원</span>`
-      : `<span class="rf-pill" style="background:#fff7ed;color:#c2410c;">비론디원</span>`;
+      ? `<span class="rf-pill p-green">론디원</span>`
+      : `<span class="rf-pill p-orange">비론디원</span>`;
     const cashTag = s.card_cancel_possible === false
-      ? `<span class="rf-pill" style="background:#fee2e2;color:#b91c1c;">현금전용</span>` : '';
+      ? `<span class="rf-pill p-red">현금전용</span>` : '';
     return `<div class="rf-dd-item" onclick="rfPickStore(${s.id})"><span>${s.name}</span><div class="rf-dd-badges">${rondiTag}${cashTag}</div></div>`;
   }).join('');
   dd.classList.add('open');
@@ -46,13 +46,13 @@ function rfPickStore(id) {
   document.getElementById('rf-clear-btn').style.display = 'block';
   document.getElementById('rf-dropdown').classList.remove('open');
   const rondi = rfIsRondi(rfSelected);
-  const rc = rondi ? 'background:var(--accent-light);color:var(--accent-text);' : 'background:#fff7ed;color:#c2410c;';
+  const rc = rondi ? 'p-green' : 'p-orange';
   const tags = [
-    `<span class="rf-pill" style="background:var(--bg);color:var(--text3);border:1px solid var(--border);">${rfSelected.type}</span>`,
-    `<span class="rf-pill" style="${rc}">${rondi ? '론디원' : '비론디원'}</span>`,
-    rfSelected.card_cancel_possible === false ? `<span class="rf-pill" style="background:#fee2e2;color:#b91c1c;">현금입금 전용</span>` : '',
-    rfSelected.self_device_managed === false ? `<span class="rf-pill" style="background:#fff7ed;color:#c2410c;">셀프장비 미안내</span>` : '',
-    rfSelected.rondi_topup_blocked === true ? `<span class="rf-pill" style="background:#fff7ed;color:#c2410c;">론디페이 고객센터 지급불가 (기존 잔액만 사용 가능)</span>` : '',
+    `<span class="rf-pill p-gray">${rfSelected.type}</span>`,
+    `<span class="rf-pill ${rc}">${rondi ? '론디원' : '비론디원'}</span>`,
+    rfSelected.card_cancel_possible === false ? `<span class="rf-pill p-red">현금입금 전용</span>` : '',
+    rfSelected.self_device_managed === false ? `<span class="rf-pill p-orange">셀프장비 미안내</span>` : '',
+    rfSelected.rondi_topup_blocked === true ? `<span class="rf-pill p-orange">론디페이 고객센터 지급불가 (기존 잔액만 사용 가능)</span>` : '',
   ].filter(Boolean).join('');
   document.getElementById('rf-selected-store').innerHTML =
     `<div class="rf-selected-store"><div class="rf-store-name">${rfSelected.name}</div><div class="rf-store-tags">${tags}</div></div>`;

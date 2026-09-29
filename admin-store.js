@@ -17,7 +17,7 @@ function renderAlist() {
       <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:12px">${s.line || '—'}</span>
       <span style="font-size:12px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
       <button class="ali-del" onclick="event.stopPropagation();askToggleClosed(${i})" title="${s.isClosed ? '폐점 해제' : '폐점 처리'}" style="margin-left:auto;${s.isClosed ? 'color:var(--accent2)' : ''}">${s.isClosed ? '↺' : '🔒'}</button>
-      <button class="ali-del" onclick="event.stopPropagation();askDelete(${i})" title="삭제"></button>
+      <button class="ali-del" onclick="event.stopPropagation();askDelete(${i})" title="삭제">✕</button>
     </li>
   `;
   }).join('') || '<li style="color:var(--text3);cursor:default;font-size:13px;font-weight:500">결과 없음</li>';
@@ -30,7 +30,7 @@ function selectStore(i) {
   editingIdx = i;
   highlightListItem(i);
   const s = STORES[i];
-  document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent-text)">[${s.no}] ${s.name} 수정</span>`;
+  document.getElementById('edit-card-title').innerHTML = `<span class="mono edit-no">NO. ${s.no}</span>${s.name} 수정`;
   document.getElementById('btn-form-save').className = 'btn-save';
   document.getElementById('btn-form-save').textContent = '저장하기';
   document.getElementById('edit-card').className = 'edit-card';
@@ -42,7 +42,7 @@ function selectStore(i) {
 function openNewStoreForm() {
   editingIdx = -2;
   document.querySelectorAll('.astore-list li').forEach(el => el.classList.remove('selected'));
-  document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent2)">새 매장 추가</span>`;
+  document.getElementById('edit-card-title').innerHTML = `새 매장 추가<span class="hero-dot">.</span>`;
   document.getElementById('btn-form-save').className = 'btn-save btn-save-new';
   document.getElementById('btn-form-save').textContent = '매장 추가';
   document.getElementById('edit-card').className = 'edit-card is-new';
@@ -170,7 +170,7 @@ async function saveStore() {
       data._id = result[0].id;
       STORES.push(data);
       editingIdx = STORES.length - 1;
-      document.getElementById('edit-card-title').innerHTML = `<span style="color:var(--accent-text)">[${data.no}] ${data.name} 수정</span>`;
+      document.getElementById('edit-card-title').innerHTML = `<span class="mono edit-no">NO. ${data.no}</span>${data.name} 수정`;
       document.getElementById('btn-form-save').className = 'btn-save';
       document.getElementById('edit-card').className = 'edit-card';
     } else {
@@ -316,9 +316,7 @@ async function saveSched() {
 function switchEtab(t) {
   ['store', 'refund', 'closed'].forEach(name => {
     document.getElementById('epanel-' + name).style.display = name === t ? 'block' : 'none';
-    const tab = document.getElementById('etab-' + name);
-    tab.style.borderBottomColor = name === t ? 'var(--accent)' : 'transparent';
-    tab.style.color = name === t ? 'var(--accent)' : 'var(--text3)';
+    document.getElementById('etab-' + name).classList.toggle('active', name === t);
   });
 }
 
