@@ -393,6 +393,7 @@
           매장 추가
         </button>
       </div>
+      <div class="alist-warn" id="alist-warn" style="display:none;"></div>
       <ul class="astore-list" id="alist"></ul>
       <div class="edit-card" id="edit-card" style="display:none">
         <div class="edit-card-title" id="edit-card-title">매장 정보 수정</div>
@@ -406,13 +407,14 @@
 
         <!-- 매장 정보 패널 -->
         <div id="epanel-store">
+          <div class="field-warn" id="freq-warn" style="display:none;"></div>
           <div class="fgrid">
             <div class="fg"><label>매장명 *</label><input type="text" id="f-name" placeholder="예: 강남역점"></div>
             <div class="fg"><label>직영/일반</label><select id="f-type"><option>일반</option><option>직영</option><option>일반/직영</option></select></div>
             <div class="fg"><label>론디원 여부</label><select id="f-rondi"><option>론디원</option><option>비론디원</option></select></div>
             <div class="fg"><label>매장 형태</label><select id="f-stype"><option>복합형</option><option>드라이only</option><option>셀프only</option></select></div>
-            <div class="fg"><label>라인</label><input type="text" id="f-line" placeholder="예: A, B, C..."></div>
-            <div class="fg"><label>방문 주기</label><select id="f-freq"><option>매일</option><option>격일</option><option>부산/대구</option><option>대전</option><option>셀프only</option><option>시트 미등록</option></select></div>
+            <div class="fg"><label>라인</label><input type="text" id="f-line" placeholder="예: A, B, C..." oninput="checkLineFreq()"></div>
+            <div class="fg"><label>방문 주기</label><select id="f-freq" onchange="checkLineFreq()"><option>매일</option><option>격일</option><option>부산/대구</option><option>대전</option><option>셀프only</option><option>시트 미등록</option></select></div>
             <div class="fg"><label>오픈/양수일자</label><input type="date" id="f-open"></div>
             <div class="fg"><label>셀프장비 보증 만료</label><input type="date" id="f-sw"></div>
             <div class="fg"><label>드라이 보증 만료</label><input type="date" id="f-dw"></div>

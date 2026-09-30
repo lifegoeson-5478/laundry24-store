@@ -1,19 +1,31 @@
 // ============================================================
 // ADMIN: STORE LIST
 // ============================================================
+let alistMismatchOnly = false;   // '라인·방문주기 불일치만 보기'
+function toggleMismatchOnly() { alistMismatchOnly = !alistMismatchOnly; renderAlist(); }
+
 function renderAlist() {
   const q = document.getElementById('asearch').value.trim().toLowerCase();
+  const mismatchCount = STORES.filter(s => !isEffectivelyClosed(s) && lineFreqMismatch(s)).length;
+  const warn = document.getElementById('alist-warn');
+  if (!mismatchCount) alistMismatchOnly = false;
+  warn.style.display = mismatchCount ? 'flex' : 'none';
+  warn.innerHTML = `<span class="warn-dot"></span><span>라인과 방문주기가 맞지 않는 매장 <b>${mismatchCount}곳</b> — 방문 예정일이 계산되지 않습니다.</span>
+    <button class="btn btn-sm" onclick="toggleMismatchOnly()">${alistMismatchOnly ? '전체 보기' : '해당 매장만 보기'}</button>`;
   const items = STORES
     .map((s, i) => ({ s, i }))
-    .filter(({ s }) => !q || s.name.toLowerCase().includes(q));
+    .filter(({ s }) => !q || s.name.toLowerCase().includes(q))
+    .filter(({ s }) => !alistMismatchOnly || (!isEffectivelyClosed(s) && lineFreqMismatch(s)));
 
   document.getElementById('alist').innerHTML = items.map(({ s, i }) => {
     const closedNow = isEffectivelyClosed(s);
     const statusTag = closedNow ? '<span class="closed-tag">폐점</span>' : closureStageTagHtml(s);
+    const expected = !closedNow && lineFreqMismatch(s);
+    const mismatchTag = expected ? `<span class="warn-tag" title="라인 ${s.line}은(는) 보통 ${expected}입니다">주기 확인</span>` : '';
     return `
     <li onclick="selectStore(${i})" id="ali-${i}" style="${closedNow ? 'opacity:.55' : ''}">
       <span class="ali-no">${s.no}</span>
-      <span style="flex:1;font-weight:500">${s.name}${statusTag}</span>
+      <span style="flex:1;font-weight:500">${s.name}${statusTag}${mismatchTag}</span>
       <span class="b-line ${getLineClass(s.line, s.frequency)}" style="margin-right:6px;font-size:12px">${s.line || '—'}</span>
       <span style="font-size:12px;color:var(--text3);margin-right:8px">${s.frequency || ''}</span>
       <button class="ali-del" onclick="event.stopPropagation();askToggleClosed(${i})" title="${s.isClosed ? '폐점 해제' : '폐점 처리'}" style="margin-left:auto;${s.isClosed ? 'color:var(--accent2)' : ''}">${s.isClosed ? '↺' : '🔒'}</button>
@@ -83,6 +95,18 @@ function fillForm(s) {
   document.getElementById('f-rondi-topup').value = s.rondiTopupBlocked === true ? 'true' : 'false';
   document.getElementById('f-refund-note').value = s.refundNote || '';
   document.getElementById('save-msg').classList.remove('show');
+  checkLineFreq();
+}
+
+// 수정 폼: 라인과 방문주기가 안 맞으면 바로 아래에 경고 + 한 번에 바꾸기
+function checkLineFreq() {
+  const line = document.getElementById('f-line').value;
+  const freq = document.getElementById('f-freq').value;
+  const expected = lineFreqMismatch({ line, frequency: freq });
+  const el = document.getElementById('freq-warn');
+  el.style.display = expected ? 'flex' : 'none';
+  if (expected) el.innerHTML = `<span class="warn-dot"></span><span>라인 <b>${line.trim().toUpperCase()}</b>은(는) 보통 <b>${expected}</b>입니다. 지금 방문주기(${freq})로는 방문 예정일이 계산되지 않아요.</span>
+    <button type="button" class="btn btn-sm" onclick="document.getElementById('f-freq').value='${expected}'; checkLineFreq();">${expected}(으)로 바꾸기</button>`;
 }
 
 // 폐점일을 입력하면 자동으로 "폐점"으로, 지우면 자동으로 "영업중"으로 동기화

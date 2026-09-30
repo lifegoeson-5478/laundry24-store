@@ -5,8 +5,9 @@ function showToast(msg, type = 'success', duration = 3000) {
   const wrap = document.getElementById('toast-wrap');
   const el = document.createElement('div');
   el.className = `toast t-${type}`;
-  const icons = { success: '✓', error: '✕', warn: '' };
-  el.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
+  // 검정 카드 + 점 색·모노 라벨로 종류 구분 (상신 알림 줄과 같은 문법)
+  const labels = { success: 'DONE', error: 'ERROR', warn: 'NOTICE' };
+  el.innerHTML = `<span class="toast-dot"></span>${labels[type] ? `<span class="toast-kicker">${labels[type]}</span>` : ''}<span>${String(msg).trim()}</span>`;
   wrap.appendChild(el);
   requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
   setTimeout(() => {
@@ -16,7 +17,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.13.3';
+const APP_VERSION = '1.13.4';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -521,6 +522,20 @@ function getLineClass(line, frequency) {
   return 'line-etc';
 }
 
+// 라인만 보고 알 수 있는 방문주기 (A~H 격일 · Z·Y·X·W 매일 · 부산/대구 · 대전). 판단할 수 없으면 null
+function expectedFreqForLine(line) {
+  const l = (line || '').toUpperCase().trim();
+  if (/^[A-H]$/.test(l)) return '격일';
+  if (/^[ZYXW]$/.test(l)) return '매일';
+  if (/부산|대구/.test(l)) return '부산/대구';
+  if (/대전/.test(l)) return '대전';
+  return null;
+}
+// 라인과 방문주기가 안 맞으면 맞는 방문주기를, 맞거나 판단 불가면 null
+function lineFreqMismatch(s) {
+  const expected = expectedFreqForLine(s.line);
+  return expected && s.frequency !== expected ? expected : null;
+}
 // 폐점일을 미리 등록해두는 경우가 있어, 폐점 처리는 등록된 폐점일이 되어야 실제로 반영된다
 function isEffectivelyClosed(s) {
   if (!s.isClosed) return false;
