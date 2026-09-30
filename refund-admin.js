@@ -191,16 +191,14 @@ async function checkShinsinReminder() {
 
     const isDue = todayStr >= shinsinDate;
     const text = isDue
-      ? `⚠ 오늘은 상신 예정일입니다 (${shinsinDate}) — 처리 대기 ${target.length}건`
-      : `📅 상신 예정일이 ${shinsinDate}로 다가옵니다 — 처리 대기 ${target.length}건`;
+      ? `오늘은 상신 예정일입니다 (${shinsinDate}) — 처리 대기 ${target.length}건`
+      : `상신 예정일이 ${shinsinDate}로 다가옵니다 — 처리 대기 ${target.length}건`;
     const banner = document.getElementById('shinsin-banner');
-    const accentColor = isDue ? '#7f1d1d' : '#78350f';
-    banner.style.background = isDue ? '#fef2f2' : '#fffbeb';
-    banner.style.borderBottomColor = isDue ? '#fca5a5' : '#fde68a';
-    banner.style.color = accentColor;
-    document.getElementById('shinsin-banner-goto').style.background = accentColor;
-    document.getElementById('shinsin-banner-close').style.color = accentColor;
-    document.getElementById('shinsin-banner-text').textContent = text;
+    banner.classList.toggle('due', isDue);   // 색은 CSS(.notice-bar / .due)
+    document.getElementById('shinsin-banner-kicker').textContent = isDue ? 'DUE TODAY' : 'NOTICE';
+    document.getElementById('shinsin-banner-text').innerHTML = isDue
+      ? `오늘이 상신 예정일 <b>${shinsinDate}</b> · 처리 대기 <b>${target.length}건</b>`
+      : `상신 예정일 <b>${shinsinDate}</b> 다가옴 · 처리 대기 <b>${target.length}건</b>`;
     banner.style.display = 'flex';
     showToast(text, isDue ? 'error' : 'warn', 5000);
   } catch (e) { /* 알림은 부가 기능이라 조용히 실패 */ }
