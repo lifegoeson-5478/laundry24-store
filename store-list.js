@@ -123,8 +123,8 @@ function openModal(i) {
     <span class="badge ${s.rondiOne === '론디원' ? 'b-론디원' : 'b-비론디원'}">${s.rondiOne}</span>
     <span class="badge b-${s.storeType}">${s.storeType}</span>
     <span class="freq ${freqCls(s.frequency)}">${s.frequency || '—'}</span>
-    ${isEffectivelyClosed(s) ? `<span class="closed-tag" style="font-size:12px;padding:3px 10px;">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
-    ${s.rondiTopupBlocked ? `<span class="rondi-topup-tag" style="font-size:12px;padding:3px 10px;">론디페이 고객센터 지급불가</span>` : ''}
+    ${isEffectivelyClosed(s) ? `<span class="closed-tag">폐점${s.closedDate ? ' · ' + s.closedDate : ''}</span>` : ''}
+    ${s.rondiTopupBlocked ? `<span class="rondi-topup-tag">론디페이 고객센터 지급불가</span>` : ''}
   `;
 
   // 폐업 공지 (폐점일이 예정되어 있거나 이미 지난 경우)

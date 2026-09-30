@@ -44,16 +44,12 @@ async function getBlockedDays() {
   } catch(e) { return []; }
 }
 
-const BLOCKED_MODE_COLORS = { payment: 'var(--accent)', off: '#3b5bdb', holiday: '#b91c1c' };
+// 달력 표시색 (가이드 색): 입금일 초록 · 내 휴무일 파랑 · 공휴일 빨강 — 범례의 .mark-dot과 같은 색
+const BLOCKED_MODE_COLORS = { payment: 'var(--accent)', off: 'var(--accent2)', holiday: 'var(--danger)' };
 
 function setBlockedMode(mode) {
   blockedMode = mode;
-  ['payment', 'off', 'holiday'].forEach(m => {
-    const btn = document.getElementById('blocked-mode-' + m);
-    if (!btn) return;
-    btn.style.background = mode === m ? BLOCKED_MODE_COLORS[m] : 'none';
-    btn.style.color = mode === m ? 'white' : 'var(--text2)';
-  });
+  ['payment', 'off', 'holiday'].forEach(m => document.getElementById('blocked-mode-' + m)?.classList.toggle('on', mode === m));
 }
 
 function shiftBlockedCalendar(delta) {
@@ -105,7 +101,7 @@ function renderBlockedCalendarGrid() {
   const startDow = first.getDay();
   const daysInMonth = new Date(blockedCalYear, blockedCalMonth + 1, 0).getDate();
   let html = ['일','월','화','수','목','금','토']
-    .map(l => `<div style="font-weight:700;color:var(--text3);padding:4px 0;">${l}</div>`).join('');
+    .map(l => `<div class="cal-dow">${l}</div>`).join('');
   for (let i = 0; i < startDow; i++) html += '<div></div>';
   for (let day = 1; day <= daysInMonth; day++) {
     const ds = `${blockedCalYear}-${String(blockedCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -117,7 +113,7 @@ function renderBlockedCalendarGrid() {
     const bg = overlap
       ? `linear-gradient(135deg, ${BLOCKED_MODE_COLORS.payment} 50%, ${BLOCKED_MODE_COLORS[type]} 50%)`
       : marked ? BLOCKED_MODE_COLORS[marked] : 'transparent';
-    html += `<div onclick="toggleBlockedDate('${ds}')" title="${overlap ? '입금일 + ' + (type === 'holiday' ? '공휴일' : '내 휴무일') : ''}" style="padding:6px 0;border-radius:6px;cursor:pointer;background:${bg};color:${marked ? 'white' : 'var(--text)'};font-weight:${marked ? 700 : 500};text-shadow:${overlap ? '0 1px 2px rgba(0,0,0,.4)' : 'none'};">${day}</div>`;
+    html += `<div class="cal-day${marked ? ' marked' : ''}${overlap ? ' overlap' : ''}" onclick="toggleBlockedDate('${ds}')" title="${overlap ? '입금일 + ' + (type === 'holiday' ? '공휴일' : '내 휴무일') : ''}"${marked ? ` style="background:${bg};"` : ''}>${day}</div>`;
   }
   grid.innerHTML = html;
 }
@@ -165,7 +161,7 @@ async function autoRegisterHolidays() {
         await renderBlockedDaysList();
       } catch(e) { showToast('등록 실패: ' + e.message, 'error'); }
     },
-    { okLabel: '등록', okColor: 'var(--accent)', icon: '📅' }
+    { okLabel: '등록' }
   );
 }
 
@@ -286,7 +282,7 @@ async function markPaymentDateSubmitted(date) {
       await removePaymentDate(date);
       showToast('상신 완료 처리되었습니다');
     },
-    { okLabel: '완료 처리', okColor: 'var(--accent)' }
+    { okLabel: '완료 처리' }
   );
 }
 
@@ -317,7 +313,7 @@ async function renderPaymentDateList() {
       const next = future[0];
       const shinsin = calcShinsinDate(next, blocked);
       summaryEl.innerHTML = `다음 입금일 <strong>${next}</strong> · 다음 상신예정일 <strong>${shinsin}</strong>
-        <button onclick="markPaymentDateSubmitted('${next}')" style="margin-left:8px;padding:4px 10px;background:var(--accent);color:white;border:none;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">상신 완료</button>`;
+        <button class="btn btn-sm btn-primary" onclick="markPaymentDateSubmitted('${next}')" style="margin-left:8px;">상신 완료</button>`;
     }
   }
   renderBlockedCalendarGrid();
@@ -794,7 +790,7 @@ function renderRefundList() {
       </tr>`;
       if (!isCollapsed) {
         groups[month].forEach(r => {
-          html += `<tr style="border-bottom:1px solid var(--border);${r.처리완료 ? 'background:#f0fdf4;' : ''}cursor:pointer;" onclick="openRefundDetail('${r.id}')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='${r.처리완료 ? '#f0fdf4' : ''}'">
+          html += `<tr${r.처리완료 ? ' class="row-done"' : ''} onclick="openRefundDetail('${r.id}')">
             <td style="padding:8px 10px;color:var(--text3);">${r._idx}</td>
             <td style="padding:8px 10px;white-space:nowrap;">${r.접수일자 || '-'}</td>
             <td style="padding:8px 10px;white-space:nowrap;">${r.담당자명 || '-'}</td>
@@ -807,8 +803,9 @@ function renderRefundList() {
             <td style="padding:8px 10px;"><span class="tt" data-tt="${(r.취소사유 || '').replace(/"/g, '&quot;')}"><span style="display:inline-block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">${r.취소사유 || '-'}</span></span></td>
             <td style="padding:8px 10px;white-space:nowrap;">${r.상신예정일 || '-'}</td>
             <td style="padding:8px 10px;text-align:center;white-space:nowrap;" onclick="event.stopPropagation()">
-              ${r.처리완료 ? '<span style="font-size:12px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:999px;font-weight:700;">완료</span>' : ''}
-              <input type="checkbox" ${r.처리완료 ? 'checked' : ''} onchange="toggleShinsin('${r.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-left:4px;vertical-align:middle;">
+              ${r.처리완료
+                ? `<button type="button" class="pill pill-done pill-sm pill-btn" onclick="toggleShinsin('${r.id}', false)" title="누르면 미완료로 되돌립니다">완료</button>`
+                : `<input type="checkbox" onchange="toggleShinsin('${r.id}', true)" title="처리 완료로 표시" style="width:16px;height:16px;cursor:pointer;vertical-align:middle;">`}
             </td>
           </tr>`;
         });
@@ -1036,15 +1033,13 @@ function showConfirmModal(title, desc, onConfirm, opts) {
   opts = opts || {};
   document.getElementById('custom-confirm-title').textContent = title;
   document.getElementById('custom-confirm-desc').textContent = desc;
+  // tone: 'danger'(삭제, 기본) · 'confirm'(확인) · 'warn'(주의) → 점 색 · 라벨 · 버튼 색
+  const tone = opts.tone || (opts.okLabel ? 'confirm' : 'danger');
   const okBtn = document.getElementById('custom-confirm-ok');
   okBtn.textContent = opts.okLabel || '삭제';
-  okBtn.style.background = opts.okColor || 'var(--danger)';
-  const icon = document.getElementById('custom-confirm-icon');
-  if (icon) {
-    icon.style.background = opts.okLabel ? (opts.iconBg || 'var(--accent-light)') : '#fee2e2';
-    icon.style.color = opts.okLabel ? (opts.iconColor || 'var(--accent)') : '';
-    icon.textContent = opts.icon || (opts.okLabel ? '✓' : '🗑');
-  }
+  okBtn.className = 'btn btn-lg ' + (tone === 'danger' ? 'btn-danger' : 'btn-primary');
+  document.getElementById('custom-confirm-dot').className = 'kdot k-' + tone;
+  document.getElementById('custom-confirm-kicker').textContent = { danger: 'DELETE', confirm: 'CONFIRM', warn: 'NOTICE' }[tone];
   okBtn.onclick = () => {
     document.getElementById('custom-confirm-overlay').style.display = 'none';
     onConfirm();
@@ -1092,9 +1087,10 @@ async function toggleShinsin(id, checked) {
     const item = refundList.find(r => r.id === id);
     if (item) item.처리완료 = checked;
     renderRefundList();
-    showToast(checked ? '✅ 처리 완료됨' : '↩ 처리 미완료로 변경됨');
+    showToast(checked ? '처리 완료로 표시했습니다' : '미완료로 되돌렸습니다');
   } catch(e) {
-    showToast('저장 실패: ' + e.message);
+    renderRefundList();   // 저장 실패 시 체크박스/완료 표시를 원래대로
+    showToast('저장 실패: ' + e.message, 'error');
   }
 }
 
@@ -1423,7 +1419,7 @@ async function deleteOldRefunds() {
       '삭제 전에 백업해주세요',
       `최근 ${BACKUP_FRESH_MINUTES}분 안에 스프레드시트 백업 기록이 없습니다.\n마지막 백업: ${lastLabel}\n\n백업이 끝나면 삭제 확인으로 넘어갑니다.`,
       async () => { if (await backupRefundsToSheet()) confirmDeleteOldRefunds(); },
-      { okLabel: '지금 백업하기', okColor: 'var(--accent)', icon: '!', iconBg: 'var(--orange-light)', iconColor: 'var(--orange)' }
+      { okLabel: '지금 백업하기', tone: 'warn' }
     );
     return;
   }

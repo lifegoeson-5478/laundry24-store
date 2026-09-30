@@ -230,7 +230,7 @@ function askToggleClosed(i) {
   if (!s.isClosed) {
     // 폐점 처리는 편집 폼의 "폐점일" 입력을 통해서만 이루어지도록 유도
     selectStore(i);
-    switchEtab('store');
+    switchEtab('closed');   // 폐점일 칸이 있는 탭
     showToast('편집 폼에서 "폐점일"을 입력하면 자동으로 폐점 처리됩니다', 'warn', 3500);
     setTimeout(() => {
       const dateInput = document.getElementById('f-closed-date');
@@ -243,7 +243,8 @@ function askToggleClosed(i) {
     showConfirmModal(
       '폐점 해제',
       `"${s.name}" 매장의 폐점 상태를 해제할까요?\n다시 정상 매장으로 돌아가 방문 일정 계산에 포함됩니다.`,
-      () => setClosedStatus(i, false)
+      () => setClosedStatus(i, false),
+      { okLabel: '폐점 해제' }
     );
   }
 }

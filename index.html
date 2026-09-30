@@ -482,29 +482,30 @@
         <div class="panel-title" style="margin-bottom:4px;">입금일 · 휴무일 · 공휴일 관리</div>
         <div class="hint" style="margin-bottom:14px;">아래 모드를 고른 뒤 달력에서 날짜를 클릭해 등록/해제하세요. 상신 마감일 계산과 상신 알림에 반영됩니다.</div>
 
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-          <div style="display:flex;background:var(--white);border:1.5px solid var(--border2);border-radius:8px;overflow:hidden;">
-            <button id="blocked-mode-payment" onclick="setBlockedMode('payment')" style="padding:7px 14px;border:none;background:var(--accent);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">입금일</button>
-            <button id="blocked-mode-off" onclick="setBlockedMode('off')" style="padding:7px 14px;border:none;background:none;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">내 휴무일</button>
-            <button id="blocked-mode-holiday" onclick="setBlockedMode('holiday')" style="padding:7px 14px;border:none;background:none;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">공휴일</button>
+        <div class="cal-tools">
+          <!-- 모드 선택: 선택은 검정, 색은 앞의 점으로만 -->
+          <div class="seg">
+            <button id="blocked-mode-payment" class="seg-btn on" onclick="setBlockedMode('payment')"><span class="mark-dot m-payment"></span>입금일</button>
+            <button id="blocked-mode-off" class="seg-btn" onclick="setBlockedMode('off')"><span class="mark-dot m-off"></span>내 휴무일</button>
+            <button id="blocked-mode-holiday" class="seg-btn" onclick="setBlockedMode('holiday')"><span class="mark-dot m-holiday"></span>공휴일</button>
           </div>
           <button onclick="autoRegisterHolidays()" class="btn">달력에 보이는 연도 공휴일 자동 등록</button>
         </div>
 
-        <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;max-width:360px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <button onclick="shiftBlockedCalendar(-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text2);padding:4px 8px;">‹</button>
-            <span id="blocked-cal-title" style="font-size:14px;font-weight:800;"></span>
-            <button onclick="shiftBlockedCalendar(1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text2);padding:4px 8px;">›</button>
+        <div class="cal-box">
+          <div class="cal-head">
+            <button class="cal-nav" onclick="shiftBlockedCalendar(-1)" title="이전 달">‹</button>
+            <span id="blocked-cal-title" class="cal-title"></span>
+            <button class="cal-nav" onclick="shiftBlockedCalendar(1)" title="다음 달">›</button>
           </div>
-          <div id="blocked-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:12px;text-align:center;"></div>
+          <div id="blocked-calendar" class="cal-grid"></div>
         </div>
-        <div style="display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--text2);flex-wrap:wrap;">
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--accent);margin-right:5px;vertical-align:middle;"></span>입금일</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#3b5bdb;margin-right:5px;vertical-align:middle;"></span>내 휴무일</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#b91c1c;margin-right:5px;vertical-align:middle;"></span>공휴일</span>
+        <div class="cal-legend">
+          <span><span class="mark-dot m-payment"></span>입금일</span>
+          <span><span class="mark-dot m-off"></span>내 휴무일</span>
+          <span><span class="mark-dot m-holiday"></span>공휴일</span>
         </div>
-        <div id="admin-payment-summary" style="margin-top:14px;font-size:13px;color:var(--text2);"></div>
+        <div id="admin-payment-summary" class="cal-summary"></div>
       </div>
     </div>
 
@@ -644,7 +645,7 @@
 <!-- DELETE CONFIRM MODAL -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
-    <div class="confirm-icon"></div>
+    <div class="dlg-kicker-row"><span class="kdot k-danger"></span><span class="dlg-kicker mono">DELETE</span></div>
     <div class="confirm-title" id="confirm-title">매장을 삭제할까요?</div>
     <div class="confirm-desc" id="confirm-desc"></div>
     <div class="confirm-btns">
@@ -669,7 +670,7 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 <!-- 론디페이 경고 모달 -->
 <div id="rondi-alert-overlay" class="dlg-overlay" style="display:none;">
   <div class="dlg dlg-sm dlg-center">
-    <div class="dlg-icon warn">!</div>
+    <div class="dlg-kicker-row"><span class="kdot k-warn"></span><span class="dlg-kicker mono">NOTICE</span></div>
     <div class="dlg-title">론디페이 결제 건 안내</div>
     <div class="dlg-desc">
       론디페이 결제 건은 <strong>결제 수단으로 환불이 원칙</strong>입니다.<br>
@@ -684,15 +685,15 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 <!-- 론디원+카드 경고 모달 -->
 <div id="rondi-card-alert-overlay" class="dlg-overlay" style="display:none;">
   <div class="dlg dlg-sm dlg-center">
-    <div class="dlg-icon warn">!</div>
+    <div class="dlg-kicker-row"><span class="kdot k-warn"></span><span class="dlg-kicker mono">NOTICE</span></div>
     <div class="dlg-title">카드 결제 건 안내</div>
     <div class="dlg-desc">
       망치에서 <strong>카드 취소 가능한 건</strong>입니다.<br>
       론디페이 환불 미수긍 시 <strong>카드 취소</strong>해 주세요.
     </div>
-    <label style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;margin-top:18px;text-align:left;">
-      <input type="checkbox" id="rondi-card-exception-check" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;" onchange="onRondiCardExceptionChange()">
-      <span style="font-size:13px;font-weight:600;color:var(--text);line-height:1.5;">론디페이 지급 거부로<br>현금 지급이 필요합니다</span>
+    <label class="check-card">
+      <input type="checkbox" id="rondi-card-exception-check" onchange="onRondiCardExceptionChange()">
+      <span>론디페이 지급 거부로<br>현금 지급이 필요합니다</span>
     </label>
     <div class="dlg-actions">
       <button class="btn btn-lg" onclick="closeRondiCardAlert()">닫기</button>
@@ -780,7 +781,7 @@ catch (e) { document.getElementById('login-screen').style.display = 'flex'; }
 <!-- 커스텀 Confirm 모달 -->
 <div id="custom-confirm-overlay" class="dlg-overlay" style="display:none;z-index:3000;">
   <div class="dlg dlg-sm dlg-center">
-    <div class="dlg-icon danger" id="custom-confirm-icon"></div>
+    <div class="dlg-kicker-row"><span class="kdot k-danger" id="custom-confirm-dot"></span><span class="dlg-kicker mono" id="custom-confirm-kicker">DELETE</span></div>
     <div class="dlg-title" id="custom-confirm-title"></div>
     <div class="dlg-desc" style="white-space:pre-line;" id="custom-confirm-desc"></div>
     <div class="dlg-actions">

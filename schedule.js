@@ -7,7 +7,7 @@ function renderSchedDisplay() {
     const currentPattern = resolveDaysForDate(sd, today);
     const eff = sd.effectiveDate ? new Date(sd.effectiveDate + 'T00:00:00') : null;
     const pendingBadge = (sd.pendingDays && eff && eff > today)
-      ? `<div class="sched-note-badge" style="margin-top:4px;background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;"> ${sd.effectiveDate}부터: ${sd.pendingDays}</div>`
+      ? `<div class="sched-note-badge pending">${sd.effectiveDate}부터: ${sd.pendingDays}</div>`
       : '';
     return `
     <tr>
