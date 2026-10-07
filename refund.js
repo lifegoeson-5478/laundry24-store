@@ -138,6 +138,11 @@ function rfCalc() {
       steps = `
         <div class="rf-step-row"><div class="rf-snum mono">01</div><div>론디페이로 환불 제안</div></div>
         <div class="rf-step-row"><div class="rf-snum mono">02</div><div>고객이 거절 시 → <strong>망치에서 카드 취소 가능</strong></div></div>`;
+    } else if (rfPayment === '카드' && rondi && ['자판기','세탁기','건조기'].includes(rfDevice)) {
+      // 직영 론디원 매장: 셀프장비 카드결제는 고객이 론디페이 거절 시 카드 취소로 처리
+      steps = `
+        <div class="rf-step-row"><div class="rf-snum mono">01</div><div>론디페이로 환불 제안</div></div>
+        <div class="rf-step-row"><div class="rf-snum mono">02</div><div>고객이 거절 시 → <strong>카드 취소</strong>로 처리</div></div>`;
     } else if (rfPayment === '론디페이' && RF_CARD_DEVICES.has(rfDevice)) {
       steps = `<div class="rf-step-row"><div class="rf-snum mono">01</div><div>결제한 론디페이 금액 재지급</div></div>`;
     } else if (!rondi && rfDevice !== '드라이스테이션') {
