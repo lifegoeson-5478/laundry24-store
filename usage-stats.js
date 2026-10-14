@@ -8,6 +8,9 @@ const USAGE_EVENT_LABELS = {
   refund_submit: '환불 접수',
 };
 
+// 건당 절감 시간(분) — 도입 전 방식 대비 보수적으로 잡은 추정치 (매장 확인 1~3분→즉시, 환불 3~4분→1~2분)
+const USAGE_SAVED_MIN = { store_view: 1, refund_submit: 2 };
+
 function usageTableHtml(headers, rows) {
   const th = headers.map(h => `<th style="padding:8px 10px;text-align:left;white-space:nowrap;">${h}</th>`).join('');
   const body = rows.length
@@ -41,7 +44,16 @@ async function loadUsageStats() {
       .sort((a, b) => b[4] - a[4]);
     const dayRows = Object.entries(byDay).sort((a, b) => b[0].localeCompare(a[0])).map(([d, c]) => [d, c.toLocaleString()]);
 
+    const savedMin = Object.entries(USAGE_SAVED_MIN).reduce((sum, [ev, min]) => sum + (byEvent[ev]?.cnt || 0) * min, 0);
+    const savedText = savedMin >= 60 ? `약 ${Math.floor(savedMin / 60)}시간 ${savedMin % 60}분` : `약 ${savedMin}분`;
+    const storeCnt = byEvent.store_view?.cnt || 0, refundCnt = byEvent.refund_submit?.cnt || 0;
+
     wrap.innerHTML = `
+      <div style="border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:16px 18px;margin-bottom:18px;">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">최근 ${days}일 추정 절감 시간</div>
+        <div style="font-size:26px;font-weight:800;color:var(--accent);">${savedText}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;">매장 조회 ${storeCnt.toLocaleString()}건 × 1분 + 환불 접수 ${refundCnt.toLocaleString()}건 × 2분 (도입 전 방식 대비 보수적 추정)</div>
+      </div>
       <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">최근 ${days}일 · 활성 사용자 <strong>${activeUsers}</strong>명 · 기록 시작 이후 집계</div>
       <div class="panel-title" style="margin-top:6px;">기능별 사용량</div>
       ${usageTableHtml(['기능', '횟수', '사용자 수'], eventRows)}
