@@ -93,6 +93,15 @@ function renderList() {
   }).join('');
 }
 
+// 타이핑을 멈춘 뒤 1.5초가 지나면 검색 1회로 기록 (글자마다 기록되지 않게)
+let _searchLogTimer = null;
+function logSearchDebounced() {
+  clearTimeout(_searchLogTimer);
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+  _searchLogTimer = setTimeout(() => logEvent('store_search', q), 1500);
+}
+
 function toggleFilter(val, btn) {
   activeFilters.has(val) ? (activeFilters.delete(val), btn.classList.remove('on')) : (activeFilters.add(val), btn.classList.add('on'));
   renderList();

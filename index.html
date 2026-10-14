@@ -138,7 +138,7 @@
             <button type="button" id="hero-today-btn" class="hero-today" onclick="toggleTodayOnly()" title="오늘 방문 매장만 보기">오늘 방문 <b id="hero-today">–</b></button>
           </div>
           <div class="search-box">
-            <input type="search" id="search-input" placeholder="매장명을 입력하세요" oninput="renderList()" autocomplete="off">
+            <input type="search" id="search-input" placeholder="매장명을 입력하세요" oninput="renderList(); logSearchDebounced()" autocomplete="off">
             <span class="search-icon"></span>
             <kbd class="search-kbd" title="/ 키를 누르면 바로 검색할 수 있어요">/</kbd>
           </div>
