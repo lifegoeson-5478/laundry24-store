@@ -116,6 +116,7 @@ function goHome() {
 // ============================================================
 function openModal(i) {
   const s = STORES[i];
+  logEvent('store_view', s.name);
   document.getElementById('m-no').textContent = 'NO. ' + String(s.no).padStart(3, '0');
   document.getElementById('m-name').textContent = s.name;
   document.getElementById('m-tags').innerHTML = `

@@ -612,8 +612,21 @@ let deleteTargetIdx = -1;
 // ============================================================
 // PAGE SWITCHING
 // ============================================================
+// 사용 통계용 로그 (실패해도 화면 동작에 영향 없도록 조용히 무시)
+async function logEvent(event, detail = '') {
+  try {
+    const { data: { session } } = await sbClient.auth.getSession();
+    if (!session) return;
+    await sbFetch('usage_logs', {
+      method: 'POST', prefer: 'return=minimal',
+      body: JSON.stringify({ event, detail, user_email: session.user.email }),
+    });
+  } catch (e) {}
+}
+
 function switchPage(p) {
   if (p === 'admin' && !isAdmin) { showToast('어드민 권한이 없습니다', 'error'); return; }
+  logEvent('page_view', p);
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + p).classList.add('active');

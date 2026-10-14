@@ -548,6 +548,7 @@ async function submitRefundForm() {
     });
     const savedId = Array.isArray(result) && result[0] ? result[0].id : null;
     closeRefundForm();
+    logEvent('refund_submit', `${payload.매장명} | ${payload.사용기기} | ${payload.환불방법}`);
     const rondi = rfIsRondi(rfSelected);
     const isJumju = !rondi || (rondi && (rfPayment === '현금' || rfPayment === '지역화폐')) || isPartialCancel;
     if (isJumju) {

@@ -166,6 +166,7 @@ function rfCalc() {
 }
 
 function rfShowResult(isBonsa, color, stepsHtml) {
+  logEvent('refund_check', `${rfSelected.name} | ${rfDevice} | ${rfPayment || '-'} | ${isBonsa ? '본사' : '점주'}`);
   const note = rfSelected.refund_note && !['NULL','EMPTY',''].includes(rfSelected.refund_note)
     ? `<div class="rf-note-box" style="border-left-color:${color};"><span style="white-space:pre-line;">${rfSelected.refund_note}</span></div>` : '';
   const el = document.getElementById('rf-result');

@@ -379,6 +379,7 @@
       <div class="atab" onclick="switchAtab('sched')">운송 일정 수정</div>
       <div class="atab" onclick="switchAtab('notify')">상신 알림 관리</div>
       <div class="atab" onclick="switchAtab('accounts')">계정 관리</div>
+      <div class="atab" onclick="switchAtab('usage')">사용 통계</div>
     </div>
 
     <!-- STORE PANEL -->
@@ -506,6 +507,21 @@
           <span><span class="mark-dot m-holiday"></span>공휴일</span>
         </div>
         <div id="admin-payment-summary" class="cal-summary"></div>
+      </div>
+    </div>
+
+    <!-- USAGE PANEL -->
+    <div id="apanel-usage" class="apanel">
+      <div class="panel">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div class="panel-title" style="margin:0;">사용 통계</div>
+          <select id="usage-period" class="input" onchange="loadUsageStats()">
+            <option value="7">최근 7일</option>
+            <option value="30" selected>최근 30일</option>
+            <option value="90">최근 90일</option>
+          </select>
+        </div>
+        <div id="usage-stats-content"></div>
       </div>
     </div>
 
@@ -662,6 +678,7 @@
 <script src="refund.js"></script>
 <script src="refund-admin.js"></script>
 <script src="admin-accounts.js"></script>
+<script src="usage-stats.js"></script>
 <script>
 // 스크립트 로드 실패 등으로 세션 확인이 안 되면 최소한 로그인 화면은 보여준다
 try { initAuth().catch(() => document.getElementById('login-screen').style.display = 'flex'); }

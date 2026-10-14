@@ -351,4 +351,5 @@ function switchAtab(t) {
   document.querySelector(`.atab[onclick="switchAtab('${t}')"]`).classList.add('active');
   document.getElementById('apanel-' + t).classList.add('active');
   if (t === 'accounts') loadAccountsList();
+  if (t === 'usage') loadUsageStats();
 }
