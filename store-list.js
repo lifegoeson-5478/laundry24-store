@@ -94,12 +94,33 @@ function renderList() {
 }
 
 // 타이핑을 멈춘 뒤 1.5초가 지나면 검색 1회로 기록 (글자마다 기록되지 않게)
+// 검색 뒤에 매장 상세를 열었는지도 같이 추적해서, 열지 않고 끝난 검색("검색만 한 건")을 정확히 센다.
 let _searchLogTimer = null;
+let _searchOpenPending = false; // 기록된 검색 뒤에 아직 상세를 열지 않은 상태
 function logSearchDebounced() {
   clearTimeout(_searchLogTimer);
+  _searchLogTimer = null;
   const q = document.getElementById('search-input').value.trim();
   if (!q) return;
-  _searchLogTimer = setTimeout(() => logEvent('store_search', q), 1500);
+  _searchLogTimer = setTimeout(() => {
+    _searchLogTimer = null;
+    logEvent('store_search', q);
+    _searchOpenPending = true;
+  }, 1500);
+}
+
+// 매장 상세를 열 때 호출: 직전 검색이 상세 조회로 이어졌음을 기록
+function markSearchViewed(storeName) {
+  if (_searchLogTimer) { // 1.5초 대기 중에 바로 열었으면 검색 기록을 먼저 남김
+    clearTimeout(_searchLogTimer);
+    _searchLogTimer = null;
+    logEvent('store_search', document.getElementById('search-input').value.trim());
+    _searchOpenPending = true;
+  }
+  if (_searchOpenPending) {
+    logEvent('store_search_viewed', storeName);
+    _searchOpenPending = false;
+  }
 }
 
 function toggleFilter(val, btn) {
@@ -126,6 +147,7 @@ function goHome() {
 function openModal(i) {
   const s = STORES[i];
   logEvent('store_view', s.name);
+  markSearchViewed(s.name);
   document.getElementById('m-no').textContent = 'NO. ' + String(s.no).padStart(3, '0');
   document.getElementById('m-name').textContent = s.name;
   document.getElementById('m-tags').innerHTML = `
