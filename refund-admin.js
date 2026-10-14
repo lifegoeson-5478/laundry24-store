@@ -280,6 +280,7 @@ async function markPaymentDateSubmitted(date) {
     `${date} 입금일 상신을 완료 처리할까요?\n목록에서 제거되고 다음 입금일로 자동 전환됩니다.`,
     async () => {
       await removePaymentDate(date);
+      logEvent('shinsin_done', date);
       showToast('상신 완료 처리되었습니다');
     },
     { okLabel: '완료 처리' }
