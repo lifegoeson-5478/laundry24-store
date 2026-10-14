@@ -30,8 +30,10 @@ async function loadUsageStats() {
   try {
     const rows = await sbFetch(`usage_summary?select=day,event,user_email,cnt&day=gte.${since}&limit=10000`) || [];
 
-    const byEvent = {}, byUser = {}, byDay = {};
+    const byEvent = {}, byUser = {}, byDay = {}, byDayEvent = {};
     rows.forEach(r => {
+      const de = byDayEvent[r.day] ||= {};
+      de[r.event] = (de[r.event] || 0) + r.cnt;
       const e = byEvent[r.event] ||= { cnt: 0, users: new Set() };
       e.cnt += r.cnt; e.users.add(r.user_email);
       const u = byUser[r.user_email] ||= {};
@@ -48,8 +50,10 @@ async function loadUsageStats() {
     const dayRows = Object.entries(byDay).sort((a, b) => b[0].localeCompare(a[0])).map(([d, c]) => [d, c.toLocaleString()]);
 
     const storeCnt = byEvent.store_view?.cnt || 0, refundCnt = byEvent.refund_submit?.cnt || 0, shinsinCnt = byEvent.shinsin_done?.cnt || 0;
-    // 검색 후 상세 조회까지 간 건은 조회로 이미 계산되므로, 검색만 하고 끝난 건(검색 − 상세 조회)만 30초로 계산
-    const searchOnlyCnt = Math.max(0, (byEvent.store_search?.cnt || 0) - storeCnt);
+    // 검색 후 상세 조회까지 간 건은 조회로 이미 계산되므로, 검색만 하고 끝난 건(검색 − 상세 조회)만 30초로 계산.
+    // 검색 기록은 v1.14.4 배포일부터라서, 날짜별로 빼야 배포 전 조회 기록 때문에 0이 되지 않는다.
+    const searchOnlyCnt = Object.values(byDayEvent)
+      .reduce((sum, ev) => sum + Math.max(0, (ev.store_search || 0) - (ev.store_view || 0)), 0);
     const savedMin = Math.round(
       Object.entries(USAGE_SAVED_MIN).reduce((sum, [ev, min]) => sum + (byEvent[ev]?.cnt || 0) * min, 0) + searchOnlyCnt * USAGE_SEARCH_ONLY_MIN
     );
