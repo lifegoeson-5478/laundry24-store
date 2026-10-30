@@ -103,6 +103,7 @@
       <button type="button" class="nav-tab" onclick="switchPage('schedule')">운송 일정</button>
       <button type="button" class="nav-tab" onclick="switchPage('refund')">환불 주체 확인</button>
       <button type="button" class="nav-tab" onclick="switchPage('refundlist')">환불 목록</button>
+      <button type="button" class="nav-tab" onclick="switchPage('events')">이벤트<span class="ev-navn" id="ev-nav-n" style="display:none;"></span></button>
     </div>
     <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
       <button class="btn-admin" id="admin-nav-btn" onclick="switchPage('admin')" style="display:none;">
@@ -201,6 +202,37 @@
       </table>
     </div>
   </div>
+</div>
+
+<!-- PAGE: EVENTS -->
+<div id="page-events" class="page">
+  <div class="pg-inner">
+    <div class="page-head">
+      <div class="hero-meta mono"><span>L24 / EVENT BOARD</span><span class="js-today"></span></div>
+      <div class="ev-headrow">
+        <div>
+          <h1 class="page-title">이벤트<span class="hero-dot">.</span></h1>
+          <p class="page-desc">쉬는 동안 올라온 이벤트를 한 번에 확인하세요. 공지를 붙여넣으면 AI가 기간, 미참여 매장, 확인할 내용, 고객 예상 질문까지 정리해 줍니다.</p>
+        </div>
+        <button type="button" class="btn btn-lg btn-primary" id="ev-add">+ 이벤트 추가</button>
+      </div>
+    </div>
+    <div class="ev-tools">
+      <div class="seg" id="ev-tabs"></div>
+      <div class="ev-chips" id="ev-chips"></div>
+      <div class="ev-tin">
+        <input type="search" class="input" id="ev-q" placeholder="이벤트 검색" aria-label="이벤트 검색" autocomplete="off">
+        <input type="search" class="input" id="ev-ms" list="ev-stores" placeholder="미참여 매장 검색" aria-label="미참여 매장 검색" autocomplete="off">
+        <datalist id="ev-stores"></datalist>
+      </div>
+    </div>
+    <div id="ev-catch"></div>
+    <div class="ev-list" id="ev-list"><div class="empty">불러오는 중…</div></div>
+  </div>
+</div>
+<!-- 이벤트 등록/수정 팝업 -->
+<div id="ev-form-overlay" class="dlg-overlay" style="display:none;align-items:flex-start;justify-content:center;">
+  <div class="dlg dlg-lg" id="ev-dlg"></div>
 </div>
 
 <!-- PAGE: REFUND -->
@@ -680,6 +712,7 @@
 <script src="refund-admin.js"></script>
 <script src="admin-accounts.js"></script>
 <script src="usage-stats.js"></script>
+<script src="events.js"></script>
 <script>
 // 스크립트 로드 실패 등으로 세션 확인이 안 되면 최소한 로그인 화면은 보여준다
 try { initAuth().catch(() => document.getElementById('login-screen').style.display = 'flex'); }
