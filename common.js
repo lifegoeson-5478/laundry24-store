@@ -440,6 +440,15 @@ function isBlockedDate(sd, date) {
   return !!(sd.blockedDates && sd.blockedDates.includes(toISODateLocal(date)));
 }
 
+// 격일은 달력 날짜(31일→1일이 둘 다 홀수)가 아니라 하루씩 번갈아 간다.
+// 기준일(2026-10-01)부터 짝수 번째 날 = "홀수일" 그룹, 홀수 번째 날 = "짝수일" 그룹
+// ponytail: 기준일 고정 — 운영에서 순서를 한 번 뒤집어야 하면 이 날짜를 하루 옮기면 된다
+const ALT_ANCHOR = Date.UTC(2026, 9, 1);
+function isOddGroupDay(d) {
+  const days = Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - ALT_ANCHOR) / 86400000);
+  return ((days % 2) + 2) % 2 === 0;
+}
+
 function getNextTwoDates(frequency, line) {
   const sd = schedData.find(s => s.label === frequency);
   if (!sd) return null;
@@ -459,9 +468,7 @@ function getNextTwoDates(frequency, line) {
     if (parsed.type === 'fixed') {
       if (parsed.days.includes(d.getDay())) results.push(new Date(d));
     } else if (parsed.type === 'date_parity') {
-      const isOdd = parsed.parity === 'odd';
-      const dateNum = d.getDate();
-      if (isOdd ? dateNum % 2 === 1 : dateNum % 2 === 0) results.push(new Date(d));
+      if ((parsed.parity === 'odd') === isOddGroupDay(d)) results.push(new Date(d));
     }
   }
 
@@ -574,7 +581,6 @@ function isVisitingToday(s) {
   if (isEffectivelyClosed(s)) return false;
   const today = new Date();
   today.setHours(0,0,0,0);
-  const dateNum = today.getDate();
   const dow = today.getDay(); // 0=일,1=월...6=토
   const l = (s.line || '').toUpperCase().trim();
   const sd = getSchedByFreq(s.frequency);
@@ -585,8 +591,8 @@ function isVisitingToday(s) {
     if (sd) {
       const map = parseLineParityMap(resolveDaysForDate(sd, today));
       const parity = map[l];
-      if (parity === 'odd')  return dateNum % 2 === 1;
-      if (parity === 'even') return dateNum % 2 === 0;
+      if (parity === 'odd')  return isOddGroupDay(today);
+      if (parity === 'even') return !isOddGroupDay(today);
     }
   }
   if (s.frequency === '부산/대구' || s.frequency === '대전') {
