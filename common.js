@@ -17,7 +17,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.14.6';
+const APP_VERSION = '1.15.0';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -162,6 +162,7 @@ async function showApp() {
   await renderBlockedDaysList();
   checkShinsinReminder();
   setupRealtime();
+  EventBoard.load();   // 메뉴의 "새 이벤트" 숫자용 (기다리지 않음)
 }
 
 // ============================================================
@@ -223,6 +224,12 @@ function setupRealtime() {
   sbClient.channel('public:stores')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'stores' }, () => {
       scheduleRealtimeReload('매장 정보가 업데이트되었습니다');
+    })
+    .subscribe();
+
+  sbClient.channel('public:events')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+      EventBoard.reload();
     })
     .subscribe();
 }
@@ -636,9 +643,10 @@ function switchPage(p) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + p).classList.add('active');
-  const idx = { list: 0, schedule: 1, refund: 2, refundlist: 3 };
+  const idx = { list: 0, schedule: 1, refund: 2, refundlist: 3, events: 4 };
   if (idx[p] !== undefined) document.querySelectorAll('.nav-tab')[idx[p]]?.classList.add('active');
   if (p === 'schedule') renderSchedDisplay();
+  if (p === 'events') EventBoard.onShow();
   if (p === 'admin') { renderAlist(); renderSchedEditTable(); loadGeminiKey(); renderPaymentDateList(); renderBlockedDaysList(); }
   if (p === 'refund' && rfStores.length === 0) loadRefundStores();
   if (p === 'refundlist') { loadPaymentDate(); loadRefundList(); renderPaymentDateList(); }
