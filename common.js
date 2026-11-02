@@ -373,14 +373,15 @@ const DAY_MAP = { '일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6 };
 
 // "B·D·F·H: 짝수일 / A·C·E·G: 홀수일" 같은 어드민 입력 텍스트를 파싱해서
 // 실제 라인 → 홀짝 매핑을 만든다. (더 이상 코드에 하드코딩하지 않음)
+// "A·C·E·G: 1조 / B·D·F·H: 2조"도 된다 (1조 = 홀수일 그룹, 2조 = 짝수일 그룹)
 function parseLineParityMap(pattern) {
   const map = {};
   if (!pattern) return map;
-  const regex = /([A-Za-z·,\s]+):\s*(홀수일|짝수일)/g;
+  const regex = /([A-Za-z·,\s]+):\s*(홀수일|짝수일|1조|2조)/g;
   let m;
   while ((m = regex.exec(pattern)) !== null) {
     const lines = m[1].split(/[·,\s]+/).filter(Boolean);
-    const parity = m[2] === '홀수일' ? 'odd' : 'even';
+    const parity = (m[2] === '홀수일' || m[2] === '1조') ? 'odd' : 'even';
     lines.forEach(l => { map[l.toUpperCase()] = parity; });
   }
   return map;
@@ -402,7 +403,7 @@ function parseDaysFromPattern(pattern, line) {
   }
 
   // 홀수일 / 짝수일 분기 (격일 복합 패턴) — 어드민이 입력한 텍스트를 실시간으로 파싱
-  if (pattern.includes('홀수일') || pattern.includes('짝수일')) {
+  if (/홀수일|짝수일|1조|2조/.test(pattern)) {
     const map = parseLineParityMap(pattern);
     const upperLine = (line || '').toUpperCase().trim();
     if (map[upperLine]) return { type: 'date_parity', parity: map[upperLine] };
