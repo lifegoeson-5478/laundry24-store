@@ -17,7 +17,7 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 
 // 배포할 때마다 버전을 올려주세요 (푸터에 표시됨)
-const APP_VERSION = '1.15.0';
+const APP_VERSION = '1.15.1';
 
 // 아래 두 줄만 본인 값으로 교체하세요
 // ============================================================
@@ -683,19 +683,32 @@ window.addEventListener('scroll', () => {
 
 // ============================================================
 // 새 버전 배포 감지 → 자동 새로고침
-// 서버가 보내는 ETag/Last-Modified가 처음 로드했을 때와 달라지면 새 배포로 간주
+// 서버의 common.js에 적힌 APP_VERSION이 지금보다 높을 때만 새 배포로 간주.
+// (ETag는 배포 서버마다·빌드마다 달라져 배포가 없어도 새로고침되던 문제가 있었음)
+// 입력 중이거나 창이 열려 있으면 다음 확인 때로 미룬다.
 // ============================================================
-let _versionTag = null;
+function isUserBusy() {
+  const f = document.activeElement;
+  if (f && f.closest('input, textarea, select, [contenteditable]')) return true;
+  if (document.querySelector('#overlay.open, #confirm-overlay.open')) return true;
+  return [...document.querySelectorAll('.dlg-overlay')].some(el => el.style.display !== 'none');
+}
+
 async function checkForNewVersion() {
   try {
-    const res = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' });
-    const tag = res.headers.get('etag') || res.headers.get('last-modified');
-    if (!tag) return;
-    if (_versionTag === null) { _versionTag = tag; return; }
-    if (tag !== _versionTag) {
-      showToast('새 버전이 배포되어 새로고침합니다', 'success', 1500);
-      setTimeout(() => location.reload(), 1200);
-    }
+    // ?t= 로 CDN 캐시를 건너뛰고 최신 파일을 받는다
+    const text = await (await fetch('common.js?t=' + Date.now(), { cache: 'no-store' })).text();
+    const match = text.match(/APP_VERSION = '([^']+)'/);
+    if (!match || match[1].localeCompare(APP_VERSION, undefined, { numeric: true }) <= 0 || isUserBusy()) return;
+    // 같은 버전으로 이미 한 번 새로고침했는데도 옛 파일이 떴다면 반복하지 않는다
+    let tried = null;
+    try { tried = sessionStorage.getItem('reloadedFor'); sessionStorage.setItem('reloadedFor', match[1]); } catch (e) { /* 저장소 막힘 */ }
+    if (tried === match[1]) return;
+    // GitHub Pages가 파일을 10분간 캐시하므로, 새로고침 전에 JS·CSS를 새로 받아 둔다
+    const assets = [...document.querySelectorAll('script[src]:not([src^="http"]), link[rel=stylesheet]:not([href^="http"])')].map(el => el.src || el.href);
+    await Promise.all(assets.map(url => fetch(url, { cache: 'reload' })));
+    showToast('새 버전(v' + match[1] + ')이 배포되어 새로고침합니다', 'success', 1500);
+    setTimeout(() => location.reload(), 1200);
   } catch (e) { /* 오프라인 등 - 다음 주기에 재시도 */ }
 }
 setInterval(checkForNewVersion, 60000);
